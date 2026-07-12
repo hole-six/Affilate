@@ -220,9 +220,9 @@ function TabButton({ active, onClick, label, count, icon }: { active: boolean; o
   return (
     <button
       onClick={onClick}
-      className={`flex h-10 items-center gap-xs rounded-full px-4 text-[13px] font-bold transition-all ${
-        active 
-          ? "border-2 border-gray-900 bg-white text-gray-900 shadow-sm" 
+      className={`flex h-10 shrink-0 items-center gap-xs whitespace-nowrap rounded-full px-4 text-[13px] font-bold transition-all ${
+        active
+          ? "border-2 border-gray-900 bg-white text-gray-900 shadow-sm"
           : "border-2 border-transparent bg-white text-gray-500 shadow-sm ring-1 ring-black/5 hover:bg-gray-50 hover:text-gray-900"
       }`}
     >
