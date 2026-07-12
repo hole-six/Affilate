@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Tag, Copy, CalendarOff, TicketPercent } from "lucide-react";
+import { Search, Tag, Copy, Check, CalendarOff, TicketPercent, Link2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Card } from "@/components/ui/Card";
 import { VoucherStatusToggle } from "@/components/admin/VoucherStatusToggle";
+import { RenameVoucherButton } from "@/components/admin/RenameVoucherButton";
 import { formatDate } from "@/lib/format";
 
 type VoucherRow = {
@@ -16,11 +17,20 @@ type VoucherRow = {
   status: string;
   endsAt: Date | null;
   platformName: string;
+  productImage: string | null;
+  shortUrl: string | null;
 };
 
 export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "active" | "paused">("all");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  function copyShortUrl(id: string, url: string) {
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId((cur) => (cur === id ? null : cur)), 1500);
+  }
 
   const counts = {
     all: vouchers.length,
@@ -84,9 +94,17 @@ export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
                     </span>
                     <h3 className="text-[16px] font-bold text-gray-900 leading-tight line-clamp-2">{v.title}</h3>
                   </div>
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e86a33]/10 text-[#e86a33]">
-                    <TicketPercent size={20} strokeWidth={2} />
-                  </div>
+                  {v.productImage ? (
+                    <img
+                      src={v.productImage}
+                      alt=""
+                      className="h-14 w-14 shrink-0 rounded-xl object-cover ring-1 ring-black/5"
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#e86a33]/10 text-[#e86a33]">
+                      <TicketPercent size={20} strokeWidth={2} />
+                    </div>
+                  )}
                 </div>
 
                 <div className="absolute -bottom-2 -left-2 h-4 w-4 rounded-full bg-gray-50 border-t border-r border-gray-200" />
@@ -99,6 +117,27 @@ export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
                 </p>
 
                 <div className="mt-auto flex flex-col gap-md">
+                  {v.shortUrl && (
+                    <div className="flex items-center justify-between rounded-lg bg-gray-50 border border-gray-100 p-sm pl-md">
+                      <div className="flex items-center gap-xs min-w-0">
+                        <Link2 size={14} className="text-[#e86a33] shrink-0" />
+                        <span className="truncate font-mono text-[12px] font-semibold text-gray-700">
+                          {v.shortUrl}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => copyShortUrl(v.id, v.shortUrl!)}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-gray-400 hover:bg-white hover:text-[#e86a33] transition-colors"
+                        title="Copy link"
+                      >
+                        {copiedId === v.id ? (
+                          <Check size={16} className="text-emerald-500" />
+                        ) : (
+                          <Copy size={16} />
+                        )}
+                      </button>
+                    </div>
+                  )}
                   {v.voucherCode ? (
                     <div className="flex items-center justify-between rounded-lg bg-gray-50 border border-gray-100 p-sm pl-md group-hover:bg-[#fff0e6]/30 transition-colors">
                       <span className="font-mono text-[16px] font-bold tracking-wider text-gray-900">
@@ -132,6 +171,7 @@ export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
               </div>
 
               <div className="absolute inset-0 bg-white/95 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-md">
+                <RenameVoucherButton id={v.id} currentTitle={v.title} />
                 <VoucherStatusToggle id={v.id} status={v.status} />
               </div>
             </Card>

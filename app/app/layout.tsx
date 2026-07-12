@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Home, Globe, CreditCard, ShoppingBag, PartyPopper, BookOpen, Send } from "lucide-react";
+import { Home, Globe, CreditCard, ShoppingBag, PartyPopper, BookOpen, Send, TicketPercent } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { Sidebar, NavSection } from "@/components/layout/Sidebar";
 
@@ -12,6 +12,7 @@ const sections: NavSection[] = [
     items: [
       { href: "/app", label: "Trang chủ", icon: <Home size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
       { href: "/app/refunds", label: "Hoàn tiền", icon: <Globe size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
+      { href: "/app/deals", label: "Ưu đãi", icon: <TicketPercent size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
       { href: "/app/wallet", label: "Ví tiền", icon: <CreditCard size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
       { href: "/app/orders", label: "Đơn hàng", icon: <ShoppingBag size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
     ],

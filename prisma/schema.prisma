@@ -157,6 +157,7 @@ model Voucher {
   title           String
   voucherCode     String?   @map("voucher_code")
   voucherUrl      String?   @map("voucher_url")
+  productImage    String?   @map("product_image")
   benefitText     String?   @map("benefit_text")
   conditionsText  String?   @map("conditions_text")
   startsAt        DateTime? @map("starts_at")
