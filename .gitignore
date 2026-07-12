@@ -1,0 +1,10 @@
+node_modules/
+.next/
+storage/imports/*
+storage/bills/*
+!storage/imports/.gitkeep
+!storage/bills/.gitkeep
+.env
+*.log
+prisma/dev.db
+prisma/dev.db-journal
