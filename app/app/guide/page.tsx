@@ -38,7 +38,7 @@ export default function CustomerGuidePage() {
               </div>
               {i < steps.length - 1 && <div className="w-px flex-1 bg-canvas-soft" />}
             </div>
-            <Card variant="feature-sage" className="mb-lg w-full">
+            <Card variant="soft" className="mb-lg w-full">
               <h2 className="display-xs mb-sm">{s.title}</h2>
               <p className="text-body">{s.body}</p>
             </Card>

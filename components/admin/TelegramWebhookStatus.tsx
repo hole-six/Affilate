@@ -64,7 +64,7 @@ export function TelegramWebhookStatus() {
   const isConnected = info?.webhook?.url && info.webhook.url.length > 0;
 
   return (
-    <Card variant="feature-sage">
+    <Card variant="soft">
       <div className="mb-lg flex items-center justify-between">
         <h2 className="display-xs">Trạng thái kết nối bot</h2>
         <Button variant="tertiary" onClick={loadInfo} disabled={loading} className="gap-sm px-md py-xs text-[13px]">

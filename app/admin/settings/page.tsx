@@ -32,7 +32,7 @@ export default async function AdminSettingsPage() {
       </Card>
 
       {/* Tracking code format */}
-      <Card variant="feature-sage">
+      <Card variant="soft">
         <h2 className="display-xs mb-lg flex items-center gap-sm">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-canvas text-body">
             <Code2 size={16} strokeWidth={1.75} />

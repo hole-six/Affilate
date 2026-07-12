@@ -28,7 +28,7 @@ export default async function AdminTelegramPage() {
         <TelegramAccountForm account={account} />
       </Card>
 
-      <Card variant="feature-sage">
+      <Card variant="soft">
         <h2 className="display-xs mb-sm">Lệnh khách hàng có thể dùng</h2>
         <div className="grid grid-cols-1 gap-sm sm:grid-cols-2">
           {[

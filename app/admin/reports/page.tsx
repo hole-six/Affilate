@@ -61,7 +61,7 @@ export default async function AdminReportsPage() {
       />
 
       {/* Monthly breakdown */}
-      <Card variant="feature-sage">
+      <Card variant="soft">
         <h2 className="display-xs mb-lg flex items-center gap-sm">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
             <BarChart3 size={16} strokeWidth={1.75} />
@@ -99,7 +99,7 @@ export default async function AdminReportsPage() {
       </Card>
 
       {/* Status breakdown */}
-      <Card variant="feature-sage">
+      <Card variant="soft">
         <h2 className="display-xs mb-lg flex items-center gap-sm">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
             <TrendingUp size={16} strokeWidth={1.75} />
@@ -146,7 +146,7 @@ export default async function AdminReportsPage() {
       </Card>
 
       {/* Top customers */}
-      <Card variant="feature-sage">
+      <Card variant="soft">
         <h2 className="display-xs mb-lg flex items-center gap-sm">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
             <Users size={16} strokeWidth={1.75} />

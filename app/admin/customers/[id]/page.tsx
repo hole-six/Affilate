@@ -36,7 +36,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
         </p>
       </div>
 
-      <Card variant="feature-sage">
+      <Card variant="soft">
         <h2 className="display-xs mb-lg">Link affiliate gần đây</h2>
         {customer.trackingLinks.length === 0 ? (
           <EmptyState title="Chưa có link nào" />
@@ -68,7 +68,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
         )}
       </Card>
 
-      <Card variant="feature-sage">
+      <Card variant="soft">
         <h2 className="display-xs mb-lg">Đơn hàng</h2>
         {customer.orders.length === 0 ? (
           <EmptyState title="Chưa có đơn hàng nào" />
@@ -104,7 +104,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
         )}
       </Card>
 
-      <Card variant="feature-sage">
+      <Card variant="soft">
         <h2 className="display-xs mb-lg">Lịch sử thanh toán</h2>
         {customer.paymentBatches.length === 0 ? (
           <EmptyState title="Chưa có lịch sử thanh toán" />
