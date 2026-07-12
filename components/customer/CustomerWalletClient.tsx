@@ -328,8 +328,8 @@ export function CustomerWalletClient({ stats, history, paymentInfo: initialPayme
               <span className="text-[13px] font-medium text-gray-400">{history.length} giao dịch</span>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[500px] text-left">
+            <div className="responsive-table overflow-x-auto">
+              <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-gray-100">
                     <th className="py-sm px-sm text-[11px] font-bold uppercase tracking-wider text-gray-400">Thời gian</th>
@@ -348,16 +348,16 @@ export function CustomerWalletClient({ stats, history, paymentInfo: initialPayme
                   ) : (
                     history.map((tx, idx) => (
                       <tr key={idx} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                        <td className="py-md px-sm text-[13px] font-medium text-gray-600">{tx.time}</td>
-                        <td className="py-md px-sm text-[13px] font-bold text-gray-900">{tx.amount}</td>
-                        <td className="py-md px-sm text-[13px] font-medium text-gray-600">
+                        <td className="py-md px-sm text-[13px] font-medium text-gray-600" data-label="Thời gian">{tx.time}</td>
+                        <td className="py-md px-sm text-[13px] font-bold text-gray-900" data-label="Số tiền">{tx.amount}</td>
+                        <td className="py-md px-sm text-[13px] font-medium text-gray-600" data-label="Trạng thái">
                           <span className={`inline-flex items-center rounded-md px-2 py-1 text-[11px] font-bold ${
                             tx.status === 'paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-600'
                           }`}>
                             {tx.status === 'paid' ? 'Đã nhận' : tx.status}
                           </span>
                         </td>
-                        <td className="py-md px-sm text-[13px] font-mono text-gray-500">{tx.code}</td>
+                        <td className="py-md px-sm text-[13px] font-mono text-gray-500" data-label="Mã phiếu">{tx.code}</td>
                       </tr>
                     ))
                   )}

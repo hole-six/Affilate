@@ -163,4 +163,69 @@
     from { opacity: 0; transform: translateX(-12px); }
     to { opacity: 1; transform: translateX(0); }
   }
+
+  /* ── Responsive data table: stacks into cards below 640px instead of
+     horizontal-scrolling, using the column header text (via data-label,
+     injected automatically by components/ui/Table.tsx) as each cell's label ── */
+  @media (max-width: 639px) {
+    .responsive-table {
+      overflow-x: visible !important;
+    }
+    .responsive-table table,
+    .responsive-table thead,
+    .responsive-table tbody,
+    .responsive-table tr,
+    .responsive-table th,
+    .responsive-table td {
+      display: block;
+      width: 100%;
+      min-width: 0;
+    }
+    .responsive-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+    }
+    .responsive-table tbody tr {
+      margin: 0 0 12px;
+      padding: 4px 12px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      border-radius: 16px;
+    }
+    .responsive-table tbody tr:last-child {
+      margin-bottom: 0;
+    }
+    .responsive-table td {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      text-align: right;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+      white-space: normal;
+    }
+    .responsive-table td:last-child {
+      border-bottom: 0;
+    }
+    .responsive-table td[data-label]::before {
+      content: attr(data-label);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #868685;
+      text-align: left;
+      flex-shrink: 0;
+    }
+    /* Full-width empty-state / colspan rows: keep as a plain centered block
+       instead of the label/value flex row used for normal data cells. */
+    .responsive-table td[colspan] {
+      display: block;
+      text-align: center;
+    }
+  }
 }

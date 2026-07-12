@@ -132,7 +132,7 @@ export function AdminOrdersClient({ orders, customers }: Props) {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="responsive-table overflow-x-auto">
           <table className="w-full text-left text-[13px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
@@ -158,16 +158,16 @@ export function AdminOrdersClient({ orders, customers }: Props) {
                 paginatedOrders.map((o) => (
                   <tr key={o.id} className="border-b border-gray-50 hover:bg-[#fff0e6]/20 transition-colors">
                     {/* Order Info */}
-                    <td className="px-md py-sm">
+                    <td className="px-md py-sm" data-label="Đơn hàng / Tracking">
                       <div className="font-mono font-bold text-gray-900">{o.orderExternalId}</div>
                       <div className="mt-1 flex items-center gap-2">
                         <span className="rounded-md bg-gray-100 px-1.5 py-[2px] text-[10px] font-bold text-gray-500 uppercase">{o.platformName}</span>
                         <span className="font-mono text-[11px] text-gray-400">{o.trackingCode || "No tracking"}</span>
                       </div>
                     </td>
-                    
+
                     {/* Customer */}
-                    <td className="px-md py-sm">
+                    <td className="px-md py-sm" data-label="Khách hàng">
                       {o.customerName ? (
                         <span className="font-bold text-gray-700">{o.customerName}</span>
                       ) : (
@@ -178,12 +178,12 @@ export function AdminOrdersClient({ orders, customers }: Props) {
                     </td>
 
                     {/* Amount */}
-                    <td className="px-md py-sm text-right font-medium text-gray-600">
+                    <td className="px-md py-sm text-right font-medium text-gray-600" data-label="Giá trị đơn">
                       {formatCurrency(o.orderAmount)}
                     </td>
 
                     {/* Commissions */}
-                    <td className="px-md py-sm text-right">
+                    <td className="px-md py-sm text-right" data-label="Tiền hoàn / Giữ lại">
                       <div className="font-bold text-[#e86a33] text-[14px]">
                         {formatCurrency(o.customerRewardAmount)}
                       </div>
@@ -193,7 +193,7 @@ export function AdminOrdersClient({ orders, customers }: Props) {
                     </td>
 
                     {/* Statuses */}
-                    <td className="px-md py-sm">
+                    <td className="px-md py-sm" data-label="Trạng thái">
                       <div className="flex flex-col items-start gap-1">
                         <Badge tone={o.orderStatus === "approved" ? "positive" : o.orderStatus === "cancelled" ? "negative" : "warning"} dot>
                           {orderStatusLabel[o.orderStatus] ?? o.orderStatus}
@@ -205,7 +205,7 @@ export function AdminOrdersClient({ orders, customers }: Props) {
                     </td>
 
                     {/* Actions */}
-                    <td className="px-md py-sm">
+                    <td className="px-md py-sm" data-label="Thao tác">
                       <OrderActions
                         orderId={o.id}
                         orderStatus={o.orderStatus}

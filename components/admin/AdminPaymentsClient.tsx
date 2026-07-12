@@ -94,7 +94,7 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
       {/* CONTENT */}
       {activeTab === "pending" ? (
         <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden w-full max-w-[100vw]">
-          <div className="overflow-x-auto">
+          <div className="responsive-table overflow-x-auto">
             <table className="w-full text-left text-[13px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
@@ -118,11 +118,11 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
                 ) : (
                   filteredPending.map((c) => (
                     <tr key={c.id} className="border-b border-gray-50 hover:bg-[#fff0e6]/20 transition-colors">
-                      <td className="px-md py-md">
+                      <td className="px-md py-md" data-label="Khách hàng">
                         <div className="font-bold text-gray-900">{c.name}</div>
                         <div className="font-mono text-[11px] text-gray-400 mt-1">{c.code}</div>
                       </td>
-                      <td className="px-md py-md">
+                      <td className="px-md py-md" data-label="Thông tin chuyển khoản">
                         {c.bankAccountNumber || c.momoNumber ? (
                           <div className="flex flex-col gap-2">
                             {c.bankAccountNumber && (
@@ -152,13 +152,13 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
                           <div className="text-[12px] font-medium text-gray-400 italic">Chưa cập nhật thông tin</div>
                         )}
                       </td>
-                      <td className="px-md py-md text-center font-medium text-gray-600">
+                      <td className="px-md py-md text-center font-medium text-gray-600" data-label="Số đơn">
                         {c.count}
                       </td>
-                      <td className="px-md py-md text-right">
+                      <td className="px-md py-md text-right" data-label="Số tiền cần hoàn">
                         <div className="font-black text-[#e86a33] text-[16px]">{formatCurrency(c.amount)}</div>
                       </td>
-                      <td className="px-md py-md text-right">
+                      <td className="px-md py-md text-right" data-label="Thao tác">
                         <CreatePaymentButton customerId={c.id} />
                       </td>
                     </tr>
@@ -170,7 +170,7 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
         </div>
       ) : (
         <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden w-full max-w-[100vw]">
-          <div className="overflow-x-auto">
+          <div className="responsive-table overflow-x-auto">
             <table className="w-full text-left text-[13px]">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50">
@@ -192,16 +192,16 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
                 ) : (
                   filteredBatches.map((b) => (
                     <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="px-md py-md font-mono font-bold text-gray-900">{b.paymentCode}</td>
-                      <td className="px-md py-md font-medium text-gray-700">{b.customerName}</td>
-                      <td className="px-md py-md text-right font-bold text-gray-900">{formatCurrency(b.totalAmount)}</td>
-                      <td className="px-md py-md">
+                      <td className="px-md py-md font-mono font-bold text-gray-900" data-label="Mã phiếu">{b.paymentCode}</td>
+                      <td className="px-md py-md font-medium text-gray-700" data-label="Khách hàng">{b.customerName}</td>
+                      <td className="px-md py-md text-right font-bold text-gray-900" data-label="Số tiền">{formatCurrency(b.totalAmount)}</td>
+                      <td className="px-md py-md" data-label="Trạng thái">
                         <Badge tone={b.status === "paid" ? "positive" : "warning"} dot>
                           {payoutStatusLabel[b.status] ?? b.status}
                         </Badge>
                       </td>
-                      <td className="px-md py-md text-[12px] font-medium text-gray-500">{b.paidAt || "—"}</td>
-                      <td className="px-md py-md">
+                      <td className="px-md py-md text-[12px] font-medium text-gray-500" data-label="Ngày trả">{b.paidAt || "—"}</td>
+                      <td className="px-md py-md" data-label="Thao tác">
                         {b.status !== "paid" && <MarkPaidForm batchId={b.id} />}
                       </td>
                     </tr>

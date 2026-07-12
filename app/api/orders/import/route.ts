@@ -185,17 +185,24 @@ export async function POST(req: NextRequest) {
       });
       if (existing) duplicateRows++;
 
-      // Nếu đơn đã được duyệt hoặc đã thanh toán, ta không được phép ghi đè trạng thái và khách hàng.
-      // Chúng ta chỉ cập nhật các dữ liệu thô (tiền, ngày tháng) để phòng hờ Shopee cập nhật số liệu.
+      // Đồng bộ trạng thái đơn hàng. Nếu file CSV có trạng thái Shopee (Hoàn thành, Hủy...), ta lưu vào productAffiliateStatus
+      // Map trạng thái Shopee sang trạng thái nội bộ:
+      // "Hoàn thành" -> "approved"
+      // "Đã Hủy", "Đã Huỷ" -> "cancelled"
+      // Các trạng thái khác -> "pending"
+      const shopeeStatus = (row.orderStatus ?? row.productAffiliateStatus ?? "").toLowerCase();
+      let autoMappedStatus = "pending";
+      if (shopeeStatus.includes("hoàn thành")) {
+        autoMappedStatus = "approved";
+      } else if (shopeeStatus.includes("hủy") || shopeeStatus.includes("huỷ")) {
+        autoMappedStatus = "cancelled";
+      }
+
+      // Nếu đơn đã được duyệt hoặc đã thanh toán (bởi Admin thủ công), ta không ghi đè trạng thái.
       const isLocked = existing && (existing.orderStatus === "approved" || existing.payoutStatus === "paid");
       
-      // Nếu có sẵn customerId trong DB do map thủ công, thì ưu tiên giữ lại.
-      // Trừ khi trackingLink có customerId và DB chưa map ai.
       const resolvedCustomerId = existing?.customerId ?? trackingLink?.customerId;
-
-      // Đồng bộ trạng thái đơn hàng. Nếu file CSV có trạng thái Shopee (Hoàn thành, Hủy...), ta lưu vào productAffiliateStatus
-      // Còn orderStatus nội bộ thì mặc định là pending, KHÔNG đè trạng thái text tiếng Việt của CSV vào.
-      const resolvedOrderStatus = isLocked ? existing.orderStatus : "pending";
+      const resolvedOrderStatus = isLocked ? existing.orderStatus : autoMappedStatus;
 
       await prisma.order.upsert({
         where: { platformId_orderExternalId: { platformId, orderExternalId: row.orderExternalId } },
@@ -249,8 +256,8 @@ export async function POST(req: NextRequest) {
           commissionAmount,
           customerRewardAmount: split.customerRewardAmount,
           systemProfitAmount: split.systemProfitAmount,
-          orderStatus: row.orderStatus ?? "pending",
-          productAffiliateStatus: row.productAffiliateStatus,
+          orderStatus: autoMappedStatus,
+          productAffiliateStatus: row.orderStatus ?? row.productAffiliateStatus,
           subId1: row.subId1,
           subId2: row.subId2,
           subId3: row.subId3,
