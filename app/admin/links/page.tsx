@@ -1,10 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { formatDate } from "@/lib/format";
-import { Badge } from "@/components/ui/Badge";
-import { Table, Thead, Tr, Th, Td } from "@/components/ui/Table";
-import { EmptyState } from "@/components/ui/EmptyState";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { QuickLinkForm } from "@/components/admin/QuickLinkForm";
+import { AdminLinksClient } from "@/components/admin/AdminLinksClient";
 import { Link2 } from "lucide-react";
 
 export default async function AdminLinksPage() {
@@ -17,6 +14,18 @@ export default async function AdminLinksPage() {
       include: { customer: true, platform: true },
     }),
   ]);
+
+  const rows = links.map((l) => ({
+    id: l.id,
+    createdAt: l.createdAt,
+    customerName: l.customer.fullName,
+    platformName: l.platform.name,
+    trackingCode: l.trackingCode,
+    shortCode: l.shortCode,
+    channelSource: l.channelSource,
+    clicks: l.clicks,
+    status: l.status,
+  }));
 
   return (
     <div className="flex flex-col gap-2xl">
@@ -37,49 +46,7 @@ export default async function AdminLinksPage() {
           </span>
           Lịch sử link đã tạo
         </h2>
-        {links.length === 0 ? (
-          <EmptyState
-            title="Chưa có link nào"
-            description="Tạo link affiliate đầu tiên ở form phía trên."
-          />
-        ) : (
-          <Table>
-            <Thead>
-              <Tr>
-                <Th>Thời gian</Th>
-                <Th>Khách hàng</Th>
-                <Th>Nền tảng</Th>
-                <Th>Tracking code</Th>
-                <Th>Short code</Th>
-                <Th>Kênh</Th>
-                <Th align="right">Lượt click</Th>
-                <Th>Trạng thái</Th>
-              </Tr>
-            </Thead>
-            <tbody>
-              {links.map((l) => (
-                <Tr key={l.id}>
-                  <Td className="text-gray-500 text-[13px]">{formatDate(l.createdAt)}</Td>
-                  <Td className="font-medium">{l.customer.fullName}</Td>
-                  <Td>
-                    <span className="rounded-md bg-gray-50 px-sm py-[2px] text-[12px] font-medium text-body">
-                      {l.platform.name}
-                    </span>
-                  </Td>
-                  <Td className="font-mono text-[12px] text-gray-500">{l.trackingCode}</Td>
-                  <Td className="font-mono text-[12px] text-gray-500">{l.shortCode ?? "—"}</Td>
-                  <Td className="text-gray-500">{l.channelSource}</Td>
-                  <Td numeric>{l.clicks}</Td>
-                  <Td>
-                    <Badge tone={l.status === "active" ? "positive" : "neutral"} dot>
-                      {l.status === "active" ? "Hoạt động" : "Dừng"}
-                    </Badge>
-                  </Td>
-                </Tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+        <AdminLinksClient links={rows} />
       </div>
     </div>
   );
