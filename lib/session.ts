@@ -68,10 +68,16 @@ export async function verifySessionToken(token: string | undefined | null): Prom
       toArrayBuffer(base64UrlDecode(sigB64)),
       toArrayBuffer(new TextEncoder().encode(payloadB64))
     );
-    if (!valid) return null;
+    if (!valid) {
+      console.error("[session-debug] signature invalid", { secretPresent: Boolean(process.env.SESSION_SECRET) });
+      return null;
+    }
     const json = new TextDecoder().decode(base64UrlDecode(payloadB64));
     return JSON.parse(json) as SessionPayload;
-  } catch {
+  } catch (e) {
+    console.error("[session-debug] verify threw", e instanceof Error ? e.message : e, {
+      secretPresent: Boolean(process.env.SESSION_SECRET),
+    });
     return null;
   }
 }
