@@ -3,6 +3,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { setSessionCookie } from "@/lib/auth";
+import { getRequestOrigin } from "@/lib/requestOrigin";
 
 const GOOGLE_OAUTH_STATE_COOKIE = "google_oauth_state";
 
@@ -12,7 +13,7 @@ async function generateCustomerCode(): Promise<string> {
 }
 
 export async function GET(req: NextRequest) {
-  const origin = new URL(req.url).origin;
+  const origin = getRequestOrigin(req);
   const failRedirect = (reason: string) =>
     NextResponse.redirect(`${origin}/login?error=${encodeURIComponent(reason)}`);
 

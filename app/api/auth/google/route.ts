@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { getRequestOrigin } from "@/lib/requestOrigin";
 
 const GOOGLE_OAUTH_STATE_COOKIE = "google_oauth_state";
 
@@ -9,7 +10,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Google đăng nhập chưa được cấu hình" }, { status: 500 });
   }
 
-  const origin = new URL(req.url).origin;
+  const origin = getRequestOrigin(req);
   const redirectUri = `${origin}/api/auth/google/callback`;
   const state = crypto.randomBytes(16).toString("hex");
 
