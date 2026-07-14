@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Wallet, Clock, CheckCircle2, Building2, Smartphone, Edit2, AlertCircle, X, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useRouter } from "next/navigation";
+import { Pagination } from "@/components/ui/Pagination";
 
 export const VIETNAM_BANKS = [
   "Vietcombank (Ngân hàng TMCP Ngoại thương VN)",
@@ -44,10 +45,12 @@ type Props = {
     paid: number;
   };
   history: any[];
+  totalPages: number;
+  currentPage: number;
   paymentInfo: PaymentInfo;
 };
 
-export function CustomerWalletClient({ stats, history, paymentInfo: initialPaymentInfo }: Props) {
+export function CustomerWalletClient({ stats, history, totalPages, currentPage, paymentInfo: initialPaymentInfo }: Props) {
   const router = useRouter();
   const [requestAmount, setRequestAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"bank" | "momo">("bank");
@@ -364,6 +367,7 @@ export function CustomerWalletClient({ stats, history, paymentInfo: initialPayme
                 </tbody>
               </table>
             </div>
+            <Pagination totalPages={totalPages} currentPage={currentPage} />
           </div>
         </div>
       </div>

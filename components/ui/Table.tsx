@@ -42,7 +42,7 @@ export function Table(props: TableHTMLAttributes<HTMLTableElement>) {
   });
 
   return (
-    <div className="responsive-table overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-black/5 w-full">
+    <div className="responsive-table overflow-x-auto rounded-2xl bg-canvas shadow-sm ring-1 ring-ink/5 w-full">
       <table ref={tableRef} className="w-full border-collapse text-left text-[14px]" {...props} />
     </div>
   );
@@ -51,7 +51,7 @@ export function Table(props: TableHTMLAttributes<HTMLTableElement>) {
 export function Thead(props: HTMLAttributes<HTMLTableSectionElement>) {
   return (
     <thead
-      className="border-b border-black/5 bg-gray-50/50 backdrop-blur-sm"
+      className="border-b border-ink/5 bg-canvas-soft/50 backdrop-blur-sm"
       {...props}
     />
   );
@@ -64,7 +64,7 @@ export function Th({
 }: ThHTMLAttributes<HTMLTableCellElement> & { align?: "left" | "right" | "center" }) {
   return (
     <th
-      className={`whitespace-nowrap px-md md:px-xl py-sm text-[11px] font-bold uppercase tracking-[0.08em] text-gray-500 ${
+      className={`whitespace-nowrap px-md md:px-xl py-sm text-[11px] font-bold uppercase tracking-[0.08em] text-mute ${
         align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"
       } ${className}`}
       {...props}
@@ -75,7 +75,7 @@ export function Th({
 export function Tr(props: HTMLAttributes<HTMLTableRowElement>) {
   return (
     <tr
-      className="border-b border-black/[0.03] transition-colors duration-100 last:border-0 hover:bg-gray-50"
+      className="border-b border-ink/5 transition-colors duration-100 last:border-0 hover:bg-ink/5"
       {...props}
     />
   );
@@ -88,8 +88,8 @@ export function Td({
 }: TdHTMLAttributes<HTMLTableCellElement> & { numeric?: boolean }) {
   return (
     <td
-      className={`whitespace-nowrap px-md md:px-xl py-[12px] text-[13px] text-gray-700 ${
-        numeric ? "text-right tabular-nums font-medium text-gray-900" : ""
+      className={`whitespace-nowrap px-md md:px-xl py-[12px] text-[13px] text-body ${
+        numeric ? "text-right tabular-nums font-medium text-ink" : ""
       } ${className}`}
       {...props}
     />

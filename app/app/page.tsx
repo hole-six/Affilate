@@ -134,7 +134,7 @@ export default async function CustomerHomePage() {
         </div>
 
         {/* Stats row inside banner */}
-        <div className="relative z-10 mt-xl grid grid-cols-3 gap-md pt-xl border-t border-white/10">
+        <div className="relative z-10 mt-xl grid grid-cols-1 sm:grid-cols-3 gap-md pt-xl border-t border-white/10">
           {[
             { label: "Tổng tích luỹ", value: formatCurrency(totalIncome), icon: TrendingUp },
             { label: "Đang xử lý", value: formatCurrency(pendingIncome), icon: Clock },

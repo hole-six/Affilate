@@ -27,11 +27,25 @@ export async function POST(req: NextRequest) {
   const customerCode = await generateCustomerCode();
   const passwordHash = hashPassword(password);
 
+  // Check referral cookie
+  const refCode = req.cookies.get("ref_code")?.value;
+  let referredById = null;
+  if (refCode) {
+    const referrer = await prisma.customer.findUnique({
+      where: { customerCode: refCode },
+      select: { id: true },
+    });
+    if (referrer) {
+      referredById = referrer.id;
+    }
+  }
+
   const customer = await prisma.customer.create({
     data: {
       customerCode,
       fullName,
       phone: phone || null,
+      referredById,
     },
   });
 

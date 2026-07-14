@@ -4,11 +4,11 @@ import { getSession } from "@/lib/auth";
 import { LandingPage } from "@/components/marketing/LandingPage";
 
 export const metadata: Metadata = {
-  title: "Affiliate Hoàn Tiền — Mua sắm Shopee, TikTok Shop nhận hoàn tiền tự động",
+  title: "Lvi Hoàn Tiền — Mua sắm Shopee, TikTok Shop nhận hoàn tiền tự động",
   description:
     "Dán link Shopee hoặc TikTok Shop, nhận link hoàn tiền tự động. Rút tiền từ 10.000đ, tích hợp bot Telegram, miễn phí hoàn toàn.",
   openGraph: {
-    title: "Affiliate Hoàn Tiền — Mua sắm thông minh, nhận hoàn tiền tự động",
+    title: "Lvi Hoàn Tiền — Mua sắm thông minh, nhận hoàn tiền tự động",
     description:
       "Nền tảng affiliate hoàn tiền cho Shopee và TikTok Shop. Rút tiền từ 10.000đ, tích hợp bot Telegram.",
     type: "website",
@@ -21,12 +21,12 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "WebSite",
-      name: "Affiliate Hoàn Tiền",
+      name: "Lvi Hoàn Tiền",
       description: "Nền tảng affiliate hoàn tiền cho Shopee và TikTok Shop tại Việt Nam.",
     },
     {
       "@type": "Organization",
-      name: "Affiliate Hoàn Tiền",
+      name: "Lvi Hoàn Tiền",
     },
     {
       "@type": "FAQPage",

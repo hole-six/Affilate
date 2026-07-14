@@ -43,6 +43,13 @@ const payoutStatusLabel: Record<string, string> = {
 export function AdminPaymentsClient({ pendingList, batches }: Props) {
   const [activeTab, setActiveTab] = useState<"pending" | "history">("pending");
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const handleTabChange = (tab: "pending" | "history") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
 
   const filteredPending = pendingList.filter((c) => {
     if (!search) return true;
@@ -56,6 +63,11 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
     return b.customerName.toLowerCase().includes(q) || b.paymentCode.toLowerCase().includes(q);
   });
 
+  const activeList = activeTab === "pending" ? filteredPending : filteredBatches;
+  const totalPages = Math.ceil(activeList.length / itemsPerPage) || 1;
+  const paginatedPending = filteredPending.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedBatches = filteredBatches.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="flex flex-col gap-lg fade-in pb-2xl">
       {/* TOOLBAR */}
@@ -67,7 +79,10 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
             type="text"
             placeholder="Tìm theo tên khách, mã khách, số tài khoản..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="h-11 w-full rounded-2xl bg-white pl-10 pr-md text-[14px] font-medium text-gray-900 shadow-sm ring-1 ring-black/5 focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33] transition-all"
           />
         </div>
@@ -77,14 +92,14 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
         <TabButton 
           active={activeTab === "pending"} 
-          onClick={() => setActiveTab("pending")} 
+          onClick={() => handleTabChange("pending")} 
           label="Chờ thanh toán" 
           count={pendingList.length} 
           icon={<Wallet size={14} />} 
         />
         <TabButton 
           active={activeTab === "history"} 
-          onClick={() => setActiveTab("history")} 
+          onClick={() => handleTabChange("history")} 
           label="Lịch sử phiếu" 
           count={batches.length} 
           icon={<ClipboardList size={14} />} 
@@ -116,7 +131,7 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
                     </td>
                   </tr>
                 ) : (
-                  filteredPending.map((c) => (
+                  paginatedPending.map((c) => (
                     <tr key={c.id} className="border-b border-gray-50 hover:bg-[#fff0e6]/20 transition-colors">
                       <td className="px-md py-md" data-label="Khách hàng">
                         <div className="font-bold text-gray-900">{c.name}</div>
@@ -167,6 +182,32 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-md py-sm">
+              <span className="text-[13px] text-gray-500 font-medium">
+                Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, activeList.length)} trong số {activeList.length} khách hàng
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Trước
+                </button>
+                <span className="text-[13px] font-bold text-gray-900 px-2">
+                  Trang {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Sau
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden w-full max-w-[100vw]">
@@ -190,7 +231,7 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
                     </td>
                   </tr>
                 ) : (
-                  filteredBatches.map((b) => (
+                  paginatedBatches.map((b) => (
                     <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                       <td className="px-md py-md font-mono font-bold text-gray-900" data-label="Mã phiếu">{b.paymentCode}</td>
                       <td className="px-md py-md font-medium text-gray-700" data-label="Khách hàng">{b.customerName}</td>
@@ -210,6 +251,32 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-md py-sm">
+              <span className="text-[13px] text-gray-500 font-medium">
+                Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, activeList.length)} trong số {activeList.length} phiếu
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Trước
+                </button>
+                <span className="text-[13px] font-bold text-gray-900 px-2">
+                  Trang {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Sau
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

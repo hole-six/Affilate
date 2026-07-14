@@ -36,8 +36,11 @@ export async function fetchProductInfo(url: string): Promise<ProductInfo | null>
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+        // Shopee/TikTok chan bot voi User-Agent trinh duyet thuong (tra ve trang
+        // captcha thay vi HTML that), nhung van cho phep crawler mang xa hoi
+        // (Facebook/Zalo/Telegram) di qua de hien thi link preview khi chia se —
+        // gia mao UA nay de doc duoc the og:image/og:title that.
+        "User-Agent": "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
         Accept: "text/html",
       },
     });

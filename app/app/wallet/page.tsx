@@ -4,18 +4,33 @@ import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { CustomerWalletClient } from "@/components/customer/CustomerWalletClient";
 
-export default async function CustomerWalletPage() {
+export default async function CustomerWalletPage({ searchParams }: { searchParams: { page?: string; q?: string } }) {
   const session = await getSession();
   if (!session?.customerId) redirect("/admin");
 
-  const [customer, orders, paymentBatches] = await Promise.all([
+  const page = Number(searchParams.page) || 1;
+  const limit = 10;
+  const skip = (page - 1) * limit;
+  const q = searchParams.q || "";
+
+  const where: any = { customerId: session.customerId };
+  if (q) {
+    where.paymentCode = { contains: q };
+  }
+
+  const [customer, orders, paymentBatches, filteredCount] = await Promise.all([
     prisma.customer.findUnique({ where: { id: session.customerId } }),
     prisma.order.findMany({ where: { customerId: session.customerId } }),
     prisma.paymentBatch.findMany({
-      where: { customerId: session.customerId },
+      where,
       orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
     }),
+    prisma.paymentBatch.count({ where }),
   ]);
+
+  const totalPages = Math.ceil(filteredCount / limit);
 
   if (!customer) redirect("/login");
 
@@ -40,6 +55,8 @@ export default async function CustomerWalletPage() {
     <CustomerWalletClient
       stats={{ available, pending: processing, paid }}
       history={history}
+      totalPages={totalPages}
+      currentPage={page}
       paymentInfo={{
         bankName: customer.bankName,
         bankAccountNumber: customer.bankAccountNumber,

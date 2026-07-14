@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Search, ChevronDown, Filter, Package } from "lucide-react";
+import { Package } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency } from "@/lib/format";
 import { OrderActions } from "@/components/admin/OrderActions";
+import { Pagination } from "@/components/ui/Pagination";
+import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type Option = { id: string; label: string };
 
@@ -25,6 +27,10 @@ type Order = {
 type Props = {
   orders: Order[];
   customers: Option[];
+  totalPages: number;
+  currentPage: number;
+  counts: { all: number; unassigned: number; pending: number; paid: number };
+  sums: { orderAmount: number; customerRewardAmount: number; systemProfitAmount: number };
 };
 
 const orderStatusLabel: Record<string, string> = {
@@ -39,95 +45,61 @@ const payoutStatusLabel: Record<string, string> = {
   paid: "Đã thanh toán",
 };
 
-export function AdminOrdersClient({ orders, customers }: Props) {
-  const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50;
+export function AdminOrdersClient({ orders, customers, totalPages, currentPage, counts, sums }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab") || "all";
 
-  const counts = {
-    all: orders.length,
-    unmapped: orders.filter((o) => !o.customerId).length,
-    pending: orders.filter((o) => o.orderStatus === "pending").length,
-    approved: orders.filter((o) => o.orderStatus === "approved").length,
-    unpaid: orders.filter((o) => o.orderStatus === "approved" && o.payoutStatus !== "paid").length,
-  };
-
-  const filteredOrders = orders.filter((o) => {
-    if (search) {
-      const q = search.toLowerCase();
-      const matchId = o.orderExternalId.toLowerCase().includes(q);
-      const matchCustomer = o.customerName?.toLowerCase().includes(q) ?? false;
-      const matchTracking = o.trackingCode?.toLowerCase().includes(q) ?? false;
-      if (!matchId && !matchCustomer && !matchTracking) return false;
+  const handleTabChange = (tab: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (tab === "all") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tab);
     }
-    if (activeTab === "unmapped") return !o.customerId;
-    if (activeTab === "pending") return o.orderStatus === "pending";
-    if (activeTab === "approved") return o.orderStatus === "approved";
-    if (activeTab === "unpaid") return o.orderStatus === "approved" && o.payoutStatus !== "paid";
-    return true;
-  });
-
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
-  if (currentPage > totalPages) {
-    setCurrentPage(totalPages);
-  }
-
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+    params.delete("page");
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
   return (
     <div className="flex flex-col gap-lg fade-in pb-2xl">
       {/* TOOLBAR */}
       <div className="flex flex-col gap-sm sm:flex-row sm:items-center">
-        {/* Search */}
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-md top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Tìm mã đơn, tên khách hoặc tracking code..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="h-11 w-full rounded-2xl bg-white pl-10 pr-md text-[14px] font-medium text-gray-900 shadow-sm ring-1 ring-black/5 focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33] transition-all"
-          />
+          <ServerSearchInput placeholder="Tìm mã đơn, tên khách hoặc tracking code..." />
         </div>
       </div>
 
       {/* TABS */}
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
-        <TabButton active={activeTab === "all"} onClick={() => { setActiveTab("all"); setCurrentPage(1); }} label="Tất cả" count={counts.all} />
-        <TabButton active={activeTab === "unmapped"} onClick={() => { setActiveTab("unmapped"); setCurrentPage(1); }} label="Chưa map khách" count={counts.unmapped} />
-        <TabButton active={activeTab === "pending"} onClick={() => { setActiveTab("pending"); setCurrentPage(1); }} label="Chờ duyệt" count={counts.pending} />
-        <TabButton active={activeTab === "approved"} onClick={() => { setActiveTab("approved"); setCurrentPage(1); }} label="Đã duyệt" count={counts.approved} />
-        <TabButton active={activeTab === "unpaid"} onClick={() => { setActiveTab("unpaid"); setCurrentPage(1); }} label="Chưa thanh toán" count={counts.unpaid} />
+        <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
+        <TabButton active={currentTab === "unassigned"} onClick={() => handleTabChange("unassigned")} label="Chưa map khách" count={counts.unassigned} />
+        <TabButton active={currentTab === "pending_payout"} onClick={() => handleTabChange("pending_payout")} label="Chờ thanh toán" count={counts.pending} />
+        <TabButton active={currentTab === "paid"} onClick={() => handleTabChange("paid")} label="Đã thanh toán" count={counts.paid} />
       </div>
 
       {/* COMPACT TABLE WITH SUMMARY */}
       <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden flex flex-col gap-0 w-full max-w-[100vw]">
-        
+
         {/* Summary Header */}
         <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200 p-lg grid grid-cols-1 sm:grid-cols-3 gap-md">
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng giá trị đơn</span>
             <span className="text-[20px] font-bold text-gray-900 leading-none">
-              {formatCurrency(filteredOrders.reduce((sum, o) => sum + o.orderAmount, 0))}
+              {formatCurrency(sums.orderAmount)}
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-[#e86a33] uppercase tracking-wider mb-1">Tổng hoàn khách</span>
             <span className="text-[20px] font-bold text-[#e86a33] leading-none">
-              {formatCurrency(filteredOrders.reduce((sum, o) => sum + o.customerRewardAmount, 0))}
+              {formatCurrency(sums.customerRewardAmount)}
             </span>
           </div>
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng hệ thống giữ</span>
             <span className="text-[20px] font-bold text-gray-700 leading-none">
-              {formatCurrency(filteredOrders.reduce((sum, o) => sum + o.systemProfitAmount, 0))}
+              {formatCurrency(sums.systemProfitAmount)}
             </span>
           </div>
         </div>
@@ -145,7 +117,7 @@ export function AdminOrdersClient({ orders, customers }: Props) {
               </tr>
             </thead>
             <tbody>
-              {paginatedOrders.length === 0 ? (
+              {orders.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-2xl text-center">
                     <div className="flex flex-col items-center gap-sm">
@@ -155,7 +127,7 @@ export function AdminOrdersClient({ orders, customers }: Props) {
                   </td>
                 </tr>
               ) : (
-                paginatedOrders.map((o) => (
+                orders.map((o) => (
                   <tr key={o.id} className="border-b border-gray-50 hover:bg-[#fff0e6]/20 transition-colors">
                     {/* Order Info */}
                     <td className="px-md py-sm" data-label="Đơn hàng / Tracking">
@@ -219,34 +191,8 @@ export function AdminOrdersClient({ orders, customers }: Props) {
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination Footer */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-md py-sm">
-            <span className="text-[13px] text-gray-500 font-medium">
-              Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredOrders.length)} trong số {filteredOrders.length} đơn hàng
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Trước
-              </button>
-              <span className="text-[13px] font-bold text-gray-900 px-2">
-                Trang {currentPage} / {totalPages}
-              </span>
-              <button
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Sau
-              </button>
-            </div>
-          </div>
-        )}
+
+        <Pagination totalPages={totalPages} currentPage={currentPage} />
       </div>
     </div>
   );

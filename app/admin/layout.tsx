@@ -3,7 +3,6 @@ import {
   LayoutDashboard,
   Users,
   Link2,
-  Tag,
   Package,
   Download,
   Wallet,
@@ -11,6 +10,7 @@ import {
   MessageCircle,
   Send,
   Settings,
+  Flame,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { Sidebar, NavSection } from "@/components/layout/Sidebar";
@@ -25,7 +25,7 @@ const sections: NavSection[] = [
       { href: "/admin", label: "Tổng quan", icon: <LayoutDashboard size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
       { href: "/admin/customers", label: "Khách hàng", icon: <Users size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
       { href: "/admin/links", label: "Link Affiliate", icon: <Link2 size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
-      { href: "/admin/vouchers", label: "Voucher", icon: <Tag size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
+      { href: "/admin/deals", label: "Deals 🔥", icon: <Flame size={ICON_SIZE} strokeWidth={ICON_STROKE} /> },
     ],
   },
   {
@@ -52,7 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!session || session.role !== "admin") redirect("/login");
 
   return (
-    <div className="flex min-h-screen bg-white flex-col md:flex-row">
+    <div className="internal-app flex h-screen overflow-hidden bg-canvas flex-col md:flex-row text-ink">
       {/* Animated background — admin tone (xanh nhẹ hơn) */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <svg className="absolute h-full w-full" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

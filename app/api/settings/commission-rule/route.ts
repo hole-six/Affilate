@@ -8,13 +8,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
-  const { customerRate, systemRate } = await req.json();
+  const { customerRate, systemRate, referralRate, maxReferralOrders, referralValidityMonths } = await req.json();
   if (
     typeof customerRate !== "number" ||
     typeof systemRate !== "number" ||
-    customerRate + systemRate !== 100
+    customerRate + systemRate !== 100 ||
+    typeof referralRate !== "number" ||
+    typeof maxReferralOrders !== "number" ||
+    typeof referralValidityMonths !== "number"
   ) {
-    return NextResponse.json({ error: "Tỷ lệ khách + hệ thống phải bằng 100" }, { status: 400 });
+    return NextResponse.json({ error: "Dữ liệu không hợp lệ" }, { status: 400 });
   }
 
   await prisma.commissionRule.updateMany({
@@ -27,6 +30,9 @@ export async function POST(req: NextRequest) {
       name: `Cấu hình ${new Date().toLocaleDateString("vi-VN")}`,
       customerRate,
       systemRate,
+      referralRate,
+      maxReferralOrders,
+      referralValidityMonths,
       active: true,
       createdByUserId: session.userId,
     },

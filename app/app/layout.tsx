@@ -37,7 +37,7 @@ export default async function CustomerAppLayout({ children }: { children: React.
   if (!session) redirect("/login");
 
   return (
-    <div className="flex min-h-screen bg-white flex-col md:flex-row">
+    <div className="internal-app flex h-screen overflow-hidden bg-canvas flex-col md:flex-row text-ink">
       {/* Animated background SVG — pastel theme like mockup */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#fdfdfd]">
         <svg

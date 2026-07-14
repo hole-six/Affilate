@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Search, ChevronDown, Filter, CalendarDays, ExternalLink, Package } from "lucide-react";
+import { CalendarDays, ExternalLink, Package } from "lucide-react";
+import { Pagination } from "@/components/ui/Pagination";
+import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type Order = {
   id: string;
@@ -16,32 +18,27 @@ type Order = {
 
 type Props = {
   orders: Order[];
+  totalPages: number;
+  currentPage: number;
+  counts: { all: number; completed: number; pending: number; processing: number; cancelled: number };
 };
 
-export function CustomerOrdersClient({ orders }: Props) {
-  const [search, setSearch] = useState("");
-  const [activeTab, setActiveTab] = useState("all");
+export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab") || "all";
 
-  const counts = {
-    all: orders.length,
-    completed: orders.filter((o) => o.orderStatus === "approved" && o.payoutStatus === "paid").length,
-    pending: orders.filter((o) => o.orderStatus === "pending").length,
-    processing: orders.filter((o) => o.orderStatus === "approved" && o.payoutStatus !== "paid").length,
-    cancelled: orders.filter((o) => o.orderStatus === "cancelled" || o.orderStatus === "rejected").length,
-  };
-
-  const filteredOrders = orders.filter((o) => {
-    // Search match
-    if (search && !o.orderExternalId.toLowerCase().includes(search.toLowerCase())) {
-      return false;
+  const handleTabChange = (tab: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (tab === "all") {
+      params.delete("tab");
+    } else {
+      params.set("tab", tab);
     }
-    // Tab match
-    if (activeTab === "completed") return o.orderStatus === "approved" && o.payoutStatus === "paid";
-    if (activeTab === "pending") return o.orderStatus === "pending";
-    if (activeTab === "processing") return o.orderStatus === "approved" && o.payoutStatus !== "paid";
-    if (activeTab === "cancelled") return o.orderStatus === "cancelled" || o.orderStatus === "rejected";
-    return true;
-  });
+    params.delete("page");
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
   const getStatusBadge = (order: Order) => {
     if (order.orderStatus === "cancelled" || order.orderStatus === "rejected") {
@@ -70,37 +67,23 @@ export function CustomerOrdersClient({ orders }: Props) {
 
       {/* TOOLBAR */}
       <div className="flex flex-col gap-sm sm:flex-row sm:items-center">
-        {/* Search */}
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-md top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Tìm mã đơn hoặc tên sản phẩm..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-11 w-full rounded-2xl bg-white pl-10 pr-md text-[14px] font-medium text-gray-900 shadow-sm ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#e86a33]/50 transition-all"
-          />
+          <ServerSearchInput placeholder="Tìm mã đơn hoặc tên sản phẩm..." />
         </div>
-        {/* Sort */}
-        <button className="flex h-11 items-center gap-sm rounded-2xl bg-white px-md text-[14px] font-bold text-gray-700 shadow-sm ring-1 ring-black/5 hover:bg-gray-50 transition-all">
-          <Filter size={16} className="text-gray-400" />
-          Mới nhất
-          <ChevronDown size={16} className="text-gray-400" />
-        </button>
       </div>
 
       {/* TABS */}
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
-        <TabButton active={activeTab === "all"} onClick={() => setActiveTab("all")} label="Tất cả" count={counts.all} />
-        <TabButton active={activeTab === "completed"} onClick={() => setActiveTab("completed")} label="Hoàn thành" count={counts.completed} />
-        <TabButton active={activeTab === "pending"} onClick={() => setActiveTab("pending")} label="Chờ xác nhận" count={counts.pending} />
-        <TabButton active={activeTab === "processing"} onClick={() => setActiveTab("processing")} label="Đang xử lý" count={counts.processing} />
-        <TabButton active={activeTab === "cancelled"} onClick={() => setActiveTab("cancelled")} label="Đã huỷ" count={counts.cancelled} />
+        <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
+        <TabButton active={currentTab === "completed"} onClick={() => handleTabChange("completed")} label="Hoàn thành" count={counts.completed} />
+        <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="Chờ xác nhận" count={counts.pending} />
+        <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="Đang xử lý" count={counts.processing} />
+        <TabButton active={currentTab === "cancelled"} onClick={() => handleTabChange("cancelled")} label="Đã huỷ" count={counts.cancelled} />
       </div>
 
       {/* CONTENT LIST */}
       <div className="mt-md rounded-3xl bg-white p-md shadow-sm ring-1 ring-black/5 min-h-[400px]">
-        {filteredOrders.length === 0 ? (
+        {orders.length === 0 ? (
           <div className="flex h-full min-h-[350px] flex-col items-center justify-center">
             {/* Mascot Placeholder */}
             <div className="mb-md text-[40px] opacity-80 flex items-center gap-2">
@@ -110,7 +93,7 @@ export function CustomerOrdersClient({ orders }: Props) {
           </div>
         ) : (
           <div className="flex flex-col gap-sm">
-            {filteredOrders.map((o) => (
+            {orders.map((o) => (
               <div key={o.id} className="group flex flex-col sm:flex-row sm:items-center justify-between gap-md rounded-2xl border border-gray-100 p-md transition-all hover:border-[#e86a33]/30 hover:bg-[#fff0e6]/20">
                 <div className="flex items-start gap-md">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-50 text-gray-400 ring-1 ring-gray-100 group-hover:bg-white group-hover:text-[#e86a33]">
@@ -153,6 +136,7 @@ export function CustomerOrdersClient({ orders }: Props) {
             ))}
           </div>
         )}
+        <Pagination totalPages={totalPages} currentPage={currentPage} />
       </div>
     </div>
   );

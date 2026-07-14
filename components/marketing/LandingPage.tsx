@@ -14,6 +14,8 @@ import {
 import { ShopeeIcon, TiktokIcon } from "@/components/icons/PlatformIcons";
 import { Reveal } from "@/components/marketing/Reveal";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
+import { MarketingHeader } from "@/components/marketing/MarketingHeader";
+import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 const FEATURES = [
   {
@@ -91,276 +93,197 @@ const FAQ_ITEMS = [
 
 export function LandingPage() {
   return (
-    <div className="min-h-screen bg-canvas-soft">
-      {/* NAV */}
-      <nav className="sticky top-0 z-50 border-b border-ink/6 bg-canvas-soft/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between px-lg py-md">
-          <Link href="/" className="flex items-center gap-sm">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-ink text-primary text-[18px] font-black">
-              A
-            </span>
-            <span className="text-[18px] font-black tracking-tight text-ink">
-              Affiliate<span className="text-ink-deep"> Hoàn Tiền</span>
-            </span>
-          </Link>
-          <div className="hidden items-center gap-2xl md:flex">
-            <a href="#features" className="text-[14px] font-semibold text-body hover:text-ink transition-colors">
-              Tính năng
-            </a>
-            <a href="#how-it-works" className="text-[14px] font-semibold text-body hover:text-ink transition-colors">
-              Cách hoạt động
-            </a>
-            <a href="#faq" className="text-[14px] font-semibold text-body hover:text-ink transition-colors">
-              Câu hỏi thường gặp
-            </a>
+    <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
+      <MarketingHeader activePath="/" />
+
+      <main className="pt-[80px]">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden bg-[#fff0e6]">
+          {/* Background — full-bleed on desktop where the image already reserves
+              empty space on the left for copy; on mobile the wide aspect ratio
+              crops badly, so it drops down as a banner below the text instead. */}
+          <div className="absolute inset-0 hidden md:block">
+            <img
+              src="/background.png"
+              alt=""
+              className="h-full w-full object-cover object-left"
+              aria-hidden="true"
+            />
           </div>
-          <div className="flex items-center gap-sm">
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex items-center rounded-xl px-lg py-sm text-[14px] font-semibold text-ink hover:bg-ink/5 transition-colors"
-            >
-              Đăng nhập
-            </Link>
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-xs rounded-xl bg-ink px-lg py-sm text-[14px] font-bold text-primary hover:bg-ink-deep transition-colors shadow-sm"
-            >
-              Đăng ký miễn phí
-              <ArrowRight size={14} strokeWidth={2} />
-            </Link>
-          </div>
-        </div>
-      </nav>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden px-lg pt-3xl pb-3xl md:pt-[80px] md:pb-[96px]">
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -left-40 -top-40 h-[420px] w-[420px] rounded-full bg-primary/25 blur-3xl" />
-          <div className="absolute -right-40 top-20 h-[380px] w-[380px] rounded-full bg-accent-cyan/15 blur-3xl" />
-          <div className="absolute bottom-0 left-1/3 h-[300px] w-[300px] rounded-full bg-primary/10 blur-3xl" />
-        </div>
-
-        <div className="relative mx-auto max-w-[1200px]">
-          <div className="grid grid-cols-1 items-center gap-3xl lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="fade-in">
-              <div className="inline-flex items-center gap-xs rounded-pill bg-ink px-lg py-sm">
-                <Sparkles size={14} strokeWidth={2} className="text-primary" />
-                <span className="text-[12px] font-bold uppercase tracking-widest text-primary">
-                  100% miễn phí
-                </span>
-              </div>
-
-              <h1 className="mt-lg text-[36px] font-black leading-[1.08] tracking-tight text-ink sm:text-[48px] lg:text-[56px]">
-                Mua sắm Shopee, TikTok Shop
-                <br />
-                <span className="text-ink-deep">nhận hoàn tiền tự động</span>
+          <div className="relative z-10 max-w-[1200px] mx-auto px-lg md:px-3xl py-3xl md:py-[110px]">
+            <div className="max-w-xl space-y-lg fade-in">
+             
+              <h1 className="text-[40px] md:text-[56px] font-black leading-tight text-ink tracking-tight">
+                Mua Sắm Hoàn Tiền Đến <span className="text-primary relative inline-block">80%<svg className="absolute -bottom-2 left-0 w-full text-primary-pale -z-10" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0 15 Q 50 0 100 15 L 100 20 L 0 20 Z" fill="currentColor"/></svg></span> trên Shopee & TikTok Shop
               </h1>
-
-              <p className="mt-lg max-w-lg text-[16px] leading-relaxed text-body md:text-[18px]">
-                Dán link sản phẩm, mua sắm như bình thường — phần hoa hồng affiliate sẽ tự động
-                chuyển thành tiền hoàn về ví của bạn. Đơn giản, minh bạch, rút được từ 10.000đ.
+              <p className="text-[18px] text-mute max-w-lg leading-relaxed">
+                Nhận tiền mặt trực tiếp vào tài khoản ngân hàng của bạn. Gia nhập cộng đồng mua sắm thông thái ngay hôm nay!
               </p>
-
-              <div className="mt-xl flex flex-wrap gap-md">
-                <Link
-                  href="/register"
-                  className="inline-flex items-center gap-sm rounded-xl bg-primary px-2xl py-lg text-[15px] font-bold text-ink-deep shadow-sm hover:bg-primary-active transition-all hover:-translate-y-0.5"
-                >
-                  Đăng ký ngay
-                  <ArrowRight size={16} strokeWidth={2} />
+              <div className="flex flex-col sm:flex-row gap-md pt-md">
+                <Link href="/register" className="bg-gradient-to-r from-primary to-primary-active hover:shadow-lg hover:-translate-y-0.5 text-white px-2xl py-lg rounded-2xl font-bold text-[16px] flex items-center justify-center gap-sm transition-all shadow-primary/30 shadow-md">
+                  Bắt đầu tiết kiệm ngay
+                  <ArrowRight size={20} />
                 </Link>
-                <a
-                  href="#how-it-works"
-                  className="inline-flex items-center gap-sm rounded-xl bg-canvas px-2xl py-lg text-[15px] font-bold text-ink border border-ink/10 hover:bg-ink/5 transition-all"
-                >
-                  Xem cách hoạt động
+                <a href="#how-it-works" className="bg-white hover:bg-primary-pale text-primary px-2xl py-lg rounded-2xl font-bold text-[16px] flex items-center justify-center gap-sm transition-all border border-primary/20 shadow-sm">
+                  Tìm hiểu thêm
                 </a>
               </div>
-
-              <div className="mt-2xl flex flex-wrap gap-lg">
-                <div className="flex items-center gap-sm">
-                  <ShopeeIcon size={28} />
-                  <span className="text-[13px] font-semibold text-mute">Shopee</span>
-                </div>
-                <div className="flex items-center gap-sm">
-                  <TiktokIcon size={28} />
-                  <span className="text-[13px] font-semibold text-mute">TikTok Shop</span>
-                </div>
-                <div className="flex items-center gap-sm">
-                  <Send size={22} strokeWidth={1.75} className="text-mute" />
-                  <span className="text-[13px] font-semibold text-mute">Bot Telegram</span>
-                </div>
-              </div>
             </div>
 
-            {/* Illustrative dashboard preview (not a real screenshot) */}
-            <div className="fade-in">
-              <div className="relative mx-auto max-w-[380px] rounded-[28px] bg-ink p-2xl shadow-xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-xs text-primary/70">
-                      <PiggyBank size={16} strokeWidth={1.75} />
-                      <span className="text-[11px] font-semibold uppercase tracking-widest">
-                        Tổng thu nhập
-                      </span>
-                    </div>
-                    <div className="mt-xs text-[28px] font-black text-primary">2.480.000đ</div>
-                  </div>
-                  <span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary/15 text-primary">
-                    <TrendingUp size={20} strokeWidth={1.75} />
-                  </span>
-                </div>
+            {/* Mobile-only banner — the wide desktop background would crop away
+                the graphic elements entirely on a portrait phone screen. */}
+            <div className="mt-2xl rounded-[24px] overflow-hidden shadow-lg md:hidden">
+              <img src="/background.png" alt="" className="w-full h-auto object-cover" />
+            </div>
+          </div>
+        </section>
 
-                <div className="mt-xl grid grid-cols-2 gap-md">
-                  <div className="rounded-2xl bg-canvas/10 p-lg">
-                    <div className="text-[11px] font-semibold text-primary/60">Chờ xác nhận</div>
-                    <div className="mt-xs text-[18px] font-bold text-primary">340.000đ</div>
-                  </div>
-                  <div className="rounded-2xl bg-canvas/10 p-lg">
-                    <div className="text-[11px] font-semibold text-primary/60">Khả dụng</div>
-                    <div className="mt-xs text-[18px] font-bold text-primary">1.120.000đ</div>
-                  </div>
-                </div>
-
-                <div className="mt-xl flex flex-col gap-sm">
-                  <div className="flex items-center justify-between rounded-xl bg-canvas/10 px-lg py-md">
-                    <div className="flex items-center gap-sm">
-                      <ShopeeIcon size={20} />
-                      <span className="text-[13px] font-medium text-primary/80">Đơn Shopee #4821</span>
-                    </div>
-                    <span className="text-[13px] font-bold text-primary">+45.000đ</span>
-                  </div>
-                  <div className="flex items-center justify-between rounded-xl bg-canvas/10 px-lg py-md">
-                    <div className="flex items-center gap-sm">
-                      <TiktokIcon size={20} />
-                      <span className="text-[13px] font-medium text-primary/80">Đơn TikTok #1190</span>
-                    </div>
-                    <span className="text-[13px] font-bold text-primary">+22.000đ</span>
-                  </div>
-                </div>
+        {/* Featured Stores */}
+        <section className="bg-white py-2xl border-y border-primary/10 shadow-sm relative z-20">
+          <div className="max-w-[1200px] mx-auto px-lg">
+            <p className="text-center font-bold text-[14px] text-primary mb-lg uppercase tracking-widest opacity-80">Hợp tác cùng các siêu nền tảng</p>
+            <div className="flex flex-wrap justify-center items-center gap-3xl">
+              <div className="flex items-center gap-sm bg-canvas-soft px-xl py-sm rounded-full border border-ink/5 hover:border-primary/30 hover:shadow-md transition-all cursor-default">
+                <ShopeeIcon size={32} />
+                <span className="text-[20px] font-black text-ink">Shopee</span>
+              </div>
+              <div className="flex items-center gap-sm bg-canvas-soft px-xl py-sm rounded-full border border-ink/5 hover:border-primary/30 hover:shadow-md transition-all cursor-default">
+                <TiktokIcon size={32} />
+                <span className="text-[20px] font-black text-ink">TikTok Shop</span>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* FEATURES */}
-      <section id="features" className="px-lg py-3xl">
-        <div className="mx-auto max-w-[1200px]">
-          <Reveal className="mx-auto max-w-xl text-center">
-            <h2 className="text-[28px] font-black tracking-tight text-ink sm:text-[36px]">
-              Mọi thứ bạn cần để tiết kiệm hơn
-            </h2>
-            <p className="mt-sm text-[16px] text-mute">
-              Một hệ thống duy nhất cho việc tạo link, theo dõi đơn và rút tiền.
-            </p>
-          </Reveal>
-
-          <div className="mt-2xl grid grid-cols-1 gap-lg sm:grid-cols-2 lg:grid-cols-3">
-            {FEATURES.map((feature, index) => (
-              <Reveal key={feature.title} delay={index * 60}>
-                <div className="h-full rounded-2xl border border-ink/8 bg-canvas p-xl hover:shadow-md hover:-translate-y-1 transition-all duration-200">
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-pale text-ink-deep">
-                    <feature.icon size={22} strokeWidth={1.75} />
-                  </span>
-                  <h3 className="mt-lg text-[17px] font-bold text-ink">{feature.title}</h3>
-                  <p className="mt-xs text-[14px] leading-relaxed text-body">{feature.description}</p>
+        {/* How It Works */}
+        <section id="how-it-works" className="py-3xl bg-canvas relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-pale/30 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+          
+          <div className="max-w-[1200px] mx-auto px-lg">
+            <div className="text-center mb-3xl">
+              <div className="inline-flex items-center justify-center mb-sm">
+                <Sparkles className="text-primary mr-2" size={24} />
+                <h2 className="font-black text-[36px] md:text-[48px] text-ink tracking-tight">3 Bước Nhận Hoàn Tiền</h2>
+              </div>
+              <p className="text-mute text-[18px] max-w-2xl mx-auto">Chưa bao giờ việc tiết kiệm tiền lại dễ dàng và minh bạch đến thế.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-xl">
+              {STEPS.map((step, index) => (
+                <div key={index} className="group relative p-2xl bg-white border border-primary/10 rounded-[32px] hover:-translate-y-2 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 overflow-hidden">
+                  <div className="absolute -right-4 -top-4 font-black text-[120px] text-primary/[0.03] select-none group-hover:text-primary/[0.08] transition-colors">{index + 1}</div>
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary-pale to-white border border-primary/20 rounded-2xl flex items-center justify-center mb-xl group-hover:from-primary group-hover:to-primary-active transition-all duration-300 shadow-sm">
+                    <span className="text-[24px] font-black text-primary group-hover:text-white transition-colors">{index + 1}</span>
+                  </div>
+                  <h3 className="font-bold text-[24px] text-ink mb-sm relative z-10">{step.title}</h3>
+                  <p className="text-mute text-[15px] leading-relaxed relative z-10">{step.description}</p>
                 </div>
-              </Reveal>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* HOW IT WORKS */}
-      <section id="how-it-works" className="bg-ink px-lg py-3xl">
-        <div className="mx-auto max-w-[1200px]">
-          <Reveal className="mx-auto max-w-xl text-center">
-            <h2 className="text-[28px] font-black tracking-tight text-primary sm:text-[36px]">
-              Chỉ 3 bước đơn giản
-            </h2>
-            <p className="mt-sm text-[16px] text-primary/60">
-              Không cần cài đặt phức tạp, bắt đầu kiếm hoàn tiền ngay hôm nay.
-            </p>
-          </Reveal>
-
-          <div className="mt-2xl grid grid-cols-1 gap-lg md:grid-cols-3">
-            {STEPS.map((step, index) => (
-              <Reveal key={step.title} delay={index * 80}>
-                <div className="relative h-full rounded-2xl bg-canvas/5 p-xl">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-[16px] font-black text-ink-deep">
-                    {index + 1}
-                  </span>
-                  <h3 className="mt-lg text-[17px] font-bold text-primary">{step.title}</h3>
-                  <p className="mt-xs text-[14px] leading-relaxed text-primary/60">{step.description}</p>
+        {/* Benefits & Features Bento */}
+        <section id="features" className="py-3xl bg-primary-pale/20 border-t border-primary/5">
+          <div className="max-w-[1200px] mx-auto px-lg">
+            <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-lg h-auto md:h-[600px]">
+              {/* Main Feature */}
+              <div className="md:col-span-2 md:row-span-2 bg-gradient-to-br from-primary to-primary-active rounded-[40px] p-3xl flex flex-col justify-between overflow-hidden relative shadow-xl shadow-primary/20">
+                <div className="z-10 relative">
+                  <h2 className="font-black text-[36px] md:text-[44px] text-white mb-lg leading-tight tracking-tight drop-shadow-md">Tại sao bạn nên<br/>chọn chúng tôi?</h2>
+                  <p className="text-white/90 mb-xl text-[16px] max-w-md leading-relaxed font-medium">Hàng triệu người dùng đã tiết kiệm hàng chục triệu đồng mỗi năm nhờ cơ chế hoàn tiền thông minh.</p>
+                  <ul className="space-y-md">
+                    {[
+                      "Tỉ lệ hoàn tiền cao nhất thị trường",
+                      "Cập nhật trạng thái đơn hàng thời gian thực",
+                      "Hàng ngàn mã giảm giá độc quyền"
+                    ].map((item, i) => (
+                      <li key={i} className="flex items-center gap-md font-bold text-[16px] text-white bg-white/10 w-fit px-md py-sm rounded-xl backdrop-blur-sm">
+                        <ShieldCheck className="text-white shrink-0 drop-shadow-sm" size={20} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
+                <div className="absolute -bottom-10 -right-10 w-[400px] h-[400px] opacity-20">
+                  <PiggyBank className="w-full h-full text-white" />
+                </div>
+              </div>
 
-      {/* FAQ */}
-      <section id="faq" className="px-lg py-3xl">
-        <div className="mx-auto max-w-[720px]">
-          <Reveal className="text-center">
-            <h2 className="text-[28px] font-black tracking-tight text-ink sm:text-[36px]">
-              Câu hỏi thường gặp
-            </h2>
-          </Reveal>
-          <div className="mt-2xl">
-            <Reveal>
-              <FaqAccordion items={FAQ_ITEMS} />
-            </Reveal>
-          </div>
-        </div>
-      </section>
+              {/* Quick Withdraw */}
+              <div className="md:col-span-2 bg-white rounded-[40px] p-2xl flex flex-col sm:flex-row items-center sm:items-start gap-xl border border-primary/10 shadow-lg shadow-primary/5 hover:-translate-y-1 transition-transform">
+                <div className="w-24 h-24 bg-gradient-to-br from-primary-pale to-white rounded-3xl flex-shrink-0 flex items-center justify-center shadow-sm border border-primary/20">
+                  <Wallet className="text-primary drop-shadow-sm" size={40} />
+                </div>
+                <div className="text-center sm:text-left mt-2">
+                  <h4 className="font-black text-[24px] text-ink mb-xs">Rút tiền siêu tốc</h4>
+                  <p className="text-mute text-[15px] leading-relaxed">Tiền hoàn về thẳng thẻ ngân hàng của bạn chỉ trong 24h. Mức tối thiểu cực thấp: chỉ từ 10.000đ.</p>
+                </div>
+              </div>
 
-      {/* FINAL CTA */}
-      <section className="px-lg pb-3xl">
-        <Reveal className="mx-auto max-w-[1000px]">
-          <div className="relative overflow-hidden rounded-[32px] bg-ink px-2xl py-3xl text-center">
-            <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-            <div className="pointer-events-none absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-            <h2 className="relative text-[26px] font-black text-primary sm:text-[34px]">
-              Bắt đầu nhận hoàn tiền ngay hôm nay
-            </h2>
-            <p className="relative mt-sm text-[15px] text-primary/60">
-              Đăng ký miễn phí — không cần thẻ thanh toán, không ràng buộc.
-            </p>
-            <Link
-              href="/register"
-              className="relative mt-xl inline-flex items-center gap-sm rounded-xl bg-primary px-2xl py-lg text-[15px] font-bold text-ink-deep shadow-sm hover:bg-primary-active transition-all hover:-translate-y-0.5"
-            >
-              Đăng ký miễn phí
-              <ArrowRight size={16} strokeWidth={2} />
-            </Link>
-          </div>
-        </Reveal>
-      </section>
+              {/* Support 24/7 */}
+              <div className="bg-white rounded-[40px] p-2xl flex flex-col justify-between border border-primary/10 shadow-lg shadow-primary/5 hover:-translate-y-1 transition-transform group">
+                <div className="w-16 h-16 bg-canvas-soft rounded-2xl flex items-center justify-center group-hover:bg-primary-pale transition-colors">
+                  <Send className="text-primary" size={32} />
+                </div>
+                <div className="mt-xl">
+                  <h4 className="font-black text-[20px] text-ink mb-xs">Bot Telegram</h4>
+                  <p className="text-mute text-[14px] leading-relaxed">Theo dõi đơn hàng tự động thông minh không cần mở ứng dụng.</p>
+                </div>
+              </div>
 
-      {/* FOOTER */}
-      <footer className="border-t border-ink/6 px-lg py-2xl">
-        <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-between gap-md sm:flex-row">
-          <div className="flex items-center gap-sm">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-ink text-primary text-[14px] font-black">
-              A
-            </span>
-            <span className="text-[14px] font-bold text-ink">Affiliate Hoàn Tiền</span>
+              {/* Coupons */}
+              <div className="bg-gradient-to-br from-[#fff0e6] to-white rounded-[40px] p-2xl flex flex-col justify-between border border-primary/10 shadow-lg shadow-primary/5 hover:-translate-y-1 transition-transform group">
+                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-primary/10">
+                  <TicketPercent className="text-primary" size={32} />
+                </div>
+                <div className="mt-xl">
+                  <h4 className="font-black text-[20px] text-ink mb-xs">Mã giảm giá</h4>
+                  <p className="text-mute text-[14px] leading-relaxed">Kho voucher độc quyền Freeship và giảm sâu lên tới 50%.</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-xl text-[13px] font-medium text-mute">
-            <Link href="/login" className="hover:text-ink transition-colors">
-              Đăng nhập
-            </Link>
-            <Link href="/register" className="hover:text-ink transition-colors">
-              Đăng ký
-            </Link>
+        </section>
+
+        {/* Quick Auth Access Section */}
+        <section className="py-3xl bg-canvas relative">
+          <div className="max-w-[1200px] mx-auto px-lg">
+            <div className="bg-gradient-to-br from-white to-primary-pale/30 rounded-[40px] p-3xl md:p-[60px] border border-primary/20 shadow-2xl shadow-primary/10 grid md:grid-cols-2 gap-3xl items-center relative overflow-hidden">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[60px] pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-orange/5 rounded-full blur-[60px] pointer-events-none"></div>
+
+              <div className="space-y-xl relative z-10">
+                <h2 className="text-[36px] md:text-[44px] font-black text-ink leading-tight tracking-tight">
+                  Trở thành bậc thầy <br/><span className="text-primary">mua sắm thông minh</span>
+                </h2>
+                <p className="text-[18px] text-mute leading-relaxed">Đăng ký tài khoản ngay để nhận đặc quyền hoàn tiền lên tới 30% và hàng ngàn voucher độc quyền mỗi ngày.</p>
+                <div className="flex flex-wrap gap-xl pt-sm">
+                  <div className="flex items-center gap-sm font-bold text-[16px] text-ink bg-white px-md py-xs rounded-full border border-primary/10 shadow-sm">
+                    <ShieldCheck className="text-primary" size={20} />
+                    Bảo mật 100%
+                  </div>
+                  <div className="flex items-center gap-sm font-bold text-[16px] text-ink bg-white px-md py-xs rounded-full border border-primary/10 shadow-sm">
+                    <Wallet className="text-primary" size={20} />
+                    Rút tiền 24/7
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-md relative z-10 bg-white/50 backdrop-blur-md p-lg rounded-[32px] border border-white shadow-sm">
+                <Link href="/register" className="w-full bg-gradient-to-r from-primary to-primary-active hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 text-white py-xl rounded-2xl font-black text-[18px] text-center transition-all">
+                  Đăng ký tài khoản miễn phí
+                </Link>
+                <Link href="/login" className="w-full bg-white hover:bg-canvas-soft border-2 border-primary/20 hover:border-primary text-primary py-xl rounded-2xl font-black text-[18px] text-center transition-all shadow-sm">
+                  Tôi đã có tài khoản
+                </Link>
+              </div>
+            </div>
           </div>
-          <p className="text-[12px] text-mute">
-            © {new Date().getFullYear()} Affiliate Hoàn Tiền. Mọi quyền được bảo lưu.
-          </p>
-        </div>
-      </footer>
+        </section>
+      </main>
+
+      <MarketingFooter />
     </div>
   );
 }

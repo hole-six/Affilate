@@ -141,7 +141,7 @@ export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
       {preview && (
         <Card variant="soft">
           <h2 className="display-xs mb-lg">Kết quả preview</h2>
-          <div className="mb-lg grid grid-cols-3 gap-lg text-center">
+          <div className="mb-lg grid grid-cols-1 sm:grid-cols-3 gap-lg text-center">
             <div>
               <div className="text-[24px] font-bold tabular-nums">{preview.totalRows}</div>
               <div className="text-[12px] text-gray-500">Tổng số dòng</div>
@@ -197,7 +197,7 @@ export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
       {commitResult && (
         <Card variant="soft">
           <h2 className="display-xs mb-lg">Import hoàn tất</h2>
-          <div className="grid grid-cols-4 gap-lg text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-lg text-center">
             <div>
               <div className="text-[24px] font-bold tabular-nums text-positive">{commitResult.successRows}</div>
               <div className="text-[12px] text-gray-500">Thành công</div>

@@ -1,34 +1,105 @@
 import { prisma } from "@/lib/prisma";
-import { PageHeader } from "@/components/ui/PageHeader";
-import { CustomerDealsClient } from "@/components/customer/CustomerDealsClient";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { Flame } from "lucide-react";
+import { DealGrid } from "@/components/customer/DealGrid";
+import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 
-export default async function CustomerDealsPage() {
-  const vouchers = await prisma.voucher.findMany({
-    where: { status: "active" },
-    orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
-    include: {
-      platform: true,
-      linkMatches: { include: { trackingLink: true }, take: 1, orderBy: { createdAt: "desc" } },
-    },
-  });
+export default async function CustomerDealsPage({ searchParams }: { searchParams: { q?: string; page?: string } }) {
+  const session = await getSession();
+  if (!session) redirect("/login");
 
-  const rows = vouchers.map((v) => ({
-    id: v.id,
-    title: v.title,
-    benefitText: v.benefitText,
-    productImage: v.productImage,
-    platformName: v.platform.name,
-    endsAt: v.endsAt,
-    link: v.linkMatches[0]?.trackingLink.shortUrl ?? v.voucherUrl,
+  const page = Number(searchParams.page) || 1;
+  const limit = 10;
+  const skip = (page - 1) * limit;
+  const q = searchParams.q || "";
+
+  const where: any = { status: "active" };
+  if (q) {
+    where.OR = [
+      { title: { contains: q } },
+      { description: { contains: q } },
+    ];
+  }
+
+  const [totalCount, activeDealsCount, deals] = await Promise.all([
+    prisma.dealPost.count({ where }),
+    prisma.dealPost.count({ where: { status: "active" } }),
+    prisma.dealPost.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    })
+  ]);
+
+  const formattedDeals = deals.map((d) => ({
+    id: d.id,
+    title: d.title,
+    description: d.description,
+    originalPrice: d.originalPrice ? Number(d.originalPrice) : null,
+    salePrice: d.salePrice ? Number(d.salePrice) : null,
+    discountPercent: d.discountPercent,
+    imageUrl: d.uploadedImageUrl || d.shopeeImageUrl || null,
+    shortUrl: d.shortUrl,
+    clicks: d.clicks,
+    createdAt: d.createdAt.toISOString(),
   }));
 
+  const totalPages = Math.ceil(totalCount / limit);
+
   return (
-    <div className="flex flex-col gap-2xl">
-      <PageHeader
-        title="Ưu đãi hôm nay"
-        subtitle="Deal giới hạn từ hệ thống — bấm vào link riêng của bạn để mua trước khi hết ưu đãi."
-      />
-      <CustomerDealsClient deals={rows} />
+    <div className="flex flex-col gap-xl fade-in">
+      {/* Banner Header */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#ff4500] via-[#e86a33] to-[#ff8c42] p-xl sm:p-2xl">
+        <div
+          className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)", backgroundSize: "20px 20px" }}
+        />
+        <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+          <circle cx="90%" cy="20%" r="120" fill="white" fillOpacity="0.06">
+            <animate attributeName="cx" values="90%;85%;90%" dur="8s" repeatCount="indefinite" />
+          </circle>
+          <circle cx="10%" cy="75%" r="80" fill="white" fillOpacity="0.08">
+            <animate attributeName="cy" values="75%;65%;75%" dur="10s" repeatCount="indefinite" />
+          </circle>
+        </svg>
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-sm mb-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/20">
+              <Flame size={16} className="text-white" strokeWidth={2} />
+            </div>
+            <span className="text-[12px] font-bold uppercase tracking-[0.12em] text-white/70">Deals Độc Quyền</span>
+          </div>
+          <h1 className="text-[28px] sm:text-[36px] font-black text-white leading-tight">
+            🔥 Deal Sập Sàn Hôm Nay
+          </h1>
+          <p className="mt-xs text-[14px] text-white/70 max-w-[400px]">
+            Những deal giảm giá được admin tuyển chọn kỹ — bấm vào mua ngay để nhận hoàn tiền!
+          </p>
+          <div className="mt-lg flex items-center gap-md">
+            <div className="flex items-center gap-xs bg-white/15 rounded-xl px-md py-xs">
+              <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-[13px] font-bold text-white">{activeDealsCount} deals đang có</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-md">
+        <ServerSearchInput placeholder="Tìm kiếm deal giảm giá..." />
+      </div>
+
+      {formattedDeals.length === 0 ? (
+        <div className="flex flex-col items-center py-3xl text-center">
+          <div className="text-6xl mb-lg">🛒</div>
+          <p className="text-[16px] font-bold text-gray-400">Không tìm thấy deal nào</p>
+          <p className="text-[13px] text-gray-300 mt-xs">Thử tìm kiếm với từ khoá khác xem sao!</p>
+        </div>
+      ) : (
+        <DealGrid deals={formattedDeals} totalPages={totalPages} currentPage={page} />
+      )}
     </div>
   );
 }

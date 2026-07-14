@@ -4,6 +4,8 @@ storage/imports/*
 storage/bills/*
 !storage/imports/.gitkeep
 !storage/bills/.gitkeep
+public/uploads/*
+!public/uploads/.gitkeep
 .env
 *.log
 prisma/dev.db

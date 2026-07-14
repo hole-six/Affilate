@@ -3,28 +3,46 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format";
 import { CustomerLinkForm } from "@/components/customer/CustomerLinkForm";
-import { ShoppingBag, Music2, Store, Copy, ExternalLink, Lightbulb } from "lucide-react";
+import { RefundHistoryClient } from "@/components/customer/RefundHistoryClient";
+import { Lightbulb } from "lucide-react";
 
-const PLATFORM_STYLE: Record<string, { icon: typeof ShoppingBag; color: string }> = {
-  SHOPEE: { icon: ShoppingBag, color: "#ee4d2d" },
-  TIKTOK: { icon: Music2, color: "#000000" },
-  LAZADA: { icon: Store, color: "#0f146d" },
-  TIKI: { icon: Store, color: "#1a73e8" },
-};
-
-export default async function CustomerRefundsPage() {
+export default async function CustomerRefundsPage({ searchParams }: { searchParams: { q?: string; page?: string } }) {
   const session = await getSession();
   if (!session?.customerId) redirect("/admin");
 
-  const [platforms, links] = await Promise.all([
+  const page = Number(searchParams.page) || 1;
+  const limit = 10;
+  const skip = (page - 1) * limit;
+  const q = searchParams.q || "";
+
+  const where: any = { customerId: session.customerId };
+  if (q) {
+    where.shortCode = { contains: q };
+  }
+
+  const [platforms, links, totalCount] = await Promise.all([
     prisma.platform.findMany({ where: { status: "active" }, orderBy: { name: "asc" } }),
     prisma.trackingLink.findMany({
-      where: { customerId: session.customerId },
+      where,
       orderBy: { createdAt: "desc" },
       include: { platform: true },
-      take: 5,
+      skip,
+      take: limit,
     }),
+    prisma.trackingLink.count({ where }),
   ]);
+
+  const totalPages = Math.ceil(totalCount / limit);
+
+  const formattedLinks = links.map(l => ({
+    id: l.id,
+    createdAt: formatDate(l.createdAt),
+    shortCode: l.shortCode || "",
+    shortUrl: l.shortUrl,
+    productTitle: l.productTitle,
+    productImage: l.productImage,
+    platform: { code: l.platform.code, name: l.platform.name },
+  }));
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-xl fade-in pb-2xl">
@@ -52,68 +70,7 @@ export default async function CustomerRefundsPage() {
       <CustomerLinkForm platforms={platforms.map((p) => ({ id: p.id, code: p.code, label: p.name }))} />
 
       {/* HISTORY CARD */}
-      <div className="rounded-2xl bg-white p-xl shadow-sm ring-1 ring-black/5">
-        <div className="mb-lg flex items-center justify-between border-b border-gray-100 pb-md">
-          <h2 className="text-[16px] font-bold text-gray-900">Lịch sử tạo link</h2>
-          <span className="text-[13px] font-medium text-gray-400">{links.length} link</span>
-        </div>
-
-        {links.length === 0 ? (
-          <div className="flex flex-col items-center py-xl text-center">
-            <span className="text-[40px] opacity-50 mb-sm">🛒</span>
-            <div className="text-[14px] font-semibold text-gray-700">Chưa có link nào</div>
-            <div className="mt-xs text-[13px] text-gray-400">Tạo link hoàn tiền đầu tiên của bạn ở phía trên!</div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-md">
-            {links.map((l) => {
-              const pStyle = PLATFORM_STYLE[l.platform.code.toUpperCase()] ?? { icon: Store, color: "#454745" };
-              const Icon = pStyle.icon;
-              
-              return (
-                <div key={l.id} className="group flex items-center justify-between gap-lg rounded-2xl border border-gray-100 p-md transition-all hover:border-gray-200 hover:bg-gray-50 hover:shadow-sm">
-                  <div className="flex flex-1 items-center gap-md min-w-0">
-                    <div 
-                      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
-                      style={{ color: pStyle.color, backgroundColor: `${pStyle.color}15` }}
-                    >
-                      <Icon size={20} strokeWidth={2} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-xs text-[11px] font-bold uppercase tracking-wider" style={{ color: pStyle.color }}>
-                        {l.platform.name}
-                        <span className="text-gray-300">•</span>
-                        <span className="text-gray-400 font-medium normal-case tracking-normal">{formatDate(l.createdAt)}</span>
-                      </div>
-                      <p className="mt-[2px] truncate text-[14px] font-bold text-gray-900">
-                        {/* We don't store product title yet, so we show the short code or tracking code as title */}
-                        Sản phẩm từ {l.platform.name} ({l.shortCode})
-                      </p>
-                      <a href={l.shortUrl ?? "#"} target="_blank" rel="noreferrer" className="mt-[2px] block truncate text-[12px] font-medium text-gray-400 transition-colors hover:text-[#e86a33]">
-                        {l.shortUrl}
-                      </a>
-                    </div>
-                  </div>
-                  
-                  <div className="flex shrink-0 items-center gap-sm">
-                    {/* Copy Button (Mock functionality, mostly visual in server component) */}
-                    <button className="flex h-9 items-center gap-xs rounded-lg bg-gray-100 px-sm text-[13px] font-bold text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900">
-                      <Copy size={14} strokeWidth={2.5} />
-                      <span className="hidden sm:inline">Copy</span>
-                    </button>
-                    <a href={l.shortUrl ?? "#"} target="_blank" rel="noreferrer">
-                      <button className="flex h-9 items-center gap-xs rounded-lg bg-[#2bc48a] px-sm text-[13px] font-bold text-white transition-colors hover:bg-[#25ad7a] hover:shadow-md hover:shadow-[#2bc48a]/20">
-                        <ExternalLink size={14} strokeWidth={2.5} />
-                        <span className="hidden sm:inline">Mở</span>
-                      </button>
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      <RefundHistoryClient links={formattedLinks} totalPages={totalPages} currentPage={page} totalCount={totalCount} />
 
       {/* NOTES CARD */}
       <div className="rounded-2xl bg-[#fffcf5] p-xl ring-1 ring-[#f59e0b]/20">

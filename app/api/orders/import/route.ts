@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
       const resolvedCustomerId = existing?.customerId ?? trackingLink?.customerId;
       const resolvedOrderStatus = isLocked ? existing.orderStatus : autoMappedStatus;
 
-      await prisma.order.upsert({
+      const updatedOrder = await prisma.order.upsert({
         where: { platformId_orderExternalId: { platformId, orderExternalId: row.orderExternalId } },
         update: {
           trackingLinkId: trackingLink?.id || existing?.trackingLinkId,
@@ -268,6 +268,71 @@ export async function POST(req: NextRequest) {
           rawData: JSON.stringify(row.rawData),
         },
       });
+
+      // Handle Referral Bonus
+      if (resolvedOrderStatus === "approved" && resolvedCustomerId) {
+        const customerData = await prisma.customer.findUnique({
+          where: { id: resolvedCustomerId },
+          select: { referredById: true, createdAt: true },
+        });
+
+        if (customerData?.referredById) {
+          const maxOrders = rule?.maxReferralOrders ?? 5;
+          const validMonths = rule?.referralValidityMonths ?? 6;
+          const referralRate = rule?.referralRate ? Number(rule.referralRate) : 0.05;
+
+          const expirationDate = new Date(customerData.createdAt);
+          expirationDate.setMonth(expirationDate.getMonth() + validMonths);
+          const isTimeValid = new Date() <= expirationDate;
+
+          if (isTimeValid) {
+            const f1OrderCount = await prisma.order.count({
+              where: {
+                customerId: resolvedCustomerId,
+                orderStatus: "approved",
+                sourceType: { not: "referral" },
+              },
+            });
+
+            if (f1OrderCount < maxOrders) {
+              const bonusAmount = Number(split.customerRewardAmount) * referralRate;
+
+              await prisma.order.upsert({
+                where: { platformId_orderExternalId: { platformId: platformId, orderExternalId: `REF-${row.orderExternalId}` } },
+                update: {
+                  customerId: customerData.referredById,
+                  orderAmount: row.orderAmount,
+                  commissionAmount: 0,
+                  customerRewardAmount: bonusAmount,
+                  systemProfitAmount: 0,
+                  orderStatus: "approved",
+                  importBatchId: batch.id,
+                },
+                create: {
+                  platformId: platformId,
+                  orderExternalId: `REF-${row.orderExternalId}`,
+                  customerId: customerData.referredById,
+                  trackingCode: "REFERRAL",
+                  channel: "REFERRAL",
+                  orderedAt: row.orderedAt,
+                  completedAt: row.completedAt,
+                  shopName: row.shopName,
+                  itemName: `Hoa hồng giới thiệu: ${row.orderExternalId}`,
+                  orderAmount: row.orderAmount,
+                  grossCommissionAmount: 0,
+                  netCommissionAmount: 0,
+                  commissionAmount: 0,
+                  customerRewardAmount: bonusAmount,
+                  systemProfitAmount: 0,
+                  orderStatus: "approved",
+                  sourceType: "referral",
+                  importBatchId: batch.id,
+                },
+              });
+            }
+          }
+        }
+      }
 
       successRows++;
     } catch (err) {

@@ -7,21 +7,21 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#9fe870",
-          active: "#cdffad",
-          neutral: "#c5edab",
-          pale: "#e2f6d5",
+          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
+          active: "rgb(var(--primary-active) / <alpha-value>)",
+          neutral: "rgb(var(--primary-neutral) / <alpha-value>)",
+          pale: "rgb(var(--primary-pale) / <alpha-value>)",
         },
         canvas: {
-          DEFAULT: "#ffffff",
-          soft: "#e8ebe6",
+          DEFAULT: "rgb(var(--canvas) / <alpha-value>)",
+          soft: "rgb(var(--canvas-soft) / <alpha-value>)",
         },
         ink: {
-          DEFAULT: "#0e0f0c",
-          deep: "#163300",
+          DEFAULT: "rgb(var(--ink) / <alpha-value>)",
+          deep: "rgb(var(--ink-deep) / <alpha-value>)",
         },
-        body: "#454745",
-        mute: "#868685",
+        body: "rgb(var(--body) / <alpha-value>)",
+        mute: "rgb(var(--mute) / <alpha-value>)",
         positive: {
           DEFAULT: "#2ead4b",
           deep: "#054d28",

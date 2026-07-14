@@ -48,10 +48,13 @@ model Customer {
   bankAccountName  String?  @map("bank_account_name")
   momoNumber       String?  @map("momo_number")
   momoName         String?  @map("momo_name")
+  referredById     String?  @map("referred_by_id")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
 
   user             User?
+  referredBy       Customer? @relation("CustomerToCustomer", fields: [referredById], references: [id])
+  referredUsers    Customer[] @relation("CustomerToCustomer")
   trackingLinks    TrackingLink[]
   orders           Order[]
   paymentBatches   PaymentBatch[]
@@ -62,6 +65,7 @@ model Customer {
   @@index([phone])
   @@index([zaloUserId])
   @@index([telegramUserId])
+  @@index([referredById])
   @@map("customers")
 }
 
@@ -304,17 +308,20 @@ model Order {
 }
 
 model CommissionRule {
-  id              String    @id @default(uuid())
-  name            String
-  customerRate    Decimal   @map("customer_rate")
-  systemRate      Decimal   @map("system_rate")
-  active          Boolean   @default(false)
-  startsAt        DateTime? @map("starts_at")
-  endsAt          DateTime? @map("ends_at")
-  createdByUserId String?   @map("created_by_user_id")
-  createdByUser   User?     @relation("CommissionRuleCreatedBy", fields: [createdByUserId], references: [id])
-  createdAt       DateTime  @default(now()) @map("created_at")
-
+  id                     String    @id @default(uuid())
+  name                   String
+  customerRate           Decimal   @map("customer_rate")
+  systemRate             Decimal   @map("system_rate")
+  referralRate           Decimal   @default(0.05) @map("referral_rate")
+  maxReferralOrders      Int       @default(5) @map("max_referral_orders")
+  referralValidityMonths Int       @default(6) @map("referral_validity_months")
+  active                 Boolean   @default(false)
+  startsAt               DateTime? @map("starts_at")
+  endsAt                 DateTime? @map("ends_at")
+  createdByUserId        String?   @map("created_by_user_id")
+  createdByUser          User?     @relation("CommissionRuleCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt              DateTime  @default(now()) @map("created_at")
+  
   @@map("commission_rules")
 }
 
@@ -445,4 +452,36 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+model DealPost {
+  id              String   @id @default(uuid())
+  title           String
+  description     String?
+  originalPrice   Decimal? @map("original_price")
+  salePrice       Decimal? @map("sale_price")
+  discountPercent Int?     @map("discount_percent")
+  tags            String?  // JSON array of tags
+  platformCode    String   @default("SHOPEE") @map("platform_code")
+
+  // Links
+  rawInputLink    String   @map("raw_input_link")   // Link bẩn admin dán vào
+  cleanLink       String   @map("clean_link")        // Link đã tẩy params đối thủ
+  affiliateUrl    String   @map("affiliate_url")     // Link cuối gắn aff của mình
+  shortCode       String?  @unique @map("short_code")
+  shortUrl        String?  @map("short_url")
+
+  // Images: admin upload hoặc auto-fetch từ Shopee
+  uploadedImageUrl  String? @map("uploaded_image_url") // Ảnh admin upload
+  shopeeImageUrl    String? @map("shopee_image_url")   // Ảnh auto-fetch từ Shopee
+
+  status          String   @default("active") // active | hidden
+  clicks          Int      @default(0)
+  createdByUserId String?  @map("created_by_user_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("deal_posts")
 }

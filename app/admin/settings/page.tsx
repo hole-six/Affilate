@@ -28,6 +28,9 @@ export default async function AdminSettingsPage() {
         <CommissionRuleForm
           customerRate={Number(activeRule?.customerRate ?? 80)}
           systemRate={Number(activeRule?.systemRate ?? 20)}
+          referralRate={Number(activeRule?.referralRate ?? 0.05) * 100}
+          maxReferralOrders={activeRule?.maxReferralOrders ?? 5}
+          referralValidityMonths={activeRule?.referralValidityMonths ?? 6}
         />
       </Card>
 

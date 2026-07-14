@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Store, Check, Copy, ExternalLink, Link2, Plus } from "lucide-react";
+import { Store, Check, Copy, ExternalLink, Link2, Plus, Package, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { Card } from "@/components/ui/Card";
@@ -161,44 +161,65 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
 
       {/* Result Card */}
       {result && (
-        <div className="rounded-2xl bg-gradient-to-br from-[#fff7f2] to-[#fff0e6] p-xl shadow-sm ring-1 ring-[#e86a33]/20 fade-in">
-          <div className="flex items-start justify-between gap-lg flex-wrap">
-            <div className="flex flex-1 gap-md">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-black/5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-md fade-in">
+          {/* Panel trai: THONG TIN SAN PHAM */}
+          <div className="rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/5">
+            <div className="mb-md flex items-center gap-xs text-[12px] font-bold uppercase tracking-wider text-gray-500">
+              <Package size={14} strokeWidth={2.5} />
+              Thông tin sản phẩm
+            </div>
+            <div className="flex gap-md">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gray-50 ring-1 ring-black/5 overflow-hidden">
                 {result.productImage && !imgBroken ? (
                   <img
                     src={result.productImage}
                     alt=""
                     onError={() => setImgBroken(true)}
-                    className="h-full w-full rounded-xl object-cover"
+                    className="h-full w-full object-cover"
                   />
                 ) : (
                   <Link2 size={24} strokeWidth={1.5} className="text-[#e86a33]" />
                 )}
               </div>
-              <div className="min-w-0">
-                <div className="text-[12px] font-bold uppercase tracking-wider text-[#e86a33]">Link hoàn tiền đã sẵn sàng</div>
-                <p className="mt-1 line-clamp-1 text-[15px] font-bold text-gray-900">
+              <div className="min-w-0 flex-1">
+                <p className="line-clamp-2 text-[14px] font-bold text-gray-900 leading-snug">
                   {result.productTitle ?? "Sản phẩm mua sắm"}
                 </p>
-                <a href={result.shortUrl} target="_blank" rel="noreferrer" className="mt-1 block truncate text-[13px] font-medium text-gray-500 hover:text-[#e86a33] transition-colors">
-                  {result.shortUrl}
-                </a>
+                <div className="mt-sm flex items-center gap-xs">
+                  <span className="rounded-md bg-[#e86a33]/10 px-sm py-[2px] text-[11px] font-bold text-[#e86a33]">
+                    {selectedPlatform?.label ?? "Sản phẩm"}
+                  </span>
+                  <span className="font-mono text-[11px] text-gray-400 truncate">{result.trackingCode}</span>
+                </div>
               </div>
             </div>
-            <div className="flex gap-sm shrink-0 mt-sm sm:mt-0">
+          </div>
+
+          {/* Panel phai: LINK HOAN TIEN CUA BAN */}
+          <div className="rounded-2xl bg-[#2bc48a]/10 p-lg ring-1 ring-[#2bc48a]/20">
+            <div className="mb-md flex items-center gap-xs text-[12px] font-bold uppercase tracking-wider text-[#1f9c6d]">
+              <Sparkles size={14} strokeWidth={2.5} />
+              Link hoàn tiền của bạn
+            </div>
+            <input
+              readOnly
+              value={result.shortUrl}
+              onFocus={(e) => e.target.select()}
+              className="mb-md h-11 w-full rounded-xl bg-white px-md text-[13px] font-medium text-gray-700 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#2bc48a]/40"
+            />
+            <div className="flex gap-sm">
               <Button
                 type="button"
-                variant="tertiary"
                 onClick={copyLink}
+                className="flex-1 bg-[#2bc48a] text-white hover:bg-[#25ad7a] hover:shadow-md hover:shadow-[#2bc48a]/30"
               >
-                {copied ? <Check size={16} className="text-emerald-500" /> : <Copy size={16} />}
-                {copied ? "Đã copy" : "Copy"}
+                {copied ? <Check size={16} /> : <Copy size={16} />}
+                {copied ? "Đã copy" : "Copy link"}
               </Button>
               <a href={result.shortUrl} target="_blank" rel="noreferrer">
-                <Button type="button" className="bg-[#2bc48a] text-white hover:bg-[#25ad7a] hover:shadow-md hover:shadow-[#2bc48a]/30">
+                <Button type="button" variant="tertiary">
                   <ExternalLink size={16} />
-                  Mở link
+                  Mở
                 </Button>
               </a>
             </div>

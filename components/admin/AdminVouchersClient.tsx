@@ -25,6 +25,13 @@ export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<"all" | "active" | "paused">("all");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const handleTabChange = (tab: "all" | "active" | "paused") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
 
   function copyShortUrl(id: string, url: string) {
     navigator.clipboard.writeText(url);
@@ -52,6 +59,9 @@ export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
     return true;
   });
 
+  const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+  const paginated = filtered.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <div className="flex flex-col gap-lg">
       <div className="flex flex-col gap-sm sm:flex-row sm:items-center">
@@ -61,16 +71,19 @@ export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
             type="text"
             placeholder="Tìm tên voucher, mã voucher hoặc nền tảng..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="h-11 w-full rounded-2xl bg-white pl-10 pr-md text-[14px] font-medium text-gray-900 shadow-sm ring-1 ring-black/5 focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33] transition-all"
           />
         </div>
       </div>
 
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
-        <TabButton active={activeTab === "all"} onClick={() => setActiveTab("all")} label="Tất cả" count={counts.all} />
-        <TabButton active={activeTab === "active"} onClick={() => setActiveTab("active")} label="Đang chạy" count={counts.active} />
-        <TabButton active={activeTab === "paused"} onClick={() => setActiveTab("paused")} label="Tạm dừng" count={counts.paused} />
+        <TabButton active={activeTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
+        <TabButton active={activeTab === "active"} onClick={() => handleTabChange("active")} label="Đang chạy" count={counts.active} />
+        <TabButton active={activeTab === "paused"} onClick={() => handleTabChange("paused")} label="Tạm dừng" count={counts.paused} />
       </div>
 
       {filtered.length === 0 ? (
@@ -81,7 +94,7 @@ export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
-          {filtered.map((v) => (
+          {paginated.map((v) => (
             <Card
               key={v.id}
               className="flex flex-col p-0 overflow-hidden border border-gray-100 hover:border-[#e86a33]/30 hover:shadow-md transition-all group relative"
@@ -176,6 +189,33 @@ export function AdminVouchersClient({ vouchers }: { vouchers: VoucherRow[] }) {
               </div>
             </Card>
           ))}
+        </div>
+      )}
+      
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-gray-100 px-md pt-lg pb-sm">
+          <span className="text-[13px] text-gray-500 font-medium">
+            Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filtered.length)} trong số {filtered.length} voucher
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Trước
+            </button>
+            <span className="text-[13px] font-bold text-gray-900 px-2">
+              Trang {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Sau
+            </button>
+          </div>
         </div>
       )}
     </div>
