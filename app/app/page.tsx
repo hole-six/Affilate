@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import {
-  PiggyBank,
   Clock,
   Wallet,
   Package,
@@ -100,23 +99,26 @@ export default async function CustomerHomePage() {
         />
 
         <div className="relative z-10 flex items-start justify-between gap-lg flex-wrap">
-          <div>
-            <div className="flex items-center gap-sm mb-sm">
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                <Sparkles size={12} strokeWidth={1.75} className="text-primary" />
+          <div className="flex items-start gap-md">
+            <img src="/01_wave.png" alt="" className="hidden sm:block h-16 w-16 shrink-0 object-contain" />
+            <div>
+              <div className="flex items-center gap-sm mb-sm">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
+                  <Sparkles size={12} strokeWidth={1.75} className="text-primary" />
+                </div>
+                <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary/60">
+                  Chào mừng trở lại
+                </span>
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary/60">
-                Chào mừng trở lại
-              </span>
+              <h1 className="text-[30px] font-black leading-tight text-white">
+                Xin chào, <span className="text-primary">{firstName}</span>! 👋
+              </h1>
+              <p className="mt-xs text-[13px] text-white/50 leading-relaxed">
+                {allOrders.length === 0
+                  ? "Chưa có đơn nào — chia sẻ link để bắt đầu hoàn tiền!"
+                  : `Bạn có ${allOrders.length} đơn đã ghi nhận. Tiếp tục mua sắm nhé!`}
+              </p>
             </div>
-            <h1 className="text-[30px] font-black leading-tight text-white">
-              Xin chào, <span className="text-primary">{firstName}</span>! 👋
-            </h1>
-            <p className="mt-xs text-[13px] text-white/50 leading-relaxed">
-              {allOrders.length === 0
-                ? "Chưa có đơn nào — chia sẻ link để bắt đầu hoàn tiền!"
-                : `Bạn có ${allOrders.length} đơn đã ghi nhận. Tiếp tục mua sắm nhé!`}
-            </p>
           </div>
 
           <div className="flex gap-sm flex-wrap">
@@ -154,11 +156,11 @@ export default async function CustomerHomePage() {
       {/* ═══ STAT CARDS ═══ */}
       <div className="grid grid-cols-2 gap-md lg:grid-cols-4">
         {[
-          { icon: PiggyBank, label: "Tổng thu nhập", value: formatCurrency(totalIncome), tag: "Tích luỹ", color: "from-emerald-400/20 to-green-300/10", iconBg: "bg-emerald-50 text-emerald-600" },
+          { image: "/02_coin.png", label: "Tổng thu nhập", value: formatCurrency(totalIncome), tag: "Tích luỹ", color: "from-emerald-400/20 to-green-300/10" },
           { icon: Clock, label: "Chờ xác nhận", value: formatCurrency(pendingIncome), tag: "Đang xử lý", color: "from-amber-400/20 to-yellow-300/10", iconBg: "bg-amber-50 text-amber-600" },
-          { icon: Wallet, label: "Số dư khả dụng", value: formatCurrency(availableBalance), tag: "Rút được", color: "from-sky-400/20 to-blue-300/10", iconBg: "bg-sky-50 text-sky-600" },
+          { image: "/05_payout.png", label: "Số dư khả dụng", value: formatCurrency(availableBalance), tag: "Rút được", color: "from-sky-400/20 to-blue-300/10" },
           { icon: Package, label: "Tổng đơn hàng", value: String(allOrders.length), tag: "Đơn hàng", color: "from-violet-400/20 to-purple-300/10", iconBg: "bg-violet-50 text-violet-600" },
-        ].map(({ icon: Icon, label, value, tag, color, iconBg }) => (
+        ].map(({ icon: Icon, image, label, value, tag, color, iconBg }) => (
           <div
             key={label}
             className={`group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg`}
@@ -167,9 +169,13 @@ export default async function CustomerHomePage() {
             <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-60`} />
             <div className="relative">
               <div className="flex items-start justify-between">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} transition-transform duration-150 group-hover:scale-110`}>
-                  <Icon size={18} strokeWidth={1.75} />
-                </div>
+                {image ? (
+                  <img src={image} alt="" className="h-10 w-10 object-contain transition-transform duration-150 group-hover:scale-110" />
+                ) : (
+                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} transition-transform duration-150 group-hover:scale-110`}>
+                    {Icon && <Icon size={18} strokeWidth={1.75} />}
+                  </div>
+                )}
                 <span className="rounded-pill bg-black/5 px-sm py-[3px] text-[10px] font-semibold text-black/40">{tag}</span>
               </div>
               <div className="mt-lg">
@@ -194,15 +200,7 @@ export default async function CustomerHomePage() {
 
           {activity.length === 0 ? (
             <div className="flex flex-col items-center py-2xl text-center">
-              <div className="mb-lg relative">
-                {/* Animated empty state illustration */}
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 mx-auto">
-                  <ShoppingBag size={28} strokeWidth={1.5} className="text-gray-300" />
-                </div>
-                <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-ink-deep">
-                  0
-                </div>
-              </div>
+              <img src="/10_empty.png" alt="" className="mb-lg h-20 w-20 object-contain" />
               <div className="text-[14px] font-semibold text-gray-700">Chưa có hoạt động nào</div>
               <div className="mt-xs text-[12px] text-gray-400">Chia sẻ link để bắt đầu kiếm tiền hoàn!</div>
             </div>

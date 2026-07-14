@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatCurrency } from "@/lib/format";
-import { Share2, Users, TrendingUp, Gift, CheckCircle2, Copy } from "lucide-react";
+import { Users, TrendingUp, Gift, CheckCircle2, Copy } from "lucide-react";
 import { useModal } from "@/components/ui/ModalProvider";
 import { Button } from "@/components/ui/Button";
 
@@ -49,9 +49,7 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-orange-50 rounded-full blur-3xl opacity-60"></div>
             <div className="relative">
               <div className="flex items-center gap-sm mb-lg">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-50 text-[#e86a33]">
-                  <Share2 size={20} strokeWidth={2} />
-                </div>
+                <img src="/06_referral.png" alt="" className="h-12 w-12 object-contain" />
                 <h2 className="text-[16px] font-bold text-gray-900">Link giới thiệu của bạn</h2>
               </div>
               

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, Wallet, ClipboardList, Send, CreditCard, Smartphone, CheckCircle } from "lucide-react";
+import { Search, Wallet, ClipboardList, CreditCard, Smartphone, CheckCircle, Copy, Check } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { CreatePaymentButton } from "@/components/admin/CreatePaymentButton";
@@ -40,11 +40,42 @@ const payoutStatusLabel: Record<string, string> = {
   paid: "Đã thanh toán",
 };
 
+function CopyInfoButton({ customer }: { customer: CustomerPending }) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    const lines = [`Khách hàng: ${customer.name} (${customer.code})`];
+    if (customer.bankAccountNumber) {
+      lines.push(`Ngân hàng: ${customer.bankName} - ${customer.bankAccountNumber} - ${customer.bankAccountName}`);
+    }
+    if (customer.momoNumber) {
+      lines.push(`Momo: ${customer.momoNumber} - ${customer.momoName}`);
+    }
+    lines.push(`Số tiền: ${formatCurrency(customer.amount)}`);
+    navigator.clipboard.writeText(lines.join("\n"));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      className="flex h-9 items-center gap-xs rounded-lg bg-gray-100 px-md text-[13px] font-bold text-gray-600 transition-colors hover:bg-gray-200"
+    >
+      {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+      {copied ? "Đã copy" : "Copy info"}
+    </button>
+  );
+}
+
 export function AdminPaymentsClient({ pendingList, batches }: Props) {
   const [activeTab, setActiveTab] = useState<"pending" | "history">("pending");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const todayTotal = pendingList.reduce((s, c) => s + c.amount, 0);
 
   const handleTabChange = (tab: "pending" | "history") => {
     setActiveTab(tab);
@@ -88,127 +119,101 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
         </div>
       </div>
 
-      {/* TABS */}
-      <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
-        <TabButton 
-          active={activeTab === "pending"} 
-          onClick={() => handleTabChange("pending")} 
-          label="Chờ thanh toán" 
-          count={pendingList.length} 
-          icon={<Wallet size={14} />} 
-        />
-        <TabButton 
-          active={activeTab === "history"} 
-          onClick={() => handleTabChange("history")} 
-          label="Lịch sử phiếu" 
-          count={batches.length} 
-          icon={<ClipboardList size={14} />} 
-        />
+      {/* TABS + Summary */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
+        <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw] sm:w-auto">
+          <TabButton
+            active={activeTab === "pending"}
+            onClick={() => handleTabChange("pending")}
+            label="Chờ thanh toán"
+            count={pendingList.length}
+            icon={<Wallet size={14} />}
+          />
+          <TabButton
+            active={activeTab === "history"}
+            onClick={() => handleTabChange("history")}
+            label="Lịch sử phiếu"
+            count={batches.length}
+            icon={<ClipboardList size={14} />}
+          />
+        </div>
+
+        {activeTab === "pending" && pendingList.length > 0 && (
+          <div className="flex items-center gap-md rounded-2xl bg-white px-lg py-sm shadow-sm ring-1 ring-black/5 shrink-0">
+            <img src="/05_payout.png" alt="" className="h-10 w-10 object-contain" />
+            <div>
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                {pendingList.length} yêu cầu đang chờ
+              </div>
+              <div className="text-[16px] font-black text-[#e86a33]">{formatCurrency(todayTotal)}</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* CONTENT */}
       {activeTab === "pending" ? (
-        <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden w-full max-w-[100vw]">
-          <div className="responsive-table overflow-x-auto">
-            <table className="w-full text-left text-[13px]">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Khách hàng</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Thông tin chuyển khoản</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] text-center">Số đơn</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-[#e86a33] text-[11px] text-right">Số tiền cần hoàn</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] w-[150px] text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPending.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-2xl text-center">
-                      <div className="flex flex-col items-center gap-sm">
-                        <CheckCircle size={32} className="text-gray-300" />
-                        <span className="text-[14px] font-bold text-gray-400">Không có công nợ chờ thanh toán</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedPending.map((c) => (
-                    <tr key={c.id} className="border-b border-gray-50 hover:bg-[#fff0e6]/20 transition-colors">
-                      <td className="px-md py-md" data-label="Khách hàng">
-                        <div className="font-bold text-gray-900">{c.name}</div>
-                        <div className="font-mono text-[11px] text-gray-400 mt-1">{c.code}</div>
-                      </td>
-                      <td className="px-md py-md" data-label="Thông tin chuyển khoản">
-                        {c.bankAccountNumber || c.momoNumber ? (
-                          <div className="flex flex-col gap-2">
-                            {c.bankAccountNumber && (
-                              <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2 ring-1 ring-gray-100 min-w-max">
-                                <CreditCard size={14} className="text-[#e86a33] shrink-0" />
-                                <div>
-                                  <div className="text-[11px] font-bold text-gray-900">{c.bankName}</div>
-                                  <div className="text-[11px] font-medium text-gray-600 uppercase">
-                                    <span className="font-mono">{c.bankAccountNumber}</span> - {c.bankAccountName}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                            {c.momoNumber && (
-                              <div className="flex items-center gap-2 rounded-lg bg-[#a50064]/5 p-2 ring-1 ring-[#a50064]/10 min-w-max">
-                                <Smartphone size={14} className="text-[#a50064] shrink-0" />
-                                <div>
-                                  <div className="text-[11px] font-bold text-[#a50064]">Ví Momo</div>
-                                  <div className="text-[11px] font-medium text-[#a50064]/80 uppercase">
-                                    <span className="font-mono">{c.momoNumber}</span> - {c.momoName}
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-[12px] font-medium text-gray-400 italic">Chưa cập nhật thông tin</div>
-                        )}
-                      </td>
-                      <td className="px-md py-md text-center font-medium text-gray-600" data-label="Số đơn">
-                        {c.count}
-                      </td>
-                      <td className="px-md py-md text-right" data-label="Số tiền cần hoàn">
-                        <div className="font-black text-[#e86a33] text-[16px]">{formatCurrency(c.amount)}</div>
-                      </td>
-                      <td className="px-md py-md text-right" data-label="Thao tác">
-                        <CreatePaymentButton customerId={c.id} />
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+        filteredPending.length === 0 ? (
+          <div className="flex flex-col items-center gap-sm rounded-3xl bg-white py-3xl shadow-sm ring-1 ring-black/5">
+            <CheckCircle size={32} className="text-gray-300" />
+            <span className="text-[14px] font-bold text-gray-400">Không có công nợ chờ thanh toán</span>
           </div>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-md py-sm">
-              <span className="text-[13px] text-gray-500 font-medium">
-                Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, activeList.length)} trong số {activeList.length} khách hàng
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Trước
-                </button>
-                <span className="text-[13px] font-bold text-gray-900 px-2">
-                  Trang {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Sau
-                </button>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
+            {paginatedPending.map((c) => (
+              <div key={c.id} className="rounded-3xl bg-white p-lg shadow-sm ring-1 ring-black/5 flex flex-col gap-md">
+                <div className="flex items-center gap-sm">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-active text-white font-bold text-[15px]">
+                    {c.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="font-bold text-gray-900 truncate">{c.name}</div>
+                    <div className="font-mono text-[11px] text-gray-400">{c.code}</div>
+                  </div>
+                </div>
+
+                <div className="font-black text-[26px] text-[#e86a33] leading-none">{formatCurrency(c.amount)}</div>
+                <div className="text-[12px] font-medium text-gray-400">{c.count} đơn hàng</div>
+
+                {c.bankAccountNumber || c.momoNumber ? (
+                  <div className="flex flex-col gap-2">
+                    {c.bankAccountNumber && (
+                      <div className="flex items-center gap-2 rounded-xl bg-gray-50 p-sm ring-1 ring-gray-100">
+                        <CreditCard size={14} className="text-[#e86a33] shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-bold text-gray-900">{c.bankName}</div>
+                          <div className="text-[11px] font-medium text-gray-600 uppercase truncate">
+                            <span className="font-mono">{c.bankAccountNumber}</span> - {c.bankAccountName}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {c.momoNumber && (
+                      <div className="flex items-center gap-2 rounded-xl bg-[#a50064]/5 p-sm ring-1 ring-[#a50064]/10">
+                        <Smartphone size={14} className="text-[#a50064] shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-bold text-[#a50064]">Ví Momo</div>
+                          <div className="text-[11px] font-medium text-[#a50064]/80 uppercase truncate">
+                            <span className="font-mono">{c.momoNumber}</span> - {c.momoName}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-[12px] font-medium text-gray-400 italic">Chưa cập nhật thông tin</div>
+                )}
+
+                <div className="mt-auto flex items-center gap-sm pt-sm border-t border-gray-50">
+                  <CopyInfoButton customer={c} />
+                  <div className="flex-1">
+                    <CreatePaymentButton customerId={c.id} />
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )
       ) : (
         <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden w-full max-w-[100vw]">
           <div className="responsive-table overflow-x-auto">

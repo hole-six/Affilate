@@ -172,13 +172,16 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
     <>
       <div className="mx-auto flex max-w-5xl flex-col gap-xl fade-in pb-2xl">
         {/* HEADER */}
-        <div>
-          <h1 className="text-[28px] font-black tracking-tight text-gray-900">
-            Thanh Toán
-          </h1>
-          <p className="mt-1 text-[14px] font-medium text-gray-500">
-            Quản lý số dư, yêu cầu thanh toán và xem lịch sử
-          </p>
+        <div className="flex items-center gap-md">
+          <img src="/05_payout.png" alt="" className="h-14 w-14 object-contain" />
+          <div>
+            <h1 className="text-[28px] font-black tracking-tight text-gray-900">
+              Thanh Toán
+            </h1>
+            <p className="mt-1 text-[14px] font-medium text-gray-500">
+              Quản lý số dư, yêu cầu thanh toán và xem lịch sử
+            </p>
+          </div>
         </div>
 
         {/* STAT CARDS */}

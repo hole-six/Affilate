@@ -10,12 +10,40 @@ import {
   Sparkles,
   PiggyBank,
   TrendingUp,
+  Gift,
 } from "lucide-react";
 import { ShopeeIcon, TiktokIcon } from "@/components/icons/PlatformIcons";
 import { Reveal } from "@/components/marketing/Reveal";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+
+const PIG_FEATURES = [
+  {
+    image: "/04_link.png",
+    title: "Tạo link tức thì",
+    description: "Tạo link Shopee nhanh chóng chỉ với 1 click. Mua gì cũng hoàn, không bỏ lỡ ưu đãi.",
+    bg: "bg-[#fdece3]",
+  },
+  {
+    image: "/09_admin.png",
+    title: "Theo dõi minh bạch",
+    description: "Theo dõi đơn hàng, tiền hoàn theo thời gian thực. Mọi thông tin rõ ràng, đáng tin cậy.",
+    bg: "bg-[#e3f5ea]",
+  },
+  {
+    image: "/05_payout.png",
+    title: "Rút tiền từ 10K",
+    description: "Rút tiền linh hoạt chỉ từ 10.000đ. Về ví nhanh chóng, không cần chờ lâu.",
+    bg: "bg-[#fdf3e0]",
+  },
+  {
+    image: "/06_referral.png",
+    title: "Mời bạn nhận 5%",
+    description: "Mời bạn bè dùng hệ thống, nhận ngay 5% trên tiền hoàn của bạn bè.",
+    bg: "bg-[#f0ecfb]",
+  },
+];
 
 const FEATURES = [
   {
@@ -98,27 +126,19 @@ export function LandingPage() {
 
       <main className="pt-[80px]">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-[#fff0e6]">
-          {/* Background — full-bleed on desktop where the image already reserves
-              empty space on the left for copy; on mobile the wide aspect ratio
-              crops badly, so it drops down as a banner below the text instead. */}
-          <div className="absolute inset-0 hidden md:block">
-            <img
-              src="/background.png"
-              alt=""
-              className="h-full w-full object-cover object-left"
-              aria-hidden="true"
-            />
-          </div>
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#fff0e6] via-[#fff7f2] to-white">
+          <div className="relative z-10 max-w-[1200px] mx-auto px-lg md:px-3xl py-3xl md:py-[90px] grid md:grid-cols-2 gap-2xl items-center">
+            <div className="space-y-lg fade-in">
+              <div className="inline-flex items-center gap-sm bg-gradient-to-r from-primary to-[#ff8a65] text-white px-lg py-sm rounded-full shadow-md shadow-primary/30">
+                <Gift size={16} strokeWidth={2} />
+                <span className="text-[13px] font-bold">Hoàn 80% + 5% mời bạn</span>
+              </div>
 
-          <div className="relative z-10 max-w-[1200px] mx-auto px-lg md:px-3xl py-3xl md:py-[110px]">
-            <div className="max-w-xl space-y-lg fade-in">
-             
               <h1 className="text-[40px] md:text-[56px] font-black leading-tight text-ink tracking-tight">
-                Mua Sắm Hoàn Tiền Đến <span className="text-primary relative inline-block">80%<svg className="absolute -bottom-2 left-0 w-full text-primary-pale -z-10" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0 15 Q 50 0 100 15 L 100 20 L 0 20 Z" fill="currentColor"/></svg></span> trên Shopee & TikTok Shop
+                Để tiền tự về ví <span className="inline-block">🐷</span>
               </h1>
               <p className="text-[18px] text-mute max-w-lg leading-relaxed">
-                Nhận tiền mặt trực tiếp vào tài khoản ngân hàng của bạn. Gia nhập cộng đồng mua sắm thông thái ngay hôm nay!
+                Cách thông minh hơn để mua Shopee & TikTok Shop — hoàn tiền tự động cho mọi đơn, tiền về thẳng ví của bạn.
               </p>
               <div className="flex flex-col sm:flex-row gap-md pt-md">
                 <Link href="/register" className="bg-gradient-to-r from-primary to-primary-active hover:shadow-lg hover:-translate-y-0.5 text-white px-2xl py-lg rounded-2xl font-bold text-[16px] flex items-center justify-center gap-sm transition-all shadow-primary/30 shadow-md">
@@ -126,16 +146,33 @@ export function LandingPage() {
                   <ArrowRight size={20} />
                 </Link>
                 <a href="#how-it-works" className="bg-white hover:bg-primary-pale text-primary px-2xl py-lg rounded-2xl font-bold text-[16px] flex items-center justify-center gap-sm transition-all border border-primary/20 shadow-sm">
-                  Tìm hiểu thêm
+                  Cách hoạt động
                 </a>
               </div>
             </div>
 
-            {/* Mobile-only banner — the wide desktop background would crop away
-                the graphic elements entirely on a portrait phone screen. */}
-            <div className="mt-2xl rounded-[24px] overflow-hidden shadow-lg md:hidden">
-              <img src="/background.png" alt="" className="w-full h-auto object-cover" />
+            {/* Pig mascot illustration — flat opaque background, so it's framed
+                in its own card rather than blended over the section's tint. */}
+            <div className="relative fade-in">
+              <div className="mx-auto max-w-[420px] rounded-[40px] bg-white shadow-2xl shadow-primary/10 p-lg overflow-hidden">
+                <img src="/mascot_pig_phone_1784048060867.png" alt="Ví Heo" className="w-full h-auto object-contain" />
+              </div>
             </div>
+          </div>
+        </section>
+
+        {/* Pig feature cards */}
+        <section className="py-2xl bg-white border-y border-primary/10">
+          <div className="max-w-[1200px] mx-auto px-lg grid grid-cols-1 sm:grid-cols-2 gap-lg">
+            {PIG_FEATURES.map((f) => (
+              <div key={f.title} className={`flex items-center gap-lg rounded-3xl ${f.bg} p-lg`}>
+                <img src={f.image} alt="" className="h-16 w-16 shrink-0 object-contain" />
+                <div>
+                  <h3 className="font-black text-[18px] text-ink mb-xs">{f.title}</h3>
+                  <p className="text-mute text-[14px] leading-relaxed">{f.description}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
