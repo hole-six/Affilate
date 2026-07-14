@@ -120,9 +120,7 @@ export default async function CustomerHomePage() {
           </div>
 
           <div className="flex gap-sm flex-wrap">
-            <CopyInviteButton
-              inviteUrl={`https://affiliate-hoantien.vn/r/${customer?.customerCode ?? ""}`}
-            />
+            <CopyInviteButton customerCode={customer?.customerCode ?? ""} />
             <a href="/app/refunds">
               <button className="flex items-center gap-xs rounded-xl bg-primary px-xl py-[10px] text-[13px] font-bold text-ink-deep transition-all duration-150 hover:bg-primary-active hover:shadow-lg hover:shadow-primary/30 active:scale-[0.97]">
                 <Percent size={14} strokeWidth={2} />

@@ -1,12 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Gift, Check, Copy } from "lucide-react";
 
-export function CopyInviteButton({ inviteUrl }: { inviteUrl: string }) {
+export function CopyInviteButton({ customerCode }: { customerCode: string }) {
   const [copied, setCopied] = useState(false);
+  const [inviteUrl, setInviteUrl] = useState("");
+
+  useEffect(() => {
+    setInviteUrl(`${window.location.origin}/register?ref=${customerCode}`);
+  }, [customerCode]);
 
   function copy() {
+    if (!inviteUrl) return;
     navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

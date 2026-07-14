@@ -20,7 +20,7 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
   const [referralLink, setReferralLink] = useState("");
 
   useEffect(() => {
-    setReferralLink(`${window.location.origin}/app?ref=${customerCode}`);
+    setReferralLink(`${window.location.origin}/register?ref=${customerCode}`);
   }, [customerCode]);
 
   const handleCopy = () => {
