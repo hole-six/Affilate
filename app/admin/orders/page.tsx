@@ -24,16 +24,20 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   if (tab === "unassigned") where.customerId = null;
   if (tab === "pending_payout") where.payoutStatus = "pending";
   if (tab === "paid") where.payoutStatus = "paid";
+  if (tab === "completed") where.orderStatus = "completed";
+  if (tab === "clawback") where.orderStatus = "clawback";
 
   const orderByField = searchParams.sort || "createdAt";
   const orderByDir = searchParams.order || "desc";
   const orderBy = { [orderByField]: orderByDir };
 
-  const [allCount, unassignedCount, pendingPayoutCount, paidCount, orders, customers, filteredCount, sumsAgg] = await Promise.all([
+  const [allCount, unassignedCount, pendingPayoutCount, paidCount, completedCount, clawbackCount, orders, customers, filteredCount, sumsAgg] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({ where: { customerId: null } }),
     prisma.order.count({ where: { payoutStatus: "pending" } }),
     prisma.order.count({ where: { payoutStatus: "paid" } }),
+    prisma.order.count({ where: { orderStatus: "completed" } }),
+    prisma.order.count({ where: { orderStatus: "clawback" } }),
     prisma.order.findMany({
       where,
       orderBy,
@@ -63,10 +67,16 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     systemProfitAmount: Number(o.systemProfitAmount),
     orderStatus: o.orderStatus,
     payoutStatus: o.payoutStatus,
+    orderedAt: o.orderedAt?.toISOString() ?? null,
+    completedAt: o.completedAt?.toISOString() ?? null,
+    // Cảnh báo clawback: đơn "completed" đã quá 15 ngày (Shopee đã đóng kỳ thanh toán)
+    clawbackWarning: o.orderStatus === "completed" && o.completedAt
+      ? (new Date().getTime() - new Date(o.completedAt).getTime()) > 15 * 24 * 60 * 60 * 1000
+      : false,
   }));
 
   const totalPages = Math.ceil(filteredCount / limit);
-  const counts = { all: allCount, unassigned: unassignedCount, pending: pendingPayoutCount, paid: paidCount };
+  const counts = { all: allCount, unassigned: unassignedCount, pending: pendingPayoutCount, paid: paidCount, completed: completedCount, clawback: clawbackCount };
   const sums = {
     orderAmount: Number(sumsAgg._sum.orderAmount ?? 0),
     customerRewardAmount: Number(sumsAgg._sum.customerRewardAmount ?? 0),

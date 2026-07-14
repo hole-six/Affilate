@@ -14,6 +14,25 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const order = await prisma.order.findUnique({ where: { id: params.id } });
   if (!order) return NextResponse.json({ error: "Không tìm thấy đơn" }, { status: 404 });
 
+  // Kiểm tra chuyển trạng thái hợp lệ
+  const VALID_TRANSITIONS: Record<string, string[]> = {
+    pending:   ["completed", "cancelled", "approved"],
+    completed: ["approved", "cancelled"],   // Shopee đã trả → approved; hoặc phát hiện lỗi → cancelled
+    approved:  ["clawback"],                // Shopee đòi lại
+    cancelled: ["pending"],                 // Khôi phục nếu nhầm
+    clawback:  [],                          // Trạng thái cuối, không thay đổi
+  };
+
+  if (orderStatus && order.orderStatus !== orderStatus) {
+    const allowed = VALID_TRANSITIONS[order.orderStatus] ?? [];
+    if (!allowed.includes(orderStatus)) {
+      return NextResponse.json(
+        { error: `Không thể chuyển từ "${order.orderStatus}" sang "${orderStatus}"` },
+        { status: 400 }
+      );
+    }
+  }
+
   let data: Record<string, unknown> = {};
 
   if (customerId) data.customerId = customerId;
@@ -29,8 +48,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const updated = await prisma.order.update({ where: { id: params.id }, data });
 
   const targetCustomerId = updated.customerId;
+
+  // ============================================================
+  // Xử LÝ APPROVED (Admin xác nhận Shopee đã trả hoa hồng)
+  // ============================================================
   if (orderStatus === "approved" && targetCustomerId) {
-    // Notify customer
+    // Thông báo Telegram
     void notifyCustomerTelegram(
       targetCustomerId,
       buildOrderApprovedMessage({
@@ -40,7 +63,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       })
     );
 
-    // Handle Referral Bonus
+    // Xử lý Referral Bonus
     const customerData = await prisma.customer.findUnique({
       where: { id: targetCustomerId },
       select: { referredById: true, createdAt: true },
@@ -51,18 +74,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         where: { active: true },
         orderBy: { createdAt: "desc" },
       });
-      
+
       const maxOrders = activeRule?.maxReferralOrders ?? 5;
       const validMonths = activeRule?.referralValidityMonths ?? 6;
       const referralRate = activeRule?.referralRate ? Number(activeRule.referralRate) : 0.05;
 
-      // Check validity by time
       const expirationDate = new Date(customerData.createdAt);
       expirationDate.setMonth(expirationDate.getMonth() + validMonths);
       const isTimeValid = new Date() <= expirationDate;
 
       if (isTimeValid) {
-        // Check order count
         const f1OrderCount = await prisma.order.count({
           where: {
             customerId: targetCustomerId,
@@ -71,9 +92,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           },
         });
 
-        if (f1OrderCount < maxOrders) {
+        if (f1OrderCount <= maxOrders) {
           const bonusAmount = Number(updated.customerRewardAmount) * referralRate;
-
           await prisma.order.upsert({
             where: { platformId_orderExternalId: { platformId: updated.platformId, orderExternalId: `REF-${updated.orderExternalId}` } },
             update: {
@@ -106,6 +126,52 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           });
         }
       }
+    }
+  }
+
+  // ============================================================
+  // Xử LÝ CLAWBACK (Shopee đòi lại hoa hồng)
+  // Nếu đơn đã được duyệt và chưa thanh toán cho khách:
+  //   → Chỉ đổi trạng thái, không có tác động tài chính thêm
+  // Nếu đơn đã thanh toán cho khách (payoutStatus=paid):
+  //   → Tạo bụt toán đảo (Order âm) để trừ tiền ví
+  // ============================================================
+  if (orderStatus === "clawback") {
+    // Đảo referral bonus nếu có
+    const refOrder = await prisma.order.findUnique({
+      where: { platformId_orderExternalId: { platformId: updated.platformId, orderExternalId: `REF-${updated.orderExternalId}` } },
+    });
+    if (refOrder && refOrder.orderStatus === "approved") {
+      await prisma.order.update({
+        where: { id: refOrder.id },
+        data: { orderStatus: "clawback" },
+      });
+    }
+
+    if (updated.payoutStatus === "paid" && targetCustomerId) {
+      // Tạo bụt toán trừ ví khách
+      await prisma.order.create({
+        data: {
+          platformId: updated.platformId,
+          orderExternalId: `CLAWBACK-${updated.orderExternalId}`,
+          customerId: targetCustomerId,
+          trackingCode: updated.trackingCode,
+          channel: "CLAWBACK",
+          orderedAt: updated.orderedAt,
+          completedAt: updated.completedAt,
+          shopName: updated.shopName,
+          itemName: `[Clawback] ${updated.itemName ?? updated.orderExternalId}`,
+          orderAmount: updated.orderAmount,
+          grossCommissionAmount: 0,
+          netCommissionAmount: 0,
+          commissionAmount: 0,
+          customerRewardAmount: -Number(updated.customerRewardAmount), // Số âm = trừ ví
+          systemProfitAmount: -Number(updated.systemProfitAmount),
+          orderStatus: "clawback",
+          payoutStatus: "unpaid",
+          sourceType: "clawback",
+        },
+      });
     }
   }
 

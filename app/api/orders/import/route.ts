@@ -185,24 +185,53 @@ export async function POST(req: NextRequest) {
       });
       if (existing) duplicateRows++;
 
-      // Đồng bộ trạng thái đơn hàng. Nếu file CSV có trạng thái Shopee (Hoàn thành, Hủy...), ta lưu vào productAffiliateStatus
-      // Map trạng thái Shopee sang trạng thái nội bộ:
-      // "Hoàn thành" -> "approved"
-      // "Đã Hủy", "Đã Huỷ" -> "cancelled"
-      // Các trạng thái khác -> "pending"
+      // ============================================================
+      // MAP TRẠNG THÁI SHOPEE → NỘI BỘ
+      // Chính sách: Shopee "Hoàn thành" ≠ Shopee đã trả hoa hồng.
+      // Shopee thanh toán hoa hồng theo kỳ (thường ~15 ngày sau khi
+      // đơn hoàn thành). Trong thời gian đó, nếu khách hoàn trả,
+      // Shopee sẽ đổi hoặc xóa dòng trong file CSV kỳ tiếp.
+      // Do đó:
+      //   "Hoàn thành"       → "completed" (chờ admin xác nhận Shopee đã trả)
+      //   "Đã Hủy"/"Đã Huỷ" → "cancelled"
+      //   Khác               → "pending"
+      // ============================================================
       const shopeeStatus = (row.orderStatus ?? row.productAffiliateStatus ?? "").toLowerCase();
-      let autoMappedStatus = "pending";
+      let autoMappedStatus: string;
       if (shopeeStatus.includes("hoàn thành")) {
-        autoMappedStatus = "approved";
+        autoMappedStatus = "completed"; // Chờ admin xác nhận Shopee đã trả tiền hoa hồng
       } else if (shopeeStatus.includes("hủy") || shopeeStatus.includes("huỷ")) {
         autoMappedStatus = "cancelled";
+      } else {
+        autoMappedStatus = "pending";
       }
 
-      // Nếu đơn đã được duyệt hoặc đã thanh toán (bởi Admin thủ công), ta không ghi đè trạng thái.
-      const isLocked = existing && (existing.orderStatus === "approved" || existing.payoutStatus === "paid");
-      
+      // ============================================================
+      // LOCK LOGIC — Bảo vệ đơn đã thanh toán thật cho khách
+      // Chỉ lock hoàn toàn khi payoutStatus === "paid" (tiền đã chuyển)
+      // Nếu đơn đang "approved" nhưng chưa trả tiền (payoutStatus unpaid)
+      // và Shopee báo hủy qua re-import → Cho phép chuyển sang "clawback"
+      // ============================================================
+      const isFullyPaid = existing?.payoutStatus === "paid";
+      const isApprovedByAdmin = existing?.orderStatus === "approved";
+      const shopeeIsNowCancelled = autoMappedStatus === "cancelled";
+
+      let resolvedOrderStatus: string;
+      if (isFullyPaid) {
+        // Tiền đã chuyển cho khách — không tự động thay đổi, admin xử lý thủ công
+        resolvedOrderStatus = existing!.orderStatus;
+      } else if (isApprovedByAdmin && shopeeIsNowCancelled) {
+        // Đã duyệt nhưng Shopee re-import báo hủy → Clawback
+        resolvedOrderStatus = "clawback";
+      } else if (isApprovedByAdmin && !shopeeIsNowCancelled) {
+        // Đã duyệt, Shopee không hủy → Giữ nguyên approved
+        resolvedOrderStatus = "approved";
+      } else {
+        // Đơn mới hoặc chưa duyệt → Cập nhật theo CSV
+        resolvedOrderStatus = autoMappedStatus;
+      }
+
       const resolvedCustomerId = existing?.customerId ?? trackingLink?.customerId;
-      const resolvedOrderStatus = isLocked ? existing.orderStatus : autoMappedStatus;
 
       const updatedOrder = await prisma.order.upsert({
         where: { platformId_orderExternalId: { platformId, orderExternalId: row.orderExternalId } },
@@ -269,70 +298,12 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Handle Referral Bonus
-      if (resolvedOrderStatus === "approved" && resolvedCustomerId) {
-        const customerData = await prisma.customer.findUnique({
-          where: { id: resolvedCustomerId },
-          select: { referredById: true, createdAt: true },
-        });
-
-        if (customerData?.referredById) {
-          const maxOrders = rule?.maxReferralOrders ?? 5;
-          const validMonths = rule?.referralValidityMonths ?? 6;
-          const referralRate = rule?.referralRate ? Number(rule.referralRate) : 0.05;
-
-          const expirationDate = new Date(customerData.createdAt);
-          expirationDate.setMonth(expirationDate.getMonth() + validMonths);
-          const isTimeValid = new Date() <= expirationDate;
-
-          if (isTimeValid) {
-            const f1OrderCount = await prisma.order.count({
-              where: {
-                customerId: resolvedCustomerId,
-                orderStatus: "approved",
-                sourceType: { not: "referral" },
-              },
-            });
-
-            if (f1OrderCount < maxOrders) {
-              const bonusAmount = Number(split.customerRewardAmount) * referralRate;
-
-              await prisma.order.upsert({
-                where: { platformId_orderExternalId: { platformId: platformId, orderExternalId: `REF-${row.orderExternalId}` } },
-                update: {
-                  customerId: customerData.referredById,
-                  orderAmount: row.orderAmount,
-                  commissionAmount: 0,
-                  customerRewardAmount: bonusAmount,
-                  systemProfitAmount: 0,
-                  orderStatus: "approved",
-                  importBatchId: batch.id,
-                },
-                create: {
-                  platformId: platformId,
-                  orderExternalId: `REF-${row.orderExternalId}`,
-                  customerId: customerData.referredById,
-                  trackingCode: "REFERRAL",
-                  channel: "REFERRAL",
-                  orderedAt: row.orderedAt,
-                  completedAt: row.completedAt,
-                  shopName: row.shopName,
-                  itemName: `Hoa hồng giới thiệu: ${row.orderExternalId}`,
-                  orderAmount: row.orderAmount,
-                  grossCommissionAmount: 0,
-                  netCommissionAmount: 0,
-                  commissionAmount: 0,
-                  customerRewardAmount: bonusAmount,
-                  systemProfitAmount: 0,
-                  orderStatus: "approved",
-                  sourceType: "referral",
-                  importBatchId: batch.id,
-                },
-              });
-            }
-          }
-        }
-      }
+      // ============================================================
+      // REFERRAL BONUS — Chỉ tạo khi admin bấm "Duyệt" thủ công
+      // (xử lý trong app/api/orders/[id]/route.ts)
+      // Import tự động KHÔNG tạo referral bonus vì đơn "completed"
+      // chưa chắc Shopee đã trả tiền hoa hồng thực sự.
+      // ============================================================
 
       successRows++;
     } catch (err) {
