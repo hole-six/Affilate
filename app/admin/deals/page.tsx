@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { Flame, TrendingUp, MousePointerClick, Eye } from "lucide-react";
+import { MousePointerClick } from "lucide-react";
 import { CreateDealForm } from "@/components/admin/CreateDealForm";
 import { AdminDealList } from "@/components/admin/AdminDealList";
 
@@ -27,22 +27,17 @@ export default async function AdminDealsPage({ searchParams }: { searchParams: {
   const orderByDir = searchParams.order || "desc";
   const orderBy = { [orderByField]: orderByDir };
 
-  // Get total metrics across all deals (ignoring pagination/search)
-  const [allDealsCount, activeDealsCount, allDealsData] = await Promise.all([
+  const [allDealsCount, activeDealsCount, hiddenDealsCount, allDealsData] = await Promise.all([
     prisma.dealPost.count(),
     prisma.dealPost.count({ where: { status: "active" } }),
+    prisma.dealPost.count({ where: { status: "hidden" } }),
     prisma.dealPost.findMany({ select: { clicks: true } }),
   ]);
   const totalClicks = allDealsData.reduce((s, d) => s + d.clicks, 0);
+  const avgClicks = allDealsCount > 0 ? Math.round(totalClicks / allDealsCount) : 0;
 
-  // Get paginated deals
   const [deals, filteredCount] = await Promise.all([
-    prisma.dealPost.findMany({
-      where,
-      orderBy,
-      skip,
-      take: limit,
-    }),
+    prisma.dealPost.findMany({ where, orderBy, skip, take: limit }),
     prisma.dealPost.count({ where }),
   ]);
 
@@ -65,44 +60,83 @@ export default async function AdminDealsPage({ searchParams }: { searchParams: {
   const totalPages = Math.ceil(filteredCount / limit);
 
   return (
-    <div className="flex flex-col gap-xl fade-in">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-md">
-        <div>
-          <h1 className="text-[24px] font-black tracking-tight text-gray-900 flex items-center gap-sm">
-            <Flame className="text-[#e86a33]" size={26} strokeWidth={2} />
-            Quản lý Deals
-          </h1>
-          <p className="text-[14px] text-gray-400 mt-1">
-            Đăng deal giảm giá từ các group — hệ thống tự đổi link sang affiliate của bạn
-          </p>
-        </div>
-        <CreateDealForm />
-      </div>
+    <div className="flex flex-col gap-lg fade-in">
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-md">
-        {[
-          { icon: Flame, label: "Tổng số deal", value: allDealsCount, color: "text-[#e86a33]", bg: "bg-orange-50" },
-          { icon: Eye, label: "Đang hiện", value: activeDealsCount, color: "text-green-600", bg: "bg-green-50" },
-          { icon: MousePointerClick, label: "Tổng lượt click", value: totalClicks.toLocaleString(), color: "text-sky-600", bg: "bg-sky-50" },
-        ].map(({ icon: Icon, label, value, color, bg }) => (
-          <div key={label} className="flex items-center gap-md rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/5">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
-              <Icon size={18} className={color} strokeWidth={2} />
-            </div>
+      {/* ── HERO BANNER ── */}
+      <div
+        className="relative overflow-hidden rounded-3xl p-xl sm:p-2xl"
+        style={{ background: "linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fef3c7 100%)" }}
+      >
+        <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#fcd34d] opacity-25" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#fdba74] opacity-30" />
+        <div className="relative z-10 flex items-center justify-between gap-lg flex-wrap">
+          <div className="flex items-center gap-lg">
+            <img src="/heogiamgia.png" alt="" className="h-20 w-20 object-contain drop-shadow-lg shrink-0" />
             <div>
-              <div className="text-[12px] font-medium text-gray-400">{label}</div>
-              <div className={`text-[20px] font-black ${color}`}>{value}</div>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-amber-500 mb-1">Hot Deals</p>
+              <h1 className="text-[26px] sm:text-[30px] font-black leading-tight text-[#451a03]">Deals giảm giá</h1>
+              <p className="mt-1 text-[13px] text-amber-600">
+                Đăng deal từ các group —{" "}
+                <span className="font-bold text-amber-700">hệ thống tự đổi sang link affiliate</span>
+              </p>
             </div>
           </div>
-        ))}
+          <CreateDealForm />
+        </div>
       </div>
 
-      {/* Deal List */}
-      <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/5 overflow-hidden">
-        <div className="p-lg border-b border-gray-100 flex items-center justify-between">
+      {/* ── STAT CARDS ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-md">
+        <div className="group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] hover:-translate-y-1 hover:shadow-md transition-all">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-amber-50 opacity-70" />
+          <div className="relative flex items-center gap-md">
+            <img src="/heogiamgia.png" alt="" className="h-12 w-12 object-contain transition-transform group-hover:scale-110" />
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Tổng deal</div>
+              <div className="text-[26px] font-black text-[#e86a33] tabular-nums leading-tight">{allDealsCount}</div>
+            </div>
+          </div>
+        </div>
+        <div className="group relative overflow-hidden rounded-2xl p-lg shadow-sm ring-1 ring-black/[0.06] hover:-translate-y-1 hover:shadow-md transition-all"
+          style={{ background: "linear-gradient(135deg,#e8f5e9,#f1fdf2)" }}>
+          <div className="relative flex items-center gap-md">
+            <img src="/heoqua.png" alt="" className="h-12 w-12 object-contain transition-transform group-hover:scale-110" />
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Đang hiện</div>
+              <div className="text-[26px] font-black text-emerald-600 tabular-nums leading-tight">{activeDealsCount}</div>
+            </div>
+          </div>
+        </div>
+        <div className="group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] hover:-translate-y-1 hover:shadow-md transition-all">
+          <div className="absolute inset-0 bg-gradient-to-br from-sky-50 to-blue-50 opacity-60" />
+          <div className="relative flex items-center gap-md">
+            <img src="/heothongbao.png" alt="" className="h-12 w-12 object-contain transition-transform group-hover:scale-110" />
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1">
+                <MousePointerClick size={10} /> Tổng click
+              </div>
+              <div className="text-[22px] font-black text-sky-600 tabular-nums leading-tight">{totalClicks.toLocaleString()}</div>
+            </div>
+          </div>
+        </div>
+        <div className="group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] hover:-translate-y-1 hover:shadow-md transition-all">
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-slate-50 opacity-60" />
+          <div className="relative flex items-center gap-md">
+            <img src="/heoQA.png" alt="" className="h-12 w-12 object-contain transition-transform group-hover:scale-110" />
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">TB/deal</div>
+              <div className="text-[22px] font-black text-gray-600 tabular-nums leading-tight">{avgClicks}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── DEAL LIST ── */}
+      <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.06] overflow-hidden">
+        <div className="flex items-center gap-sm px-xl pt-xl pb-lg border-b border-gray-100">
+          <img src="/heoquatang.png" alt="" className="h-8 w-8 object-contain" />
           <h2 className="text-[15px] font-bold text-gray-900">Danh sách Deals</h2>
+          <span className="ml-auto text-[12px] font-semibold text-gray-400">{allDealsCount} deals</span>
         </div>
         <div className="p-lg">
           <AdminDealList initialDeals={formattedDeals} totalPages={totalPages} currentPage={page} />

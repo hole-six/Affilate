@@ -3,20 +3,27 @@ import {
   Clock,
   Wallet,
   Package,
-  Percent,
-  ClipboardList,
-  Target,
   ArrowUpRight,
-  Sparkles,
   Link2,
   ShoppingBag,
-  TrendingUp,
+  ChevronRight,
+  Star,
+  Store,
+  Music2,
 } from "lucide-react";
+import QRCode from "qrcode";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { CopyInviteButton } from "@/components/customer/CopyInviteButton";
-import { ProgressTabs } from "@/components/customer/ProgressTabs";
+import { InviteSection } from "@/components/customer/InviteSection";
+
+// Platform color map để hiển thị ảnh placeholder
+const PLATFORM_STYLE: Record<string, { color: string }> = {
+  SHOPEE: { color: "#ee4d2d" },
+  TIKTOK: { color: "#000000" },
+  LAZADA: { color: "#0f146d" },
+  TIKI: { color: "#1a73e8" },
+};
 
 export default async function CustomerHomePage() {
   const session = await getSession();
@@ -26,8 +33,15 @@ export default async function CustomerHomePage() {
   const customer = await prisma.customer.findUnique({
     where: { id: session.customerId },
     include: {
-      orders: { orderBy: { createdAt: "desc" }, take: 5 },
-      trackingLinks: { orderBy: { createdAt: "desc" }, take: 5 },
+      orders: {
+        orderBy: { createdAt: "desc" },
+        take: 6,
+        include: {
+          trackingLink: { select: { productImage: true, productTitle: true } },
+          platform: { select: { code: true, name: true } },
+        },
+      },
+      trackingLinks: { orderBy: { createdAt: "desc" }, take: 3 },
     },
   });
 
@@ -39,209 +53,294 @@ export default async function CustomerHomePage() {
   const availableBalance = allOrders
     .filter((o) => o.orderStatus === "approved" && o.payoutStatus === "unpaid")
     .reduce((s, o) => s + Number(o.customerRewardAmount), 0);
-
-  const activity = [
-    ...(customer?.trackingLinks.map((l) => ({
-      id: l.id,
-      time: l.createdAt,
-      text: `Tạo link ${l.shortCode ?? l.trackingCode}`,
-      type: "link" as const,
-    })) ?? []),
-    ...(customer?.orders.map((o) => ({
-      id: o.id,
-      time: o.createdAt,
-      text: `Đơn hàng ${o.orderExternalId}`,
-      amount: formatCurrency(o.customerRewardAmount),
-      type: "order" as const,
-    })) ?? []),
-  ]
-    .sort((a, b) => b.time.getTime() - a.time.getTime())
-    .slice(0, 8);
+  const paidTotal = allOrders
+    .filter((o) => o.payoutStatus === "paid")
+    .reduce((s, o) => s + Number(o.customerRewardAmount), 0);
 
   const firstName = (customer?.fullName ?? session.fullName).split(" ").at(-1) ?? "bạn";
+  const customerCode = customer?.customerCode ?? "";
+
+  // Sinh QR server-side thành data URL (không cần client lib)
+  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://ivihoantien.com"}/register?ref=${customerCode}`;
+  let qrDataUrl = "";
+  try {
+    qrDataUrl = await QRCode.toDataURL(inviteUrl, {
+      width: 280,
+      margin: 2,
+      color: { dark: "#2d1f14", light: "#ffffff" },
+    });
+  } catch (_) {}
 
   return (
-    <div className="flex flex-col gap-xl fade-in">
-      {/* ═══ HERO BANNER ═══ */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#0e0f0c] via-[#163300] to-[#1a4a00] p-2xl">
-        {/* Animated SVG blobs */}
-        <svg
-          className="pointer-events-none absolute inset-0 h-full w-full"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          <defs>
-            <radialGradient id="g1" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#9fe870" stopOpacity="0.18" />
-              <stop offset="100%" stopColor="#9fe870" stopOpacity="0" />
-            </radialGradient>
-            <radialGradient id="g2" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#38c8ff" stopOpacity="0.10" />
-              <stop offset="100%" stopColor="#38c8ff" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <circle cx="85%" cy="20%" r="180" fill="url(#g1)">
-            <animate attributeName="cx" values="85%;80%;85%" dur="8s" repeatCount="indefinite" />
-            <animate attributeName="cy" values="20%;35%;20%" dur="8s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="10%" cy="80%" r="140" fill="url(#g2)">
-            <animate attributeName="cx" values="10%;18%;10%" dur="10s" repeatCount="indefinite" />
-            <animate attributeName="cy" values="80%;65%;80%" dur="10s" repeatCount="indefinite" />
-          </circle>
-          <circle cx="60%" cy="90%" r="100" fill="url(#g1)">
-            <animate attributeName="r" values="100;130;100" dur="7s" repeatCount="indefinite" />
-          </circle>
-        </svg>
+    <div className="flex flex-col gap-lg fade-in">
 
-        {/* Floating dots pattern */}
-        <div className="pointer-events-none absolute inset-0 opacity-20"
-          style={{backgroundImage:"radial-gradient(circle, #9fe870 1px, transparent 1px)", backgroundSize:"28px 28px"}}
-        />
+      {/* ═══ HEADER CHÀO MỪNG ═══ */}
+      <div
+        className="relative overflow-hidden rounded-3xl p-xl sm:p-2xl"
+        style={{ background: "linear-gradient(135deg, #fff3ee 0%, #fde8d8 50%, #ffecd2 100%)" }}
+      >
+        <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#ffcba4] opacity-30" />
+        <div className="pointer-events-none absolute -bottom-6 right-24 h-24 w-24 rounded-full bg-[#ffa07a] opacity-20" />
+        <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#ffe0cc] opacity-40" />
 
-        <div className="relative z-10 flex items-start justify-between gap-lg flex-wrap">
-          <div className="flex items-start gap-md">
-            <img src="/01_wave.png" alt="" className="hidden sm:block h-16 w-16 shrink-0 object-contain" />
+        <div className="relative z-10 flex items-center justify-between gap-lg flex-wrap">
+          <div className="flex items-center gap-lg">
+            <img
+              src="/heochaomung.png"
+              alt="Heo chào mừng"
+              className="h-20 w-20 sm:h-24 sm:w-24 object-contain drop-shadow-lg shrink-0"
+            />
             <div>
-              <div className="flex items-center gap-sm mb-sm">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                  <Sparkles size={12} strokeWidth={1.75} className="text-primary" />
-                </div>
-                <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-primary/60">
-                  Chào mừng trở lại
-                </span>
-              </div>
-              <h1 className="text-[30px] font-black leading-tight text-white">
-                Xin chào, <span className="text-primary">{firstName}</span>! 👋
+              <p className="text-[12px] font-bold uppercase tracking-widest text-[#e86a33]/60 mb-1">
+                Chào mừng trở lại
+              </p>
+              <h1 className="text-[26px] sm:text-[32px] font-black leading-tight text-[#2d1f14]">
+                Xin chào, <span className="text-[#e86a33]">{firstName}</span>! 🎉
               </h1>
-              <p className="mt-xs text-[13px] text-white/50 leading-relaxed">
+              <p className="mt-1 text-[13px] text-[#a0816a] leading-relaxed">
                 {allOrders.length === 0
-                  ? "Chưa có đơn nào — chia sẻ link để bắt đầu hoàn tiền!"
-                  : `Bạn có ${allOrders.length} đơn đã ghi nhận. Tiếp tục mua sắm nhé!`}
+                  ? "Chưa có đơn nào — hãy chia sẻ link để bắt đầu hoàn tiền!"
+                  : `Bạn có ${allOrders.length} đơn đã ghi nhận. Tiếp tục kiếm tiền nhé! 🐷`}
               </p>
             </div>
           </div>
 
-          <div className="flex gap-sm flex-wrap">
-            <CopyInviteButton customerCode={customer?.customerCode ?? ""} />
+          <div className="flex gap-sm flex-wrap items-center">
             <a href="/app/refunds">
-              <button className="flex items-center gap-xs rounded-xl bg-primary px-xl py-[10px] text-[13px] font-bold text-ink-deep transition-all duration-150 hover:bg-primary-active hover:shadow-lg hover:shadow-primary/30 active:scale-[0.97]">
-                <Percent size={14} strokeWidth={2} />
+              <button className="flex items-center gap-xs rounded-2xl bg-[#e86a33] px-xl py-[10px] text-[13px] font-bold text-white shadow-md shadow-[#e86a33]/30 transition-all hover:bg-[#d65d2a] hover:shadow-lg active:scale-[0.97]">
                 Hoàn tiền ngay
-                <ArrowUpRight size={13} strokeWidth={2} />
+                <ArrowUpRight size={14} strokeWidth={2.5} />
               </button>
             </a>
           </div>
         </div>
-
-        {/* Stats row inside banner */}
-        <div className="relative z-10 mt-xl grid grid-cols-1 sm:grid-cols-3 gap-md pt-xl border-t border-white/10">
-          {[
-            { label: "Tổng tích luỹ", value: formatCurrency(totalIncome), icon: TrendingUp },
-            { label: "Đang xử lý", value: formatCurrency(pendingIncome), icon: Clock },
-            { label: "Số dư rút", value: formatCurrency(availableBalance), icon: Wallet },
-          ].map(({ label, value, icon: Icon }) => (
-            <div key={label} className="flex items-center gap-sm">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/8">
-                <Icon size={14} strokeWidth={1.75} className="text-primary" />
-              </div>
-              <div>
-                <div className="text-[11px] text-white/40 leading-none">{label}</div>
-                <div className="text-[15px] font-bold text-white tabular-nums leading-tight mt-[2px]">{value}</div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
 
-      {/* ═══ STAT CARDS ═══ */}
+      {/* ═══ 4 STAT CARDS ═══ */}
       <div className="grid grid-cols-2 gap-md lg:grid-cols-4">
-        {[
-          { image: "/02_coin.png", label: "Tổng thu nhập", value: formatCurrency(totalIncome), tag: "Tích luỹ", color: "from-emerald-400/20 to-green-300/10" },
-          { icon: Clock, label: "Chờ xác nhận", value: formatCurrency(pendingIncome), tag: "Đang xử lý", color: "from-amber-400/20 to-yellow-300/10", iconBg: "bg-amber-50 text-amber-600" },
-          { image: "/05_payout.png", label: "Số dư khả dụng", value: formatCurrency(availableBalance), tag: "Rút được", color: "from-sky-400/20 to-blue-300/10" },
-          { icon: Package, label: "Tổng đơn hàng", value: String(allOrders.length), tag: "Đơn hàng", color: "from-violet-400/20 to-purple-300/10", iconBg: "bg-violet-50 text-violet-600" },
-        ].map(({ icon: Icon, image, label, value, tag, color, iconBg }) => (
-          <div
-            key={label}
-            className={`group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/5 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg`}
-          >
-            {/* gradient tint */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-60`} />
-            <div className="relative">
-              <div className="flex items-start justify-between">
-                {image ? (
-                  <img src={image} alt="" className="h-10 w-10 object-contain transition-transform duration-150 group-hover:scale-110" />
-                ) : (
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${iconBg} transition-transform duration-150 group-hover:scale-110`}>
-                    {Icon && <Icon size={18} strokeWidth={1.75} />}
-                  </div>
-                )}
-                <span className="rounded-pill bg-black/5 px-sm py-[3px] text-[10px] font-semibold text-black/40">{tag}</span>
-              </div>
-              <div className="mt-lg">
-                <div className="text-[11px] font-semibold uppercase tracking-wider text-black/40">{label}</div>
-                <div className="mt-xs text-[22px] font-bold text-gray-900 tabular-nums leading-tight">{value}</div>
-              </div>
+        {/* Card 1: Chờ duyệt */}
+        <div className="group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50 opacity-60" />
+          <div className="relative">
+            <div className="flex items-start justify-between mb-md">
+              <img src="/heochodoi.png" alt="" className="h-11 w-11 object-contain transition-transform group-hover:scale-110" />
+              <span className="rounded-full bg-amber-100 px-sm py-[3px] text-[10px] font-bold text-amber-600">Đang xử lý</span>
+            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Chờ duyệt</div>
+            <div className="text-[20px] font-black text-gray-900 tabular-nums leading-tight">{formatCurrency(pendingIncome)}</div>
+            <div className="mt-1 text-[11px] text-gray-400">
+              {allOrders.filter((o) => o.orderStatus === "pending").length} đơn hàng
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Card 2: Sẵn sàng rút */}
+        <div
+          className="group relative overflow-hidden rounded-2xl p-lg shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+          style={{ background: "linear-gradient(135deg, #e8f5e9 0%, #f1fdf2 100%)", outline: "1px solid rgba(0,0,0,0.06)" }}
+        >
+          <div className="relative">
+            <div className="flex items-start justify-between mb-md">
+              <div className="relative">
+                <img src="/heovitien.png" alt="" className="h-11 w-11 object-contain transition-transform group-hover:scale-110" />
+                <div className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 shadow-sm">
+                  <span className="text-[9px] font-black text-white">✓</span>
+                </div>
+              </div>
+              <span className="rounded-full bg-emerald-100 px-sm py-[3px] text-[10px] font-bold text-emerald-600">Rút được</span>
+            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Sẵn sàng rút</div>
+            <div className="text-[20px] font-black text-gray-900 tabular-nums leading-tight">{formatCurrency(availableBalance)}</div>
+            <div className="mt-1 text-[11px] text-gray-400">
+              {allOrders.filter((o) => o.orderStatus === "approved" && o.payoutStatus === "unpaid").length} đơn hàng
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Đã rút */}
+        <div className="group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
+          <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-rose-50 opacity-50" />
+          <div className="relative">
+            <div className="flex items-start justify-between mb-md">
+              <img src="/heongansach.png" alt="" className="h-11 w-11 object-contain transition-transform group-hover:scale-110" />
+              <span className="rounded-full bg-orange-100 px-sm py-[3px] text-[10px] font-bold text-orange-600">Đã nhận</span>
+            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Đã rút</div>
+            <div className="text-[20px] font-black text-gray-900 tabular-nums leading-tight">{formatCurrency(paidTotal)}</div>
+            <div className="mt-1 text-[11px] text-gray-400">
+              {allOrders.filter((o) => o.payoutStatus === "paid").length} đơn hàng
+            </div>
+          </div>
+        </div>
+
+        {/* Card 4: Tổng tích luỹ */}
+        <div
+          className="group relative overflow-hidden rounded-2xl p-lg shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+          style={{ background: "linear-gradient(135deg, #f3e8ff 0%, #fdf4ff 100%)", outline: "1px solid rgba(0,0,0,0.06)" }}
+        >
+          <div className="relative">
+            <div className="flex items-start justify-between mb-md">
+              <img src="/heoquatang.png" alt="" className="h-11 w-11 object-contain transition-transform group-hover:scale-110" />
+              <span className="rounded-full bg-purple-100 px-sm py-[3px] text-[10px] font-bold text-purple-600">Tổng cộng</span>
+            </div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Tổng tích luỹ</div>
+            <div className="text-[20px] font-black text-gray-900 tabular-nums leading-tight">{formatCurrency(totalIncome)}</div>
+            <div className="mt-1 text-[11px] text-gray-400">{allOrders.length} đơn hàng</div>
+          </div>
+        </div>
       </div>
 
       {/* ═══ BOTTOM PANELS ═══ */}
       <div className="grid grid-cols-1 gap-lg lg:grid-cols-[2fr_1fr]">
-        {/* Activity feed */}
-        <div className="rounded-2xl bg-white p-xl shadow-sm ring-1 ring-black/5">
-          <h2 className="mb-lg flex items-center gap-sm text-[15px] font-bold text-gray-900">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#9fe870] to-[#7dd654] text-ink-deep shadow-sm">
-              <ClipboardList size={15} strokeWidth={2} />
-            </span>
-            Nhật ký hoạt động
-          </h2>
 
-          {activity.length === 0 ? (
+        {/* LỊCH SỬ ĐƠN HÀNG với ảnh preview */}
+        <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/[0.06]">
+          <div className="mb-lg flex items-center justify-between border-b border-gray-100 pb-md">
+            <h2 className="flex items-center gap-sm text-[15px] font-bold text-gray-900">
+              <img src="/heothongbao.png" alt="" className="h-8 w-8 object-contain" />
+              Lịch sử đơn hàng
+            </h2>
+            <a
+              href="/app/orders"
+              className="flex items-center gap-[3px] text-[12px] font-bold text-[#e86a33] hover:text-[#d65d2a] transition-colors"
+            >
+              Xem tất cả
+              <ChevronRight size={14} strokeWidth={2.5} />
+            </a>
+          </div>
+
+          {allOrders.length === 0 ? (
             <div className="flex flex-col items-center py-2xl text-center">
-              <img src="/10_empty.png" alt="" className="mb-lg h-20 w-20 object-contain" />
-              <div className="text-[14px] font-semibold text-gray-700">Chưa có hoạt động nào</div>
+              <img src="/heochodoi.png" alt="" className="mb-lg h-20 w-20 object-contain" />
+              <div className="text-[14px] font-semibold text-gray-700">Chưa có đơn hàng nào</div>
               <div className="mt-xs text-[12px] text-gray-400">Chia sẻ link để bắt đầu kiếm tiền hoàn!</div>
             </div>
           ) : (
             <ul className="flex flex-col divide-y divide-gray-50">
-              {activity.map((a) => (
-                <li key={a.id} className="flex items-center justify-between py-sm gap-sm group hover:bg-gray-50/60 rounded-lg px-xs transition-colors">
-                  <div className="flex items-center gap-sm min-w-0">
-                    <div className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
-                      a.type === "order" ? "bg-emerald-50" : "bg-sky-50"
-                    }`}>
-                      {a.type === "order"
-                        ? <ShoppingBag size={13} strokeWidth={1.75} className="text-emerald-500" />
-                        : <Link2 size={13} strokeWidth={1.75} className="text-sky-500" />
-                      }
+              {allOrders.map((order) => {
+                const platformCode = order.platform?.code?.toUpperCase() ?? "";
+                const platformColor = PLATFORM_STYLE[platformCode]?.color ?? "#e86a33";
+                const productImage = order.trackingLink?.productImage ?? null;
+                const productTitle =
+                  order.trackingLink?.productTitle ??
+                  order.itemName ??
+                  `Đơn hàng ${order.orderExternalId}`;
+
+                return (
+                  <li
+                    key={order.id}
+                    className="flex items-center gap-md py-md px-xs hover:bg-orange-50/30 rounded-xl transition-colors"
+                  >
+                    {/* Ảnh sản phẩm */}
+                    <ProductThumb image={productImage} color={platformColor} platform={platformCode} />
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-[13px] font-semibold text-gray-800">{productTitle}</p>
+                      <div className="flex items-center gap-xs mt-[2px]">
+                        <span
+                          className="text-[10px] font-bold uppercase"
+                          style={{ color: platformColor }}
+                        >
+                          {order.platform?.name ?? platformCode}
+                        </span>
+                        <span className="text-gray-200">•</span>
+                        <span className="text-[11px] text-gray-400">{formatDate(order.createdAt)}</span>
+                      </div>
                     </div>
-                    <span className="truncate text-[13px] text-gray-600">{a.text}</span>
-                  </div>
-                  <div className="flex items-center gap-sm shrink-0">
-                    {"amount" in a && a.amount && (
-                      <span className="text-[12px] font-bold text-emerald-600 bg-emerald-50 px-sm py-[2px] rounded-pill">{a.amount}</span>
-                    )}
-                    <span className="text-[11px] text-gray-400 whitespace-nowrap">{formatDate(a.time)}</span>
-                  </div>
-                </li>
-              ))}
+
+                    {/* Số tiền + trạng thái */}
+                    <div className="flex flex-col items-end gap-[3px] shrink-0">
+                      <span className="text-[13px] font-black text-emerald-600">
+                        +{formatCurrency(order.customerRewardAmount)}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-sm py-[2px] rounded-full ${
+                          order.payoutStatus === "paid"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : order.payoutStatus === "processing"
+                            ? "bg-blue-100 text-blue-600"
+                            : order.orderStatus === "approved"
+                            ? "bg-green-100 text-green-600"
+                            : "bg-amber-100 text-amber-600"
+                        }`}
+                      >
+                        {order.payoutStatus === "paid"
+                          ? "Đã rút"
+                          : order.payoutStatus === "processing"
+                          ? "Đang xử lý"
+                          : order.orderStatus === "approved"
+                          ? "Sẵn sàng rút"
+                          : "Chờ duyệt"}
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
 
-        {/* Progress card */}
-        <div className="rounded-2xl bg-white p-xl shadow-sm ring-1 ring-black/5">
-          <h2 className="mb-lg flex items-center gap-sm text-[15px] font-bold text-gray-900">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#9fe870] to-[#7dd654] text-ink-deep shadow-sm">
-              <Target size={15} strokeWidth={2} />
-            </span>
-            Tiến độ của bạn
-          </h2>
-          <ProgressTabs hasShoppingActivity={allOrders.length > 0} />
+        {/* PANEL PHẢI */}
+        <div className="flex flex-col gap-lg">
+          {/* Giới thiệu bạn bè với QR */}
+          <InviteSection customerCode={customerCode} qrDataUrl={qrDataUrl} />
+
+          {/* Truy cập nhanh */}
+          <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/[0.06]">
+            <h2 className="mb-md flex items-center gap-sm text-[14px] font-bold text-gray-700">
+              <img src="/heodashboard.png" alt="" className="h-7 w-7 object-contain" />
+              Truy cập nhanh
+            </h2>
+            <div className="grid grid-cols-2 gap-sm">
+              {[
+                { href: "/app/wallet", label: "Rút tiền", img: "/heovitien.png", bg: "bg-emerald-50", text: "text-emerald-600" },
+                { href: "/app/refunds", label: "Hoàn tiền", img: "/heogiamgia.png", bg: "bg-orange-50", text: "text-orange-600" },
+                { href: "/app/orders", label: "Đơn hàng", img: "/heongansach.png", bg: "bg-blue-50", text: "text-blue-600" },
+                { href: "/app/deals", label: "Ưu đãi hot", img: "/heoqua.png", bg: "bg-purple-50", text: "text-purple-600" },
+              ].map(({ href, label, img, bg, text }) => (
+                <a
+                  key={href}
+                  href={href}
+                  className={`flex flex-col items-center gap-xs rounded-2xl ${bg} p-md transition-all hover:-translate-y-0.5 hover:shadow-sm`}
+                >
+                  <img src={img} alt="" className="h-9 w-9 object-contain" />
+                  <span className={`text-[12px] font-bold ${text}`}>{label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Server-side component nhỏ để render ảnh sản phẩm (tránh hydration mismatch)
+function ProductThumb({
+  image,
+  color,
+  platform,
+}: {
+  image: string | null;
+  color: string;
+  platform: string;
+}) {
+  if (image) {
+    return (
+      <img
+        src={image}
+        alt=""
+        className="h-12 w-12 shrink-0 rounded-xl object-cover ring-1 ring-black/[0.06] shadow-sm"
+      />
+    );
+  }
+  return (
+    <div
+      className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-sm"
+      style={{ backgroundColor: `${color}18`, color }}
+    >
+      <ShoppingBag size={18} strokeWidth={1.75} />
     </div>
   );
 }

@@ -28,6 +28,8 @@ model User {
   commissionRules  CommissionRule[] @relation("CommissionRuleCreatedBy")
   paidBatches      PaymentBatch[]  @relation("PaidBy")
   auditLogs        AuditLog[]      @relation("AuditActor")
+  notifications    Notification[]
+  chatMessages     ChatMessage[]
 
   @@map("users")
 }
@@ -310,6 +312,7 @@ model Order {
 model CommissionRule {
   id                     String    @id @default(uuid())
   name                   String
+  taxRate                Decimal   @default(10.98) @map("tax_rate")
   customerRate           Decimal   @map("customer_rate")
   systemRate             Decimal   @map("system_rate")
   referralRate           Decimal   @default(0.05) @map("referral_rate")
@@ -452,6 +455,38 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// Thông báo trong app cho từng user — mỗi sự kiện (đơn được duyệt, đã trả tiền,
+// hoa hồng giới thiệu, admin gửi thông báo hệ thống) sinh ra 1 dòng riêng cho
+// user đó, kể cả broadcast (tạo N dòng cho N user) để track đã đọc theo từng người.
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // order_approved | payment_paid | referral_bonus | broadcast | system
+  title     String
+  message   String
+  link      String?
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+// Room chat chung cho toàn hệ thống — mọi user (khách hàng lẫn admin) đăng
+// nhập đều thấy và gửi được vào cùng 1 room duy nhất.
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("chat_messages")
 }
 
 model DealPost {

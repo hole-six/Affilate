@@ -8,7 +8,9 @@ import { LogOut, Sun, Menu, X } from "lucide-react";
 export type NavItem = {
   href: string;
   label: string;
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
+  pigIcon?: string; // path to pig image in /public
+  badge?: number;
 };
 
 export type NavSection = {
@@ -122,15 +124,26 @@ export function Sidebar({
                             : "text-mute hover:bg-ink/5 hover:text-ink"
                         }`}
                       >
-                        <span
-                          className={`shrink-0 transition-transform duration-150 group-hover:scale-110 ${
-                            active ? "text-primary" : "text-mute"
-                          }`}
-                        >
-                          {item.icon}
+                        <span className={`shrink-0 transition-transform duration-150 group-hover:scale-110`}>
+                          {item.pigIcon ? (
+                            <img
+                              src={item.pigIcon}
+                              alt=""
+                              className={`h-6 w-6 object-contain transition-transform duration-150 group-hover:scale-110 ${active ? "" : "opacity-70"}`}
+                            />
+                          ) : (
+                            <span className={active ? "text-primary" : "text-mute"}>
+                              {item.icon}
+                            </span>
+                          )}
                         </span>
                         <span className="truncate">{item.label}</span>
-                        {active && (
+                        {!!item.badge && item.badge > 0 && (
+                          <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-negative px-1 text-[11px] font-bold text-white">
+                            {item.badge > 99 ? "99+" : item.badge}
+                          </span>
+                        )}
+                        {!item.badge && active && (
                           <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
                         )}
                       </Link>

@@ -26,6 +26,7 @@ export default async function AdminSettingsPage() {
           Tỷ lệ chia hoa hồng
         </h2>
         <CommissionRuleForm
+          taxRate={Number(activeRule?.taxRate ?? 10.98)}
           customerRate={Number(activeRule?.customerRate ?? 80)}
           systemRate={Number(activeRule?.systemRate ?? 20)}
           referralRate={Number(activeRule?.referralRate ?? 0.05) * 100}

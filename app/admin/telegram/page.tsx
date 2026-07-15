@@ -17,6 +17,7 @@ export default async function AdminTelegramPage() {
   return (
     <div className="flex flex-col gap-2xl">
       <PageHeader
+        icon="/heothongbao.png"
         title="Tích hợp Telegram Bot"
         subtitle="Nhận link, đổi sang short link hoàn tiền, tra số dư ví và thông báo real-time ngay trong Telegram."
       />

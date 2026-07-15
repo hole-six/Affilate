@@ -97,27 +97,37 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
             const style = platformStyle(p.code);
             const Icon = style.icon;
             const active = p.id === platformId;
+            const isTiktok = p.code.toUpperCase() === "TIKTOK";
             return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => setPlatformId(p.id)}
-                className={`group flex h-[88px] w-[100px] flex-col items-center justify-center gap-xs rounded-2xl border transition-all duration-200 ${
-                  active
-                    ? "border-[#e86a33] bg-white shadow-[0_4px_12px_rgba(232,106,51,0.15)] scale-105"
-                    : "border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50 hover:-translate-y-1 hover:shadow-sm"
-                }`}
-              >
-                <div 
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 ${active ? "scale-110" : "group-hover:scale-110"}`}
-                  style={{ color: style.color, backgroundColor: `${style.color}15` }}
+              <div key={p.id} className="relative">
+                <button
+                  type="button"
+                  onClick={() => !isTiktok && setPlatformId(p.id)}
+                  disabled={isTiktok}
+                  className={`group flex h-[88px] w-[100px] flex-col items-center justify-center gap-xs rounded-2xl border transition-all duration-200 ${
+                    isTiktok
+                      ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed"
+                      : active
+                      ? "border-[#e86a33] bg-white shadow-[0_4px_12px_rgba(232,106,51,0.15)] scale-105"
+                      : "border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50 hover:-translate-y-1 hover:shadow-sm"
+                  }`}
                 >
-                  <Icon size={22} />
-                </div>
-                <span className={`text-[12px] font-bold ${active ? "text-gray-900" : "text-gray-500"}`}>
-                  {p.label}
-                </span>
-              </button>
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 ${active && !isTiktok ? "scale-110" : "group-hover:scale-110"}`}
+                    style={{ color: style.color, backgroundColor: `${style.color}15` }}
+                  >
+                    <Icon size={22} />
+                  </div>
+                  <span className={`text-[12px] font-bold ${active && !isTiktok ? "text-gray-900" : "text-gray-500"}`}>
+                    {p.label}
+                  </span>
+                </button>
+                {isTiktok && (
+                  <span className="absolute -top-1 -right-1 rounded-full bg-gray-400 px-[5px] py-[1px] text-[9px] font-bold text-white leading-tight">
+                    Tạm tắt
+                  </span>
+                )}
+              </div>
             );
           })}
         </div>

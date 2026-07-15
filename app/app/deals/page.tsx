@@ -85,6 +85,12 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
             </div>
           </div>
         </div>
+
+        <img
+          src="/heogiamgia.png"
+          alt=""
+          className="pointer-events-none absolute -right-2 bottom-0 z-10 hidden h-[140px] w-[140px] object-contain drop-shadow-xl sm:block"
+        />
       </div>
 
       <div className="mb-md">

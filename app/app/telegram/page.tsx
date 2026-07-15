@@ -8,12 +8,15 @@ export default async function CustomerTelegramPage() {
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-xl pb-2xl">
-      <div>
-        <h1 className="display-sm text-ink">Liên kết Telegram</h1>
-        <p className="mt-xs text-[14px] text-mute leading-relaxed">
-          Đồng bộ tài khoản Telegram của bạn để kiểm tra số dư, đơn hàng và nhận thông báo hoàn tiền ngay
-          trong Telegram.
-        </p>
+      <div className="flex items-center gap-md">
+        <img src="/heothongbao.png" alt="" className="h-14 w-14 shrink-0 object-contain" />
+        <div>
+          <h1 className="display-sm text-ink">Liên kết Telegram</h1>
+          <p className="mt-xs text-[14px] text-mute leading-relaxed">
+            Đồng bộ tài khoản Telegram của bạn để kiểm tra số dư, đơn hàng và nhận thông báo hoàn tiền ngay
+            trong Telegram.
+          </p>
+        </div>
       </div>
 
       <TelegramLinkCard />

@@ -1,4 +1,5 @@
-// Phiên đăng nhập nhẹ: cookie chứa payload + chữ ký HMAC-SHA256.
+// Access token ngắn hạn (có hạn dùng "exp" được ký và kiểm tra thật) + refresh
+// token dài hạn để tự cấp lại access token khi hết hạn — không lưu server-side.
 // Dùng Web Crypto (crypto.subtle) thay vì node:crypto để chạy được cả trong
 // middleware (Edge runtime) lẫn Route Handlers (Node runtime).
 
@@ -9,7 +10,15 @@ export type SessionPayload = {
   customerId?: string | null;
 };
 
-export const SESSION_COOKIE = "affiliate_session";
+type TokenType = "access" | "refresh";
+
+type TokenClaims = SessionPayload & { typ: TokenType; exp: number };
+
+export const ACCESS_TOKEN_COOKIE = "affiliate_access";
+export const REFRESH_TOKEN_COOKIE = "affiliate_refresh";
+
+export const ACCESS_TOKEN_TTL_SECONDS = 60 * 30; // 30 phút
+export const REFRESH_TOKEN_TTL_SECONDS = 60 * 60 * 24 * 7; // 7 ngày
 
 function base64UrlEncode(bytes: Uint8Array): string {
   let binary = "";
@@ -45,16 +54,16 @@ async function getKey(): Promise<CryptoKey> {
   );
 }
 
-export async function createSessionToken(payload: SessionPayload): Promise<string> {
+async function signToken(claims: TokenClaims): Promise<string> {
   const key = await getKey();
-  const payloadBytes = new TextEncoder().encode(JSON.stringify(payload));
+  const payloadBytes = new TextEncoder().encode(JSON.stringify(claims));
   const payloadB64 = base64UrlEncode(payloadBytes);
   const signature = await crypto.subtle.sign("HMAC", key, bufSource(new TextEncoder().encode(payloadB64)));
   const sigB64 = base64UrlEncode(new Uint8Array(signature));
   return `${payloadB64}.${sigB64}`;
 }
 
-export async function verifySessionToken(token: string | undefined | null): Promise<SessionPayload | null> {
+async function verifyToken(token: string | undefined | null, expectedType: TokenType): Promise<SessionPayload | null> {
   if (!token) return null;
   const [payloadB64, sigB64] = token.split(".");
   if (!payloadB64 || !sigB64) return null;
@@ -68,9 +77,32 @@ export async function verifySessionToken(token: string | undefined | null): Prom
       bufSource(new TextEncoder().encode(payloadB64))
     );
     if (!valid) return null;
+
     const json = new TextDecoder().decode(base64UrlDecode(payloadB64));
-    return JSON.parse(json) as SessionPayload;
+    const claims = JSON.parse(json) as TokenClaims;
+
+    if (claims.typ !== expectedType) return null;
+    if (typeof claims.exp !== "number" || claims.exp < Math.floor(Date.now() / 1000)) return null;
+
+    const { typ, exp, ...payload } = claims;
+    return payload;
   } catch {
     return null;
   }
+}
+
+export async function createAccessToken(payload: SessionPayload): Promise<string> {
+  return signToken({ ...payload, typ: "access", exp: Math.floor(Date.now() / 1000) + ACCESS_TOKEN_TTL_SECONDS });
+}
+
+export async function createRefreshToken(payload: SessionPayload): Promise<string> {
+  return signToken({ ...payload, typ: "refresh", exp: Math.floor(Date.now() / 1000) + REFRESH_TOKEN_TTL_SECONDS });
+}
+
+export async function verifyAccessToken(token: string | undefined | null): Promise<SessionPayload | null> {
+  return verifyToken(token, "access");
+}
+
+export async function verifyRefreshToken(token: string | undefined | null): Promise<SessionPayload | null> {
+  return verifyToken(token, "refresh");
 }

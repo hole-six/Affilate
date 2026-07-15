@@ -173,7 +173,7 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
       <div className="mx-auto flex max-w-5xl flex-col gap-xl fade-in pb-2xl">
         {/* HEADER */}
         <div className="flex items-center gap-md">
-          <img src="/05_payout.png" alt="" className="h-14 w-14 object-contain" />
+          <img src="/heovitien.png" alt="" className="h-14 w-14 object-contain" />
           <div>
             <h1 className="text-[28px] font-black tracking-tight text-gray-900">
               Thanh Toán

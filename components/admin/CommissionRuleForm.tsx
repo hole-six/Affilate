@@ -5,20 +5,23 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 
-export function CommissionRuleForm({ 
-  customerRate, 
-  systemRate, 
+export function CommissionRuleForm({
+  taxRate = 10.98,
+  customerRate,
+  systemRate,
   referralRate = 5,
   maxReferralOrders = 5,
   referralValidityMonths = 6
-}: { 
-  customerRate: number; 
-  systemRate: number; 
+}: {
+  taxRate?: number;
+  customerRate: number;
+  systemRate: number;
   referralRate?: number;
   maxReferralOrders?: number;
   referralValidityMonths?: number;
 }) {
   const router = useRouter();
+  const [tax, setTax] = useState(taxRate);
   const [customer, setCustomer] = useState(customerRate);
   const [system, setSystem] = useState(systemRate);
   const [referral, setReferral] = useState(referralRate);
@@ -35,8 +38,9 @@ export function CommissionRuleForm({
     const res = await fetch("/api/settings/commission-rule", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        customerRate: Number(customer), 
+      body: JSON.stringify({
+        taxRate: Number(tax),
+        customerRate: Number(customer),
         systemRate: Number(system),
         referralRate: Number(referral) / 100,
         maxReferralOrders: Number(maxOrders),
@@ -57,6 +61,20 @@ export function CommissionRuleForm({
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-lg">
+      <div className="rounded-lg border border-amber-200 bg-amber-50 p-md">
+        <label className="text-[14px] font-semibold text-amber-900">Thuế thu nhập khấu trừ (%)</label>
+        <TextInput
+          type="number"
+          value={tax}
+          onChange={(e) => setTax(Number(e.target.value))}
+          className="mt-sm max-w-[200px]"
+          step="0.01"
+        />
+        <p className="mt-sm text-[12px] text-amber-800">
+          Shopee/TikTok trừ thuế trên hoa hồng gộp trước khi đối soát. Số tiền trả khách sẽ được tính trên phần hoa hồng đã trừ thuế này, không phải trên hoa hồng ghi nhận ban đầu.
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 gap-lg">
         <div>
           <label className="text-[14px] font-semibold">Tỷ lệ khách hàng nhận (%)</label>

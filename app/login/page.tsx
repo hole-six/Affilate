@@ -22,9 +22,9 @@ export default function LoginPage({
       {/* Left Column - Image & Slogan */}
       <div className="relative hidden w-1/2 overflow-hidden bg-ink lg:block">
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/login_bg.png" 
-            alt="Hoàn tiền mua sắm" 
+          <img
+            src="/login.png"
+            alt="Hoàn tiền mua sắm"
             className="h-full w-full object-cover opacity-80"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-transparent"></div>

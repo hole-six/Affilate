@@ -93,18 +93,10 @@ export function OrderActions({
           </Button>
         )}
 
-        {/* Xác nhận Shopee đã trả (completed → approved) */}
+        {/* "completed" là dữ liệu cũ (trước khi sửa logic đọc CSV) — không còn nút bấm tay,
+            vì phân loại đúng (approved/cancelled) chỉ có được khi re-import lại đúng file CSV gốc. */}
         {orderStatus === "completed" && (
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={loading}
-            onClick={() => patch({ orderStatus: "approved" })}
-            title="Xác nhận Shopee đã thanh toán hoa hồng kỳ này"
-          >
-            <CheckCircle size={13} strokeWidth={1.75} />
-            ✅ Shopee đã trả
-          </Button>
+          <span className="text-[11px] font-medium text-gray-400 italic">Re-import CSV để cập nhật</span>
         )}
 
         {/* Clawback (approved → clawback) — chỉ khi chưa trả tiền khách */}

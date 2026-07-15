@@ -8,8 +8,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
-  const { customerRate, systemRate, referralRate, maxReferralOrders, referralValidityMonths } = await req.json();
+  const { taxRate, customerRate, systemRate, referralRate, maxReferralOrders, referralValidityMonths } = await req.json();
   if (
+    typeof taxRate !== "number" ||
+    taxRate < 0 ||
+    taxRate >= 100 ||
     typeof customerRate !== "number" ||
     typeof systemRate !== "number" ||
     customerRate + systemRate !== 100 ||
@@ -28,6 +31,7 @@ export async function POST(req: NextRequest) {
   const rule = await prisma.commissionRule.create({
     data: {
       name: `Cấu hình ${new Date().toLocaleDateString("vi-VN")}`,
+      taxRate,
       customerRate,
       systemRate,
       referralRate,

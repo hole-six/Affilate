@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
 import { buildOrderApprovedMessage } from "@/lib/telegramBot";
+import { notifyCustomerInApp } from "@/lib/notifications";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession();
@@ -51,8 +52,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   // ============================================================
   // Xử LÝ APPROVED (Admin xác nhận Shopee đã trả hoa hồng)
+  // Chạy referral bonus + thông báo Telegram khi đơn VỪA chuyển sang
+  // approved, HOẶC khi đơn đã approved từ trước (import tự động) nhưng
+  // chưa map khách — và admin vừa gán khách vào (thao tác "Gán khách" ở
+  // tab "Chưa map khách" rất phổ biến, trước đây bị bỏ sót không tính
+  // referral bonus / không báo Telegram vì chỉ check khi đổi orderStatus
+  // trong CÙNG request).
   // ============================================================
-  if (orderStatus === "approved" && targetCustomerId) {
+  const justBecameApproved = updated.orderStatus === "approved" && order.orderStatus !== "approved";
+  const justGotCustomerOnApprovedOrder = updated.orderStatus === "approved" && !order.customerId && !!customerId;
+
+  if ((justBecameApproved || justGotCustomerOnApprovedOrder) && targetCustomerId) {
     // Thông báo Telegram
     void notifyCustomerTelegram(
       targetCustomerId,
@@ -62,6 +72,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         shopName: updated.shopName,
       })
     );
+
+    void notifyCustomerInApp(targetCustomerId, {
+      type: "order_approved",
+      title: "💰 Tiền đã về!",
+      message: `Đơn hàng ${updated.orderExternalId}${updated.shopName ? ` (${updated.shopName})` : ""} đã được duyệt — bạn sẽ nhận ${Number(updated.customerRewardAmount).toLocaleString("vi-VN")}đ hoàn tiền.`,
+      link: "/app/orders",
+    });
 
     // Xử lý Referral Bonus
     const customerData = await prisma.customer.findUnique({
@@ -123,6 +140,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
               orderStatus: "approved",
               sourceType: "referral",
             },
+          });
+
+          void notifyCustomerInApp(customerData.referredById, {
+            type: "referral_bonus",
+            title: "🎁 Hoa hồng giới thiệu",
+            message: `Bạn vừa nhận ${bonusAmount.toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
+            link: "/app/referral",
           });
         }
       }

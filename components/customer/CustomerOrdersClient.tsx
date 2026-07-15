@@ -53,6 +53,12 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
     return <span className="inline-flex rounded-md bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-600">Chờ xác nhận</span>;
   };
 
+  const getStatusHint = (order: Order) => {
+    if (order.orderStatus === "cancelled" || order.orderStatus === "rejected") return null;
+    if (order.orderStatus === "approved") return null;
+    return "Shopee chưa xác nhận hoàn thành đơn — tiền hoàn chỉ về sau khi đơn được xác nhận, chưa chắc chắn nhận được.";
+  };
+
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-lg fade-in pb-2xl">
       {/* HEADER */}
@@ -85,10 +91,7 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
       <div className="mt-md rounded-3xl bg-white p-md shadow-sm ring-1 ring-black/5 min-h-[400px]">
         {orders.length === 0 ? (
           <div className="flex h-full min-h-[350px] flex-col items-center justify-center">
-            {/* Mascot Placeholder */}
-            <div className="mb-md text-[40px] opacity-80 flex items-center gap-2">
-               🥑 🐾
-            </div>
+            <img src="/heochodoi.png" alt="" className="mb-md h-20 w-20 object-contain opacity-90" />
             <div className="text-[14px] font-bold text-gray-400">Chưa có đơn hàng</div>
           </div>
         ) : (
@@ -116,6 +119,11 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
                     <div className="mt-1 flex items-center gap-xs">
                       {getStatusBadge(o)}
                     </div>
+                    {getStatusHint(o) && (
+                      <div className="mt-1 max-w-[280px] text-[11px] leading-snug text-amber-600/80">
+                        {getStatusHint(o)}
+                      </div>
+                    )}
                   </div>
                 </div>
 

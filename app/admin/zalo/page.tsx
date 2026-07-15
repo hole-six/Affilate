@@ -14,7 +14,9 @@ export default async function AdminZaloPage() {
 
   return (
     <div className="flex flex-col gap-2xl">
-      <div>
+      <div className="flex items-center gap-md">
+        <img src="/heothongbao.png" alt="" className="h-12 w-12 shrink-0 object-contain" />
+        <div>
         <h1 className="display-sm">Tích hợp Zalo OA</h1>
         <p className="mt-xs text-body">
           Endpoint webhook: <code className="rounded-sm bg-gray-50 px-sm py-xxs">/api/zalo/webhook</code>.
@@ -24,6 +26,7 @@ export default async function AdminZaloPage() {
           Để gửi tin thật ra OA, cần cấu hình thêm <code className="rounded-sm bg-gray-50 px-sm py-xxs">ZALO_OA_ACCESS_TOKEN</code> và{" "}
           <code className="rounded-sm bg-gray-50 px-sm py-xxs">ZALO_OA_MESSAGE_ENDPOINT</code> trong file môi trường.
         </p>
+        </div>
       </div>
 
       <Card variant="default" className="border border-gray-100">

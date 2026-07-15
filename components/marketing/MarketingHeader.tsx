@@ -22,9 +22,9 @@ export function MarketingHeader({ activePath = "/" }: { activePath?: string }) {
           className="flex items-center gap-2 hover:opacity-90 transition-opacity"
         >
           <img
-            src="/anhlogo.png"
+            src="/icontitle.png"
             alt="Lvi Hoàn Tiền logo"
-            className="w-8 h-8 object-contain rounded-full"
+            className="w-12 h-12 object-cover rounded-full"
           />
           <span
             className="font-bold text-[#FF6B35] text-[18px] leading-tight"

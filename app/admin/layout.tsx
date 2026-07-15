@@ -7,10 +7,10 @@ import {
   Download,
   Wallet,
   BarChart3,
-  MessageCircle,
   Send,
   Settings,
   Flame,
+  MessagesSquare,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
@@ -24,6 +24,7 @@ const sections = [
       { href: "/admin/customers", label: "Khách hàng",     emoji: "👥", icon: <Users           size={16} strokeWidth={1.75} /> },
       { href: "/admin/links",     label: "Link Affiliate",  emoji: "🔗", icon: <Link2           size={16} strokeWidth={1.75} /> },
       { href: "/admin/deals",     label: "Deals Hot",       emoji: "🔥", icon: <Flame           size={16} strokeWidth={1.75} /> },
+      { href: "/admin/community", label: "Cộng đồng",       emoji: "💬", icon: <MessagesSquare  size={16} strokeWidth={1.75} /> },
     ],
   },
   {
@@ -38,7 +39,6 @@ const sections = [
   {
     title: "Tích hợp & Cài đặt",
     items: [
-      { href: "/admin/zalo",     label: "Zalo OA",      emoji: "💬", icon: <MessageCircle size={16} strokeWidth={1.75} /> },
       { href: "/admin/telegram", label: "Telegram Bot",  emoji: "✈️", icon: <Send          size={16} strokeWidth={1.75} /> },
       { href: "/admin/settings", label: "Cài đặt",       emoji: "⚙️", icon: <Settings      size={16} strokeWidth={1.75} /> },
     ],
@@ -52,7 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div
       className="flex h-screen overflow-hidden flex-col md:flex-row"
-      style={{ background: "#FFFAF7", fontFamily: "'Nunito', sans-serif" }}
+      style={{ background: "#FFFAF7" }}
     >
       <AdminSidebar adminName={session.fullName} sections={sections} />
 

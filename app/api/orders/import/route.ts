@@ -9,6 +9,7 @@ import { parseShopeeAffiliateCsv } from "@/lib/shopeeAffiliateCsv";
 import { getActiveCommissionRule, splitCommission } from "@/lib/commission";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
 import { buildOrderApprovedMessage } from "@/lib/telegramBot";
+import { notifyCustomerInApp } from "@/lib/notifications";
 
 // Chuẩn hoá output từ cả 2 parser về cùng shape dùng trong route
 type NormRow = {
@@ -134,6 +135,24 @@ export async function POST(req: NextRequest) {
   let errorRows = 0;
   let duplicateRows = 0;
 
+  // ============================================================
+  // GỘP DÒNG THEO ĐƠN HÀNG
+  //
+  // Shopee xuất CSV theo TỪNG SẢN PHẨM (1 đơn nhiều món = nhiều dòng cùng
+  // "ID đơn hàng"). Trước đây mỗi dòng upsert độc lập theo orderExternalId
+  // nên dòng sau đè dòng trước, làm mất tiền của các sản phẩm khác trong
+  // cùng đơn (đã kiểm chứng: 33/249 đơn thật bị mất tổng ~1.29tr hoa hồng).
+  // Giờ gộp tất cả dòng cùng 1 đơn lại, cộng dồn tiền, rồi mới upsert 1 lần.
+  // ============================================================
+  const rowsByOrderId = new Map<string, NormRow[]>();
+  for (const row of rows) {
+    if (!row.orderExternalId) continue;
+    const list = rowsByOrderId.get(row.orderExternalId) ?? [];
+    list.push(row);
+    rowsByOrderId.set(row.orderExternalId, list);
+  }
+
+  // Ghi audit trail cho từng dòng CSV gốc (giữ nguyên, không gộp — để soát lại sau này)
   for (const row of rows) {
     try {
       await prisma.importBatchRow.create({
@@ -168,10 +187,22 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      if (!row.orderExternalId) {
-        errorRows++;
-        continue;
-      }
+      if (!row.orderExternalId) errorRows++;
+    } catch {
+      errorRows++;
+    }
+  }
+
+  for (const [orderExternalId, groupRows] of rowsByOrderId) {
+    try {
+      // Cộng dồn tiền của tất cả sản phẩm trong đơn — Shopee đã tự đưa
+      // orderAmount/commission về 0 cho dòng "Đã hủy" nên cộng thẳng là đúng.
+      const orderAmount = groupRows.reduce((s, r) => s + (r.orderAmount ?? 0), 0);
+      const grossCommissionAmount = groupRows.reduce((s, r) => s + (r.grossCommissionAmount ?? 0), 0);
+      const netCommissionAmount = groupRows.reduce((s, r) => s + (r.netCommissionAmount ?? 0), 0);
+
+      // Dòng đại diện cho các field mô tả chung (ngày tháng, shop, tracking...) — lấy dòng cuối.
+      const row = groupRows[groupRows.length - 1];
 
       const trackingLink = row.trackingCode
         ? await prisma.trackingLink.findUnique({ where: { trackingCode: row.trackingCode } })
@@ -179,44 +210,38 @@ export async function POST(req: NextRequest) {
 
       if (!trackingLink) unmappedRows++;
 
-      const commissionAmount = row.netCommissionAmount ?? row.commissionAmount ?? 0;
+      const commissionAmount = netCommissionAmount || grossCommissionAmount || 0;
       const split = splitCommission(commissionAmount, rule);
 
       const existing = await prisma.order.findUnique({
-        where: { platformId_orderExternalId: { platformId, orderExternalId: row.orderExternalId } },
+        where: { platformId_orderExternalId: { platformId, orderExternalId } },
       });
       if (existing) duplicateRows++;
 
       // ============================================================
       // MAP TRẠNG THÁI SHOPEE → NỘI BỘ
       //
-      // Shopee có 2 cột trạng thái quan trọng trong CSV:
-      //   1. orderStatus          = "Trạng thái đặt hàng"
-      //   2. productAffiliateStatus = "Trạng thái sản phẩm liên kết"
+      // Nguồn xác thực chính là "Trạng thái sản phẩm liên kết"
+      // (productAffiliateStatus) của TỪNG sản phẩm — đây mới là field
+      // Shopee dùng để quyết định hoa hồng, không phải "Trạng thái đặt
+      // hàng" (orderStatus) ở cấp đơn. Khi orderStatus="Hoàn thành" nhưng
+      // 1 sản phẩm cụ thể bị "Đã hủy" (khách hoàn trả món đó), sản phẩm đó
+      // không tính tiền — nhưng các sản phẩm khác "Hoàn thành" thật trong
+      // cùng đơn vẫn tính bình thường.
       //
-      // Logic chuẩn:
-      //   productAffiliateStatus = "Đã duyệt" → Shopee đã xác nhận hoa hồng
-      //     → Tự động "approved" (tiền đã về, không cần admin bấm gì thêm)
-      //
-      //   orderStatus = "Hoàn thành" + productAffiliateStatus = "Chờ xác nhận"
-      //     → "Ờ completed" (Shopee chưa duyệt hoa hồng, chờ kỳ sau)
-      //
-      //   "Đã Hủy" / "Đã Huỷ" → "cancelled"
-      //   Khác → "pending"
+      //   Có ít nhất 1 sản phẩm "Hoàn thành" → "approved" (tiền đã về ví)
+      //   TẤT CẢ sản phẩm đều "Đã hủy"       → "cancelled"
+      //   Còn lại (đang chờ xử lý)           → "pending"
       // ============================================================
-      const shopeeOrderStatus = (row.orderStatus ?? "").toLowerCase();
-      const shopeeAffStatus   = (row.productAffiliateStatus ?? "").toLowerCase();
+      const affStatuses = groupRows.map((r) => (r.productAffiliateStatus ?? "").toLowerCase());
+      const anyCompleted = affStatuses.some((s) => s.includes("hoàn thành"));
+      const allCancelled = affStatuses.length > 0 && affStatuses.every((s) => s.includes("hủy") || s.includes("huỷ"));
 
       let autoMappedStatus: string;
-      if (shopeeAffStatus.includes("đã duyệt")) {
-        // Shopee đã xác nhận hoa hồng → tự động duyệt
-        autoMappedStatus = "approved";
-      } else if (shopeeOrderStatus.includes("hoàn thành")) {
-        // Đơn xong nhưng Shopee chưa duyệt hoa hồng → chờ
-        autoMappedStatus = "completed";
-      } else if (shopeeOrderStatus.includes("hủy") || shopeeOrderStatus.includes("huỷ")
-              || shopeeAffStatus.includes("đã hủy")  || shopeeAffStatus.includes("đã huỷ")) {
+      if (allCancelled) {
         autoMappedStatus = "cancelled";
+      } else if (anyCompleted) {
+        autoMappedStatus = "approved";
       } else {
         autoMappedStatus = "pending";
       }
@@ -249,7 +274,7 @@ export async function POST(req: NextRequest) {
       const resolvedCustomerId = existing?.customerId ?? trackingLink?.customerId;
 
       const updatedOrder = await prisma.order.upsert({
-        where: { platformId_orderExternalId: { platformId, orderExternalId: row.orderExternalId } },
+        where: { platformId_orderExternalId: { platformId, orderExternalId } },
         update: {
           trackingLinkId: trackingLink?.id || existing?.trackingLinkId,
           customerId: resolvedCustomerId,
@@ -263,14 +288,14 @@ export async function POST(req: NextRequest) {
           shopId: row.shopId,
           itemId: row.itemId,
           itemName: row.itemName,
-          orderAmount: row.orderAmount,
-          grossCommissionAmount: row.grossCommissionAmount,
-          netCommissionAmount: row.netCommissionAmount,
+          orderAmount,
+          grossCommissionAmount,
+          netCommissionAmount,
           commissionAmount,
           customerRewardAmount: split.customerRewardAmount,
           systemProfitAmount: split.systemProfitAmount,
           orderStatus: resolvedOrderStatus,
-          productAffiliateStatus: row.orderStatus ?? row.productAffiliateStatus, // Lưu trạng thái thật của Shopee vào đây
+          productAffiliateStatus: row.productAffiliateStatus ?? row.orderStatus,
           subId1: row.subId1,
           subId2: row.subId2,
           subId3: row.subId3,
@@ -281,7 +306,7 @@ export async function POST(req: NextRequest) {
         },
         create: {
           platformId,
-          orderExternalId: row.orderExternalId,
+          orderExternalId,
           trackingLinkId: trackingLink?.id,
           customerId: trackingLink?.customerId,
           trackingCode: row.trackingCode,
@@ -294,14 +319,14 @@ export async function POST(req: NextRequest) {
           shopId: row.shopId,
           itemId: row.itemId,
           itemName: row.itemName,
-          orderAmount: row.orderAmount,
-          grossCommissionAmount: row.grossCommissionAmount,
-          netCommissionAmount: row.netCommissionAmount,
+          orderAmount,
+          grossCommissionAmount,
+          netCommissionAmount,
           commissionAmount,
           customerRewardAmount: split.customerRewardAmount,
           systemProfitAmount: split.systemProfitAmount,
           orderStatus: autoMappedStatus,
-          productAffiliateStatus: row.orderStatus ?? row.productAffiliateStatus,
+          productAffiliateStatus: row.productAffiliateStatus ?? row.orderStatus,
           subId1: row.subId1,
           subId2: row.subId2,
           subId3: row.subId3,
@@ -322,16 +347,42 @@ export async function POST(req: NextRequest) {
       const wasAlreadyApproved = existing?.orderStatus === "approved";
       const justApproved = resolvedOrderStatus === "approved" && !wasAlreadyApproved;
 
+      // ============================================================
+      // ĐẢO REFERRAL BONUS KHI ĐƠN GỐC BỊ CLAWBACK QUA RE-IMPORT
+      // Nếu đơn này từng "approved" và đã tạo hoa hồng giới thiệu cho
+      // người giới thiệu, mà giờ Shopee đòi lại (chuyển "clawback") —
+      // phải đảo luôn hoa hồng giới thiệu đó, nếu không người giới thiệu
+      // vẫn được trả tiền cho một đơn hàng đã bị huỷ hoa hồng thật.
+      // ============================================================
+      if (resolvedOrderStatus === "clawback") {
+        const refOrder = await prisma.order.findUnique({
+          where: { platformId_orderExternalId: { platformId, orderExternalId: `REF-${orderExternalId}` } },
+        });
+        if (refOrder && refOrder.orderStatus === "approved") {
+          await prisma.order.update({
+            where: { id: refOrder.id },
+            data: { orderStatus: "clawback" },
+          });
+        }
+      }
+
       if (justApproved && resolvedCustomerId) {
         // Thông báo Telegram cho khách
         void notifyCustomerTelegram(
           resolvedCustomerId,
           buildOrderApprovedMessage({
-            orderExternalId: row.orderExternalId!,
+            orderExternalId,
             customerRewardAmount: Number(split.customerRewardAmount),
             shopName: row.shopName ?? null,
           })
         );
+
+        void notifyCustomerInApp(resolvedCustomerId, {
+          type: "order_approved",
+          title: "💰 Tiền đã về!",
+          message: `Đơn hàng ${orderExternalId}${row.shopName ? ` (${row.shopName})` : ""} đã được duyệt — bạn sẽ nhận ${Number(split.customerRewardAmount).toLocaleString("vi-VN")}đ hoàn tiền.`,
+          link: "/app/orders",
+        });
 
         // Tạo Referral Bonus
         const customerData = await prisma.customer.findUnique({
@@ -359,10 +410,10 @@ export async function POST(req: NextRequest) {
             if (f1OrderCount <= maxOrders) {
               const bonusAmount = Number(split.customerRewardAmount) * referralRate;
               await prisma.order.upsert({
-                where: { platformId_orderExternalId: { platformId, orderExternalId: `REF-${row.orderExternalId}` } },
+                where: { platformId_orderExternalId: { platformId, orderExternalId: `REF-${orderExternalId}` } },
                 update: {
                   customerId: customerData.referredById,
-                  orderAmount: row.orderAmount,
+                  orderAmount,
                   commissionAmount: 0,
                   customerRewardAmount: bonusAmount,
                   systemProfitAmount: 0,
@@ -371,15 +422,15 @@ export async function POST(req: NextRequest) {
                 },
                 create: {
                   platformId,
-                  orderExternalId: `REF-${row.orderExternalId}`,
+                  orderExternalId: `REF-${orderExternalId}`,
                   customerId: customerData.referredById,
                   trackingCode: "REFERRAL",
                   channel: "REFERRAL",
                   orderedAt: row.orderedAt,
                   completedAt: row.completedAt,
                   shopName: row.shopName,
-                  itemName: `Hoa hồng giới thiệu: ${row.orderExternalId}`,
-                  orderAmount: row.orderAmount,
+                  itemName: `Hoa hồng giới thiệu: ${orderExternalId}`,
+                  orderAmount,
                   grossCommissionAmount: 0,
                   netCommissionAmount: 0,
                   commissionAmount: 0,
@@ -389,6 +440,13 @@ export async function POST(req: NextRequest) {
                   sourceType: "referral",
                   importBatchId: batch.id,
                 },
+              });
+
+              void notifyCustomerInApp(customerData.referredById, {
+                type: "referral_bonus",
+                title: "🎁 Hoa hồng giới thiệu",
+                message: `Bạn vừa nhận ${bonusAmount.toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
+                link: "/app/referral",
               });
             }
           }

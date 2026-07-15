@@ -20,25 +20,25 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 
 const PIG_FEATURES = [
   {
-    image: "/04_link.png",
+    image: "/heochaomung.png",
     title: "Tạo link tức thì",
     description: "Tạo link Shopee nhanh chóng chỉ với 1 click. Mua gì cũng hoàn, không bỏ lỡ ưu đãi.",
     bg: "bg-[#fdece3]",
   },
   {
-    image: "/09_admin.png",
+    image: "/heoQA.png",
     title: "Theo dõi minh bạch",
     description: "Theo dõi đơn hàng, tiền hoàn theo thời gian thực. Mọi thông tin rõ ràng, đáng tin cậy.",
     bg: "bg-[#e3f5ea]",
   },
   {
-    image: "/05_payout.png",
+    image: "/heoqua.png",
     title: "Rút tiền từ 10K",
     description: "Rút tiền linh hoạt chỉ từ 10.000đ. Về ví nhanh chóng, không cần chờ lâu.",
     bg: "bg-[#fdf3e0]",
   },
   {
-    image: "/06_referral.png",
+    image: "/heogiamgia.png",
     title: "Mời bạn nhận 5%",
     description: "Mời bạn bè dùng hệ thống, nhận ngay 5% trên tiền hoàn của bạn bè.",
     bg: "bg-[#f0ecfb]",
@@ -126,16 +126,33 @@ export function LandingPage() {
 
       <main className="pt-[80px]">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-[#fff0e6] via-[#fff7f2] to-white">
-          <div className="relative z-10 max-w-[1200px] mx-auto px-lg md:px-3xl py-3xl md:py-[90px] grid md:grid-cols-2 gap-2xl items-center">
-            <div className="space-y-lg fade-in">
+        <section className="relative overflow-hidden bg-[#fff0e6]">
+          {/* Background on desktop — object-contain so the pig+phone never
+              gets cropped regardless of section height (the section's own
+              bg-[#fff0e6] matches the image's cream tone, so any letterboxed
+              gap blends in seamlessly). Anchored right, since the image
+              already reserves open cream space on the left for copy. On
+              mobile the wide ratio would hide the pig almost entirely, so it
+              drops down as a banner below the text instead. */}
+          <div className="absolute inset-0 hidden md:block">
+            <img
+              src="/section1.png"
+              alt=""
+              className="h-full w-full object-contain object-right"
+              aria-hidden="true"
+            />
+          </div>
+
+          <div className="relative z-10 max-w-[1200px] mx-auto px-lg md:px-3xl py-3xl md:py-[110px]">
+            <div className="max-w-xl space-y-lg fade-in">
               <div className="inline-flex items-center gap-sm bg-gradient-to-r from-primary to-[#ff8a65] text-white px-lg py-sm rounded-full shadow-md shadow-primary/30">
                 <Gift size={16} strokeWidth={2} />
                 <span className="text-[13px] font-bold">Hoàn 80% + 5% mời bạn</span>
               </div>
 
               <h1 className="text-[40px] md:text-[56px] font-black leading-tight text-ink tracking-tight">
-                Để tiền tự về ví <span className="inline-block">🐷</span>
+                Để tiền tự về ví{" "}
+                <img src="/icontitle.png" alt="" className="inline-block h-[0.9em] w-[0.9em] object-cover rounded-full align-middle" />
               </h1>
               <p className="text-[18px] text-mute max-w-lg leading-relaxed">
                 Cách thông minh hơn để mua Shopee & TikTok Shop — hoàn tiền tự động cho mọi đơn, tiền về thẳng ví của bạn.
@@ -151,12 +168,9 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* Pig mascot illustration — flat opaque background, so it's framed
-                in its own card rather than blended over the section's tint. */}
-            <div className="relative fade-in">
-              <div className="mx-auto max-w-[420px] rounded-[40px] bg-white shadow-2xl shadow-primary/10 p-lg overflow-hidden">
-                <img src="/mascot_pig_phone_1784048060867.png" alt="Ví Heo" className="w-full h-auto object-contain" />
-              </div>
+            {/* Mobile-only banner */}
+            <div className="mt-2xl rounded-[24px] overflow-hidden shadow-lg md:hidden">
+              <img src="/section1.png" alt="" className="w-full h-auto object-cover" />
             </div>
           </div>
         </section>
@@ -260,9 +274,7 @@ export function LandingPage() {
 
               {/* Support 24/7 */}
               <div className="bg-white rounded-[40px] p-2xl flex flex-col justify-between border border-primary/10 shadow-lg shadow-primary/5 hover:-translate-y-1 transition-transform group">
-                <div className="w-16 h-16 bg-canvas-soft rounded-2xl flex items-center justify-center group-hover:bg-primary-pale transition-colors">
-                  <Send className="text-primary" size={32} />
-                </div>
+                <img src="/heothongbao.png" alt="" className="h-16 w-16 object-contain" />
                 <div className="mt-xl">
                   <h4 className="font-black text-[20px] text-ink mb-xs">Bot Telegram</h4>
                   <p className="text-mute text-[14px] leading-relaxed">Theo dõi đơn hàng tự động thông minh không cần mở ứng dụng.</p>
@@ -271,9 +283,7 @@ export function LandingPage() {
 
               {/* Coupons */}
               <div className="bg-gradient-to-br from-[#fff0e6] to-white rounded-[40px] p-2xl flex flex-col justify-between border border-primary/10 shadow-lg shadow-primary/5 hover:-translate-y-1 transition-transform group">
-                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-primary/10">
-                  <TicketPercent className="text-primary" size={32} />
-                </div>
+                <img src="/heogiamgia.png" alt="" className="h-16 w-16 object-contain" />
                 <div className="mt-xl">
                   <h4 className="font-black text-[20px] text-ink mb-xs">Mã giảm giá</h4>
                   <p className="text-mute text-[14px] leading-relaxed">Kho voucher độc quyền Freeship và giảm sâu lên tới 50%.</p>

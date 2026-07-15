@@ -1,83 +1,295 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Wallet, ClipboardList, CreditCard, Smartphone, CheckCircle, Copy, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Search, Wallet, ClipboardList, CreditCard, Smartphone,
+  Copy, Check, X, Eye, Receipt, AlertCircle,
+  CheckCircle2, Clock, Image as ImageIcon, ExternalLink,
+  ChevronDown, ChevronUp, ShoppingBag,
+} from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { CreatePaymentButton } from "@/components/admin/CreatePaymentButton";
 import { MarkPaidForm } from "@/components/admin/MarkPaidForm";
 
 type CustomerPending = {
-  id: string;
-  name: string;
-  code: string;
-  amount: number;
-  count: number;
-  bankName: string | null;
-  bankAccountNumber: string | null;
-  bankAccountName: string | null;
-  momoNumber: string | null;
-  momoName: string | null;
+  id: string; name: string; code: string; amount: number; count: number;
+  bankName: string | null; bankAccountNumber: string | null; bankAccountName: string | null;
+  momoNumber: string | null; momoName: string | null;
 };
 
 type PaymentBatch = {
-  id: string;
-  paymentCode: string;
-  customerName: string;
-  totalAmount: number;
-  status: string;
-  paidAt: string | null;
+  id: string; paymentCode: string; customerName: string;
+  totalAmount: number; status: string; paidAt: string | null;
+  transferReference: string | null; billStorageKey: string | null;
+  itemCount: number;
+};
+
+type WaitingOrder = {
+  id: string; orderExternalId: string; platformName: string;
+  productTitle: string | null; productImage: string | null;
+  productAffiliateStatus: string | null; customerRewardAmount: number;
+  orderedAt: string | null;
+};
+
+type CustomerWaiting = {
+  id: string; name: string; code: string; amount: number; count: number;
+  orders: WaitingOrder[];
 };
 
 type Props = {
   pendingList: CustomerPending[];
   batches: PaymentBatch[];
+  waitingList: CustomerWaiting[];
 };
 
-const payoutStatusLabel: Record<string, string> = {
-  unpaid: "Chưa thanh toán",
-  processing: "Đang xử lý",
-  paid: "Đã thanh toán",
-};
-
-function CopyInfoButton({ customer }: { customer: CustomerPending }) {
-  const [copied, setCopied] = useState(false);
-
-  function copy() {
-    const lines = [`Khách hàng: ${customer.name} (${customer.code})`];
-    if (customer.bankAccountNumber) {
-      lines.push(`Ngân hàng: ${customer.bankName} - ${customer.bankAccountNumber} - ${customer.bankAccountName}`);
-    }
-    if (customer.momoNumber) {
-      lines.push(`Momo: ${customer.momoNumber} - ${customer.momoName}`);
-    }
-    lines.push(`Số tiền: ${formatCurrency(customer.amount)}`);
-    navigator.clipboard.writeText(lines.join("\n"));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  }
-
+// ── tiny helpers ──────────────────────────────────────────────────────────────
+function CopyBtn({ value, label }: { value: string; label?: string }) {
+  const [ok, setOk] = useState(false);
+  const go = () => { navigator.clipboard.writeText(value); setOk(true); setTimeout(() => setOk(false), 1400); };
   return (
-    <button
-      type="button"
-      onClick={copy}
-      className="flex h-9 items-center gap-xs rounded-lg bg-gray-100 px-md text-[13px] font-bold text-gray-600 transition-colors hover:bg-gray-200"
+    <button onClick={go} title="Copy"
+      className="flex items-center gap-[3px] rounded-md px-[6px] py-[3px] text-[11px] font-bold transition-colors hover:bg-white"
     >
-      {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
-      {copied ? "Đã copy" : "Copy info"}
+      {ok ? <Check size={11} className="text-emerald-500" /> : <Copy size={11} className="text-gray-400" />}
+      {label && <span className={ok ? "text-emerald-500" : "text-gray-400"}>{ok ? "Đã copy" : label}</span>}
     </button>
   );
 }
 
-export function AdminPaymentsClient({ pendingList, batches }: Props) {
-  const [activeTab, setActiveTab] = useState<"pending" | "history">("pending");
+function CopyInfoBtn({ c }: { c: CustomerPending }) {
+  const [ok, setOk] = useState(false);
+  const go = () => {
+    const lines = [`${c.name} (${c.code})`];
+    if (c.bankAccountNumber) lines.push(`${c.bankName} — ${c.bankAccountNumber} — ${c.bankAccountName}`);
+    if (c.momoNumber) lines.push(`Momo: ${c.momoNumber} — ${c.momoName}`);
+    lines.push(`Số tiền: ${formatCurrency(c.amount)}`);
+    navigator.clipboard.writeText(lines.join("\n"));
+    setOk(true); setTimeout(() => setOk(false), 1400);
+  };
+  return (
+    <button onClick={go}
+      className="flex h-9 items-center gap-xs rounded-xl bg-gray-100 px-md text-[12px] font-bold text-gray-600 transition-colors hover:bg-gray-200"
+    >
+      {ok ? <Check size={13} className="text-emerald-500" /> : <Copy size={13} />}
+      {ok ? "Đã copy" : "Copy info"}
+    </button>
+  );
+}
+
+// ── Batch Detail Modal ────────────────────────────────────────────────────────
+function BatchDetailModal({ batchId, onClose }: { batchId: string; onClose: () => void }) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [showBill, setShowBill] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/payments/${batchId}`)
+      .then((r) => r.json())
+      .then((d) => { setData(d.batch); setLoading(false); });
+  }, [batchId]);
+
+  const batch = data;
+  const billUrl = batch?.billStorageKey ? `/api/bills/${batch.billStorageKey}` : null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-md" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <div
+        className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl fade-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-10 flex items-center justify-between px-xl py-lg border-b border-gray-100 bg-white rounded-t-3xl"
+          style={{ background: "linear-gradient(135deg,#fff3ee,#fde8d8)" }}>
+          <div className="flex items-center gap-sm">
+            <img src="/heovitien.png" alt="" className="h-10 w-10 object-contain" />
+            <div>
+              <h3 className="text-[16px] font-black text-gray-900">Chi tiết phiếu thanh toán</h3>
+              {batch && <p className="text-[12px] font-mono text-gray-500">{batch.paymentCode}</p>}
+            </div>
+          </div>
+          <button onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/70 text-gray-500 hover:bg-white hover:text-gray-900 transition-colors">
+            <X size={16} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        <div className="p-xl flex flex-col gap-lg">
+          {loading ? (
+            <div className="flex flex-col items-center py-2xl gap-md">
+              <img src="/heochodoi.png" alt="" className="h-16 w-16 object-contain animate-bounce" />
+              <p className="text-[13px] text-gray-400 font-medium">Đang tải dữ liệu...</p>
+            </div>
+          ) : !batch ? (
+            <div className="flex flex-col items-center py-2xl gap-sm">
+              <AlertCircle size={32} className="text-red-400" />
+              <p className="text-[13px] font-bold text-red-500">Không tìm thấy phiếu</p>
+            </div>
+          ) : (
+            <>
+              {/* Status bar */}
+              <div className={`flex items-center gap-sm rounded-2xl p-md ${
+                batch.status === "paid" ? "bg-emerald-50 border border-emerald-100" : "bg-amber-50 border border-amber-100"
+              }`}>
+                {batch.status === "paid"
+                  ? <CheckCircle2 size={20} className="text-emerald-500 shrink-0" />
+                  : <Clock size={20} className="text-amber-500 shrink-0" />}
+                <div>
+                  <p className={`text-[13px] font-black ${batch.status === "paid" ? "text-emerald-700" : "text-amber-700"}`}>
+                    {batch.status === "paid" ? "Đã thanh toán thành công" : "Đang chờ xử lý"}
+                  </p>
+                  {batch.paidAt && (
+                    <p className="text-[11px] text-emerald-500">{formatDate(new Date(batch.paidAt))}</p>
+                  )}
+                </div>
+                <div className="ml-auto text-right">
+                  <p className="text-[11px] text-gray-400">Tổng tiền</p>
+                  <p className="text-[18px] font-black text-[#e86a33]">{formatCurrency(Number(batch.totalAmount))}</p>
+                </div>
+              </div>
+
+              {/* Customer info */}
+              <div className="rounded-2xl bg-gray-50 border border-gray-100 p-lg">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-md">Thông tin khách hàng</p>
+                <div className="flex items-center gap-md mb-md">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#e86a33] to-[#d65d2a] text-white font-black text-[15px]">
+                    {batch.customer.fullName.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{batch.customer.fullName}</p>
+                    <p className="font-mono text-[11px] text-gray-400">{batch.customer.customerCode}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  {batch.customer.bankAccountNumber && (
+                    <div className="flex items-center gap-sm rounded-xl bg-white p-sm ring-1 ring-gray-100">
+                      <CreditCard size={14} className="text-[#e86a33] shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-gray-800">{batch.customer.bankName}</p>
+                        <p className="font-mono text-[11px] text-gray-500">{batch.customer.bankAccountNumber} — {batch.customer.bankAccountName}</p>
+                      </div>
+                      <CopyBtn value={batch.customer.bankAccountNumber} />
+                    </div>
+                  )}
+                  {batch.customer.momoNumber && (
+                    <div className="flex items-center gap-sm rounded-xl bg-purple-50 p-sm ring-1 ring-purple-100">
+                      <Smartphone size={14} className="text-[#a50064] shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-[#a50064]">Ví Momo</p>
+                        <p className="font-mono text-[11px] text-purple-500">{batch.customer.momoNumber} — {batch.customer.momoName}</p>
+                      </div>
+                      <CopyBtn value={batch.customer.momoNumber} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Transfer info */}
+              {(batch.transferReference || batch.transferNote) && (
+                <div className="rounded-2xl bg-emerald-50 border border-emerald-100 p-lg">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-600 mb-sm">Thông tin chuyển khoản</p>
+                  {batch.transferReference && (
+                    <div className="flex items-center gap-sm mb-xs">
+                      <span className="text-[12px] text-gray-500 w-24 shrink-0">Mã giao dịch:</span>
+                      <span className="font-mono font-bold text-[13px] text-gray-900 flex-1">{batch.transferReference}</span>
+                      <CopyBtn value={batch.transferReference} />
+                    </div>
+                  )}
+                  {batch.transferNote && (
+                    <div className="flex items-start gap-sm">
+                      <span className="text-[12px] text-gray-500 w-24 shrink-0">Ghi chú:</span>
+                      <span className="text-[13px] text-gray-700">{batch.transferNote}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Bill image */}
+              {billUrl && (
+                <div className="rounded-2xl bg-sky-50 border border-sky-100 p-lg">
+                  <div className="flex items-center justify-between mb-sm">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-sky-600 flex items-center gap-xs">
+                      <ImageIcon size={12} /> Ảnh bill chuyển khoản
+                    </p>
+                    <div className="flex gap-sm">
+                      <button onClick={() => setShowBill(!showBill)}
+                        className="flex items-center gap-xs rounded-lg bg-white px-sm py-[4px] text-[12px] font-bold text-sky-600 hover:bg-sky-100 transition-colors">
+                        <Eye size={12} strokeWidth={2.5} />
+                        {showBill ? "Ẩn" : "Xem bill"}
+                      </button>
+                      <a href={billUrl} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-xs rounded-lg bg-white px-sm py-[4px] text-[12px] font-bold text-gray-600 hover:bg-gray-100 transition-colors">
+                        <ExternalLink size={12} strokeWidth={2.5} />
+                        Mở tab mới
+                      </a>
+                    </div>
+                  </div>
+                  {showBill && (
+                    <div className="mt-sm rounded-xl overflow-hidden ring-1 ring-sky-200">
+                      <img src={billUrl} alt="Bill thanh toán" className="w-full object-contain max-h-[400px]" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Order items */}
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-md">
+                  Đơn hàng trong phiếu ({batch.items?.length ?? 0} đơn)
+                </p>
+                <div className="flex flex-col gap-sm">
+                  {batch.items?.map((item: any) => {
+                    const o = item.order;
+                    const img = o?.trackingLink?.productImage;
+                    const title = o?.trackingLink?.productTitle ?? o?.itemName ?? o?.orderExternalId;
+                    return (
+                      <div key={item.id} className="flex items-center gap-md rounded-xl bg-gray-50 border border-gray-100 p-sm">
+                        {img ? (
+                          <img src={img} alt="" className="h-10 w-10 rounded-lg object-cover ring-1 ring-black/5 shrink-0" />
+                        ) : (
+                          <div className="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center shrink-0">
+                            <Receipt size={14} className="text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-[12px] font-semibold text-gray-800">{title}</p>
+                          <div className="flex items-center gap-xs mt-[2px]">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase">{o?.platform?.name}</span>
+                            <span className="text-gray-200">•</span>
+                            <span className="font-mono text-[10px] text-gray-400">{o?.orderExternalId}</span>
+                          </div>
+                        </div>
+                        <span className="text-[13px] font-black text-emerald-600 shrink-0">
+                          +{formatCurrency(Number(item.amount))}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props) {
+  const [activeTab, setActiveTab] = useState<"pending" | "waiting" | "history">("pending");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [viewingBatch, setViewingBatch] = useState<string | null>(null);
+  const [expandedWaiting, setExpandedWaiting] = useState<string | null>(null);
+  const itemsPerPage = 9;
 
   const todayTotal = pendingList.reduce((s, c) => s + c.amount, 0);
+  const paidBatches = batches.filter((b) => b.status === "paid");
+  const pendingBatches = batches.filter((b) => b.status !== "paid");
 
-  const handleTabChange = (tab: "pending" | "history") => {
+  const handleTabChange = (tab: "pending" | "waiting" | "history") => {
     setActiveTab(tab);
     setCurrentPage(1);
   };
@@ -85,7 +297,14 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
   const filteredPending = pendingList.filter((c) => {
     if (!search) return true;
     const q = search.toLowerCase();
-    return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q) || c.momoNumber?.includes(q) || c.bankAccountNumber?.includes(q);
+    return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
+      || c.momoNumber?.includes(q) || c.bankAccountNumber?.includes(q);
+  });
+
+  const filteredWaiting = waitingList.filter((c) => {
+    if (!search) return true;
+    const q = search.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q);
   });
 
   const filteredBatches = batches.filter((b) => {
@@ -94,217 +313,328 @@ export function AdminPaymentsClient({ pendingList, batches }: Props) {
     return b.customerName.toLowerCase().includes(q) || b.paymentCode.toLowerCase().includes(q);
   });
 
-  const activeList = activeTab === "pending" ? filteredPending : filteredBatches;
+  const activeList = activeTab === "pending" ? filteredPending : activeTab === "waiting" ? filteredWaiting : filteredBatches;
   const totalPages = Math.ceil(activeList.length / itemsPerPage) || 1;
   const paginatedPending = filteredPending.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const paginatedWaiting = filteredWaiting.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const paginatedBatches = filteredBatches.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   return (
     <div className="flex flex-col gap-lg fade-in pb-2xl">
-      {/* TOOLBAR */}
-      <div className="flex flex-col gap-sm sm:flex-row sm:items-center">
-        {/* Search */}
-        <div className="relative flex-1">
-          <Search size={16} className="absolute left-md top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Tìm theo tên khách, mã khách, số tài khoản..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="h-11 w-full rounded-2xl bg-white pl-10 pr-md text-[14px] font-medium text-gray-900 shadow-sm ring-1 ring-black/5 focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33] transition-all"
-          />
-        </div>
+      {/* Detail modal */}
+      {viewingBatch && (
+        <BatchDetailModal batchId={viewingBatch} onClose={() => setViewingBatch(null)} />
+      )}
+
+      {/* Search */}
+      <div className="relative">
+        <Search size={16} className="absolute left-md top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+        <input type="text" placeholder="Tìm tên khách, mã KH, mã phiếu, số tài khoản..."
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
+          className="h-11 w-full rounded-2xl bg-white pl-10 pr-md text-[14px] font-medium shadow-sm ring-1 ring-black/[0.08] focus:outline-none focus:ring-2 focus:ring-[#e86a33]/40 transition-all"
+        />
       </div>
 
-      {/* TABS + Summary */}
+      {/* Tabs + summary */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
-        <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw] sm:w-auto">
-          <TabButton
-            active={activeTab === "pending"}
-            onClick={() => handleTabChange("pending")}
-            label="Chờ thanh toán"
-            count={pendingList.length}
-            icon={<Wallet size={14} />}
-          />
-          <TabButton
-            active={activeTab === "history"}
-            onClick={() => handleTabChange("history")}
-            label="Lịch sử phiếu"
-            count={batches.length}
-            icon={<ClipboardList size={14} />}
-          />
+        <div className="flex items-center gap-sm overflow-x-auto">
+          {[
+            { id: "pending" as const, label: "Sẵn sàng thanh toán", count: pendingList.length, icon: <Wallet size={14} /> },
+            { id: "waiting" as const, label: "Chờ Shopee duyệt", count: waitingList.length, icon: <Clock size={14} /> },
+            { id: "history" as const, label: "Lịch sử phiếu", count: batches.length, icon: <ClipboardList size={14} /> },
+          ].map((t) => (
+            <button key={t.id} onClick={() => handleTabChange(t.id)}
+              className={`flex h-10 shrink-0 items-center gap-xs whitespace-nowrap rounded-full px-lg text-[13px] font-bold transition-all ${
+                activeTab === t.id
+                  ? "bg-[#e86a33] text-white shadow-md shadow-[#e86a33]/25"
+                  : "bg-white text-gray-500 ring-1 ring-black/[0.08] hover:bg-gray-50 hover:text-gray-900"
+              }`}>
+              <span className={activeTab === t.id ? "text-white/80" : "text-gray-400"}>{t.icon}</span>
+              {t.label}
+              <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[11px] ${
+                activeTab === t.id ? "bg-white/20 text-white" : "bg-gray-100 text-gray-400"
+              }`}>{t.count}</span>
+            </button>
+          ))}
         </div>
-
         {activeTab === "pending" && pendingList.length > 0 && (
-          <div className="flex items-center gap-md rounded-2xl bg-white px-lg py-sm shadow-sm ring-1 ring-black/5 shrink-0">
-            <img src="/05_payout.png" alt="" className="h-10 w-10 object-contain" />
+          <div className="flex items-center gap-md rounded-2xl bg-white px-lg py-sm shadow-sm ring-1 ring-black/[0.06] shrink-0">
+            <img src="/heovitien.png" alt="" className="h-10 w-10 object-contain" />
             <div>
-              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
-                {pendingList.length} yêu cầu đang chờ
-              </div>
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{pendingList.length} khách chờ thanh toán</div>
               <div className="text-[16px] font-black text-[#e86a33]">{formatCurrency(todayTotal)}</div>
+            </div>
+          </div>
+        )}
+        {activeTab === "history" && (
+          <div className="flex items-center gap-md rounded-2xl bg-white px-lg py-sm shadow-sm ring-1 ring-black/[0.06] shrink-0">
+            <img src="/heongansach.png" alt="" className="h-10 w-10 object-contain" />
+            <div>
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Đã thanh toán</div>
+              <div className="text-[16px] font-black text-emerald-600">{paidBatches.length} phiếu</div>
             </div>
           </div>
         )}
       </div>
 
-      {/* CONTENT */}
-      {activeTab === "pending" ? (
+      {/* ── PENDING TAB ── */}
+      {activeTab === "pending" && (
         filteredPending.length === 0 ? (
-          <div className="flex flex-col items-center gap-sm rounded-3xl bg-white py-3xl shadow-sm ring-1 ring-black/5">
-            <CheckCircle size={32} className="text-gray-300" />
-            <span className="text-[14px] font-bold text-gray-400">Không có công nợ chờ thanh toán</span>
+          <div className="flex flex-col items-center gap-sm rounded-3xl bg-white py-3xl shadow-sm ring-1 ring-black/[0.06]">
+            <img src="/heochodoi.png" alt="" className="h-16 w-16 object-contain opacity-70" />
+            <span className="text-[14px] font-bold text-gray-400">Không có công nợ chờ thanh toán 🎉</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
-            {paginatedPending.map((c) => (
-              <div key={c.id} className="rounded-3xl bg-white p-lg shadow-sm ring-1 ring-black/5 flex flex-col gap-md">
-                <div className="flex items-center gap-sm">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-active text-white font-bold text-[15px]">
-                    {c.name.charAt(0).toUpperCase()}
+          <div className="flex flex-col gap-lg">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-lg">
+              {paginatedPending.map((c) => (
+                <div key={c.id} className="rounded-3xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] flex flex-col gap-md hover:shadow-md transition-shadow">
+                  {/* Avatar + name */}
+                  <div className="flex items-center gap-sm">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#e86a33] to-[#d65d2a] text-white font-black text-[16px] shadow-md shadow-[#e86a33]/20">
+                      {c.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-gray-900 truncate">{c.name}</div>
+                      <div className="font-mono text-[11px] text-gray-400">{c.code}</div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <div className="font-bold text-gray-900 truncate">{c.name}</div>
-                    <div className="font-mono text-[11px] text-gray-400">{c.code}</div>
+
+                  {/* Amount */}
+                  <div>
+                    <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-[2px]">{c.count} đơn cần thanh toán</div>
+                    <div className="text-[28px] font-black text-[#e86a33] leading-none tabular-nums">{formatCurrency(c.amount)}</div>
+                  </div>
+
+                  {/* Payment info */}
+                  {c.bankAccountNumber || c.momoNumber ? (
+                    <div className="flex flex-col gap-[6px]">
+                      {c.bankAccountNumber && (
+                        <div className="flex items-center gap-sm rounded-xl bg-gray-50 p-sm ring-1 ring-gray-100">
+                          <CreditCard size={13} className="text-[#e86a33] shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[11px] font-bold text-gray-800 truncate">{c.bankName}</div>
+                            <div className="font-mono text-[11px] text-gray-500">{c.bankAccountNumber}</div>
+                            <div className="text-[10px] text-gray-400 uppercase truncate">{c.bankAccountName}</div>
+                          </div>
+                          <CopyBtn value={c.bankAccountNumber} />
+                        </div>
+                      )}
+                      {c.momoNumber && (
+                        <div className="flex items-center gap-sm rounded-xl bg-purple-50 p-sm ring-1 ring-purple-100">
+                          <Smartphone size={13} className="text-[#a50064] shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-[11px] font-bold text-[#a50064]">Momo</div>
+                            <div className="font-mono text-[11px] text-purple-500">{c.momoNumber}</div>
+                            <div className="text-[10px] text-purple-300 uppercase truncate">{c.momoName}</div>
+                          </div>
+                          <CopyBtn value={c.momoNumber} />
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-sm rounded-xl bg-amber-50 p-sm ring-1 ring-amber-100">
+                      <AlertCircle size={14} className="text-amber-400 shrink-0" />
+                      <span className="text-[12px] font-medium text-amber-600">Chưa cập nhật thông tin TT</span>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="mt-auto flex items-center gap-sm pt-sm border-t border-gray-50">
+                    <CopyInfoBtn c={c} />
+                    <div className="flex-1">
+                      <CreatePaymentButton
+                        customerId={c.id}
+                        customerName={c.name}
+                        amount={c.amount}
+                        hasPaymentInfo={!!(c.bankAccountNumber || c.momoNumber)}
+                      />
+                    </div>
                   </div>
                 </div>
-
-                <div className="font-black text-[26px] text-[#e86a33] leading-none">{formatCurrency(c.amount)}</div>
-                <div className="text-[12px] font-medium text-gray-400">{c.count} đơn hàng</div>
-
-                {c.bankAccountNumber || c.momoNumber ? (
-                  <div className="flex flex-col gap-2">
-                    {c.bankAccountNumber && (
-                      <div className="flex items-center gap-2 rounded-xl bg-gray-50 p-sm ring-1 ring-gray-100">
-                        <CreditCard size={14} className="text-[#e86a33] shrink-0" />
-                        <div className="min-w-0">
-                          <div className="text-[11px] font-bold text-gray-900">{c.bankName}</div>
-                          <div className="text-[11px] font-medium text-gray-600 uppercase truncate">
-                            <span className="font-mono">{c.bankAccountNumber}</span> - {c.bankAccountName}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    {c.momoNumber && (
-                      <div className="flex items-center gap-2 rounded-xl bg-[#a50064]/5 p-sm ring-1 ring-[#a50064]/10">
-                        <Smartphone size={14} className="text-[#a50064] shrink-0" />
-                        <div className="min-w-0">
-                          <div className="text-[11px] font-bold text-[#a50064]">Ví Momo</div>
-                          <div className="text-[11px] font-medium text-[#a50064]/80 uppercase truncate">
-                            <span className="font-mono">{c.momoNumber}</span> - {c.momoName}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-[12px] font-medium text-gray-400 italic">Chưa cập nhật thông tin</div>
-                )}
-
-                <div className="mt-auto flex items-center gap-sm pt-sm border-t border-gray-50">
-                  <CopyInfoButton customer={c} />
-                  <div className="flex-1">
-                    <CreatePaymentButton customerId={c.id} />
-                  </div>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <PagerFooter currentPage={currentPage} totalPages={totalPages} itemsPerPage={itemsPerPage}
+              totalItems={filteredPending.length} unitLabel="khách"
+              onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onNext={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} />
           </div>
         )
-      ) : (
-        <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden w-full max-w-[100vw]">
-          <div className="responsive-table overflow-x-auto">
-            <table className="w-full text-left text-[13px]">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50">
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Mã phiếu</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Khách hàng</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] text-right">Số tiền</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Trạng thái</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Ngày trả</th>
-                  <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] w-[150px]">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredBatches.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-2xl text-center">
-                      <span className="text-[14px] font-bold text-gray-400">Không có phiếu thanh toán nào</span>
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedBatches.map((b) => (
-                    <tr key={b.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                      <td className="px-md py-md font-mono font-bold text-gray-900" data-label="Mã phiếu">{b.paymentCode}</td>
-                      <td className="px-md py-md font-medium text-gray-700" data-label="Khách hàng">{b.customerName}</td>
-                      <td className="px-md py-md text-right font-bold text-gray-900" data-label="Số tiền">{formatCurrency(b.totalAmount)}</td>
-                      <td className="px-md py-md" data-label="Trạng thái">
-                        <Badge tone={b.status === "paid" ? "positive" : "warning"} dot>
-                          {payoutStatusLabel[b.status] ?? b.status}
-                        </Badge>
-                      </td>
-                      <td className="px-md py-md text-[12px] font-medium text-gray-500" data-label="Ngày trả">{b.paidAt || "—"}</td>
-                      <td className="px-md py-md" data-label="Thao tác">
-                        {b.status !== "paid" && <MarkPaidForm batchId={b.id} />}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+      )}
+
+      {/* ── WAITING TAB ── */}
+      {activeTab === "waiting" && (
+        filteredWaiting.length === 0 ? (
+          <div className="flex flex-col items-center gap-sm rounded-3xl bg-white py-3xl shadow-sm ring-1 ring-black/[0.06]">
+            <img src="/heochaomung.png" alt="" className="h-16 w-16 object-contain opacity-70" />
+            <span className="text-[14px] font-bold text-gray-400">Không có đơn nào đang chờ Shopee duyệt 🎉</span>
           </div>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50 px-md py-sm">
-              <span className="text-[13px] text-gray-500 font-medium">
-                Hiển thị {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, activeList.length)} trong số {activeList.length} phiếu
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Trước
-                </button>
-                <span className="text-[13px] font-bold text-gray-900 px-2">
-                  Trang {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="rounded-lg border border-gray-200 bg-white px-3 py-1 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Sau
-                </button>
+        ) : (
+          <div className="flex flex-col gap-lg">
+            {/* Info box */}
+            <div className="flex items-start gap-sm rounded-2xl bg-blue-50 border border-blue-200 px-lg py-md">
+              <img src="/heochodoi.png" alt="" className="h-7 w-7 object-contain shrink-0 mt-[1px]" />
+              <p className="text-[13px] text-blue-700 font-medium leading-relaxed">
+                Các đơn bên dưới có <strong>tiếp thị liên kết chưa hoàn thành</strong> (Shopee chưa xác nhận hoa hồng).
+                Khi nào import lại CSV mới và Shopee đã duyệt, đơn sẽ tự chuyển sang <strong>"Sẵn sàng thanh toán"</strong>.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-md">
+              {paginatedWaiting.map((c) => (
+                <div key={c.id} className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.06] overflow-hidden">
+                  {/* Customer header */}
+                  <div className="flex items-center justify-between p-lg border-b border-gray-100 bg-gray-50/60">
+                    <div className="flex items-center gap-sm">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600 text-white font-black text-[15px]">
+                        {c.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold text-gray-900">{c.name}</div>
+                        <div className="font-mono text-[11px] text-gray-400">{c.code}</div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[11px] text-gray-400">{c.count} đơn đang chờ</div>
+                      <div className="text-[16px] font-black text-blue-600">{formatCurrency(c.amount)}</div>
+                    </div>
+                  </div>
+
+                  {/* Orders list */}
+                  <div className="flex flex-col divide-y divide-gray-50">
+                    {c.orders.map((o) => (
+                      <div key={o.id} className="flex items-center gap-md p-md">
+                        {o.productImage ? (
+                          <img src={o.productImage} alt="" className="h-10 w-10 rounded-xl object-cover ring-1 ring-black/5 shrink-0" />
+                        ) : (
+                          <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                            <ShoppingBag size={14} className="text-gray-300" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="truncate text-[13px] font-semibold text-gray-800">
+                            {o.productTitle ?? o.orderExternalId}
+                          </p>
+                          <div className="flex items-center gap-xs mt-[2px]">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase">{o.platformName}</span>
+                            <span className="text-gray-200">•</span>
+                            <span className="font-mono text-[10px] text-gray-400">{o.orderExternalId}</span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <div className="text-[13px] font-black text-gray-700">{formatCurrency(o.customerRewardAmount)}</div>
+                          {o.productAffiliateStatus && (
+                            <span className="text-[10px] font-bold text-amber-500 bg-amber-50 rounded-full px-sm py-[2px]">
+                              {o.productAffiliateStatus}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <PagerFooter currentPage={currentPage} totalPages={totalPages} itemsPerPage={itemsPerPage}
+              totalItems={filteredWaiting.length} unitLabel="khách"
+              onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onNext={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} />
+          </div>
+        )
+      )}
+
+      {/* ── HISTORY TAB ── */}
+      {activeTab === "history" && (
+        filteredBatches.length === 0 ? (
+          <div className="flex flex-col items-center gap-sm rounded-3xl bg-white py-3xl shadow-sm ring-1 ring-black/[0.06]">
+            <img src="/10_empty.png" alt="" className="h-16 w-16 object-contain opacity-60" />
+            <span className="text-[14px] font-bold text-gray-400">Không có phiếu nào</span>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-lg">
+            <div className="rounded-3xl bg-white shadow-sm ring-1 ring-black/[0.06] overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[13px]">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50/80">
+                      {["Mã phiếu", "Khách hàng", "Số tiền", "Đơn", "Trạng thái", "Ngày trả", "Thao tác"].map((h) => (
+                        <th key={h} className="px-md py-sm text-[11px] font-bold uppercase tracking-wider text-gray-400">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedBatches.map((b) => (
+                      <tr key={b.id}
+                        className={`border-b border-gray-50 transition-colors hover:bg-orange-50/20 ${b.status === "paid" ? "" : "bg-amber-50/30"}`}>
+                        <td className="px-md py-md">
+                          <span className="font-mono font-bold text-[13px] text-gray-900">{b.paymentCode}</span>
+                          {b.billStorageKey && (
+                            <span className="ml-xs inline-flex items-center gap-[2px] rounded-md bg-sky-100 px-[5px] py-[2px] text-[10px] font-bold text-sky-600">
+                              <ImageIcon size={9} /> Bill
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-md py-md font-semibold text-gray-800">{b.customerName}</td>
+                        <td className="px-md py-md font-black text-[14px] text-[#e86a33]">{formatCurrency(b.totalAmount)}</td>
+                        <td className="px-md py-md text-center">
+                          <span className="inline-flex items-center justify-center h-6 min-w-6 rounded-md bg-gray-100 font-mono text-[12px] font-bold text-gray-600 px-sm">
+                            {b.itemCount}
+                          </span>
+                        </td>
+                        <td className="px-md py-md">
+                          <Badge tone={b.status === "paid" ? "positive" : "warning"} dot>
+                            {b.status === "paid" ? "Đã thanh toán" : "Chờ xử lý"}
+                          </Badge>
+                        </td>
+                        <td className="px-md py-md text-[12px] text-gray-500">{b.paidAt ?? "—"}</td>
+                        <td className="px-md py-md">
+                          <div className="flex items-center gap-sm">
+                            {/* Xem chi tiết — quan trọng nhất */}
+                            <button onClick={() => setViewingBatch(b.id)}
+                              className="flex h-8 items-center gap-xs rounded-xl bg-[#e86a33]/10 px-sm text-[12px] font-bold text-[#e86a33] hover:bg-[#e86a33]/20 transition-colors">
+                              <Eye size={13} strokeWidth={2} /> Xem
+                            </button>
+                            {/* Mark paid nếu chưa xong */}
+                            {b.status !== "paid" && <MarkPaidForm batchId={b.id} />}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          )}
-        </div>
+            <PagerFooter currentPage={currentPage} totalPages={totalPages} itemsPerPage={itemsPerPage}
+              totalItems={filteredBatches.length} unitLabel="phiếu"
+              onPrev={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              onNext={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} />
+          </div>
+        )
       )}
     </div>
   );
 }
 
-function TabButton({ active, onClick, label, count, icon }: { active: boolean; onClick: () => void; label: string; count: number; icon?: React.ReactNode }) {
+function PagerFooter({ currentPage, totalPages, itemsPerPage, totalItems, unitLabel, onPrev, onNext }:
+  { currentPage: number; totalPages: number; itemsPerPage: number; totalItems: number; unitLabel: string; onPrev: () => void; onNext: () => void }) {
+  if (totalPages <= 1) return null;
   return (
-    <button
-      onClick={onClick}
-      className={`flex h-10 shrink-0 items-center gap-xs whitespace-nowrap rounded-full px-4 text-[13px] font-bold transition-all ${
-        active
-          ? "border-2 border-gray-900 bg-white text-gray-900 shadow-sm"
-          : "border-2 border-transparent bg-white text-gray-500 shadow-sm ring-1 ring-black/5 hover:bg-gray-50 hover:text-gray-900"
-      }`}
-    >
-      {icon && <span className={active ? "text-gray-900" : "text-gray-400"}>{icon}</span>}
-      {label}
-      <span className={`ml-1 flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[11px] ${
-        active ? "bg-gray-100 text-gray-900" : "bg-gray-100 text-gray-400"
-      }`}>
-        {count}
+    <div className="flex items-center justify-between rounded-2xl bg-white ring-1 ring-black/[0.06] px-md py-sm shadow-sm">
+      <span className="text-[13px] text-gray-500">
+        {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, totalItems)} / {totalItems} {unitLabel}
       </span>
-    </button>
+      <div className="flex items-center gap-sm">
+        <button onClick={onPrev} disabled={currentPage === 1}
+          className="rounded-xl border border-gray-200 bg-white px-md py-[6px] text-[12px] font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+          ← Trước
+        </button>
+        <span className="text-[12px] font-bold text-gray-700 px-xs">{currentPage}/{totalPages}</span>
+        <button onClick={onNext} disabled={currentPage === totalPages}
+          className="rounded-xl border border-gray-200 bg-white px-md py-[6px] text-[12px] font-bold text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed">
+          Sau →
+        </button>
+      </div>
+    </div>
   );
 }

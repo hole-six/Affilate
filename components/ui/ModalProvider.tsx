@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback, ReactNode } from "react";
-import { X, AlertCircle, Info, HelpCircle, CheckCircle2 } from "lucide-react";
+import { X, AlertCircle, Info, HelpCircle } from "lucide-react";
 import { Button } from "./Button";
 
 type ModalType = "alert" | "confirm";
@@ -68,7 +68,7 @@ export function ModalProvider({ children }: { children: ReactNode }) {
       case "warning":
         return <HelpCircle className="text-amber-500" size={32} strokeWidth={1.5} />;
       case "success":
-        return <CheckCircle2 className="text-emerald-500" size={32} strokeWidth={1.5} />;
+        return <img src="/heochaomung.png" alt="" className="h-14 w-14 object-contain" />;
       default:
         return <Info className="text-sky-500" size={32} strokeWidth={1.5} />;
     }
