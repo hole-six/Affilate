@@ -62,7 +62,7 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
 
         {/* Mascot / Icon Placeholder */}
         <div className="relative z-10 flex h-24 w-24 items-center justify-center rounded-full bg-[#fff0e6] shadow-sm">
-          <span className="text-[48px]">🥑</span>
+          <img src="/heoQA.png" alt="" className="h-14 w-14 object-contain drop-shadow-sm" />
         </div>
       </div>
 
