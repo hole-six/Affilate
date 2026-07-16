@@ -1,4 +1,21 @@
 import Link from "next/link";
+import {
+  FacebookIcon,
+  ZaloIcon,
+  YoutubeIcon,
+  TiktokIcon,
+  InstagramIcon,
+  ThreadsIcon,
+} from "@/components/icons/PlatformIcons";
+
+const SOCIAL_LINKS = [
+  { key: "facebook", label: "Facebook", href: "https://www.facebook.com/share/1BShYKizDV/?mibextid=wwXIfr", Icon: FacebookIcon },
+  { key: "zalo", label: "Zalo", href: "https://zalo.me/0965965439", Icon: ZaloIcon },
+  { key: "youtube", label: "Youtube", href: "https://youtube.com/@hoanphihoahongaff?si=aNywoErGCAi7BGxV", Icon: YoutubeIcon },
+  { key: "tiktok", label: "Tiktok", href: "https://www.tiktok.com/@vi_ha790?_r=1&_t=ZS-983XgTM1aum", Icon: TiktokIcon },
+  { key: "instagram", label: "Instagram", href: "https://www.instagram.com/imviihaaa?igsh=M2RqZml1NHpzbmgx&utm_source=qr", Icon: InstagramIcon },
+  { key: "threads", label: "Threads", href: "https://www.threads.com/@imviihaaa?igshid=NTc4MTIwNjQ2YQ==", Icon: ThreadsIcon },
+];
 
 export function MarketingFooter() {
   return (
@@ -7,12 +24,30 @@ export function MarketingFooter() {
         {/* Brand & Info */}
         <div className="space-y-lg max-w-sm">
           <div className="flex items-center gap-sm">
-            <img src="/icontitle.png" alt="Ivi Hoàn tiền" className="h-12 w-12 object-cover rounded-full shadow-sm" />
-            <span className="text-[24px] font-black text-primary tracking-tight">Ivi Hoàn tiền</span>
+            <img src="/icontitle.png" alt="iviback" className="h-12 w-12 object-cover rounded-full shadow-sm" />
+            <span className="text-[24px] font-black text-primary tracking-tight">iviback</span>
           </div>
           <p className="text-mute text-[15px] leading-relaxed font-medium">
             Nền tảng hoàn tiền affiliate hàng đầu Việt Nam. Mang lại giá trị thật cho hàng triệu người tiêu dùng trên mọi mặt trận mua sắm.
           </p>
+          <div className="space-y-sm">
+            <h5 className="font-black text-[14px] text-ink">Kết nối với chúng tôi</h5>
+            <div className="flex flex-wrap items-center gap-sm">
+              {SOCIAL_LINKS.map(({ key, label, href, Icon }) => (
+                <a
+                  key={key}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  title={label}
+                  className="transition-transform hover:-translate-y-0.5"
+                >
+                  <Icon size={32} />
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
         {/* Links Grid */}
         <div className="grid grid-cols-2 gap-3xl">
@@ -36,7 +71,7 @@ export function MarketingFooter() {
       {/* Copyright */}
       <div className="border-t border-primary/10 px-lg py-lg bg-white">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-sm">
-          <p className="text-mute font-medium text-[14px]">© {new Date().getFullYear()} Ivi Hoàn tiền. Đã đăng ký bản quyền.</p>
+          <p className="text-mute font-medium text-[14px]">© {new Date().getFullYear()} iviback. Đã đăng ký bản quyền.</p>
           <div className="flex gap-lg text-[14px] text-primary font-bold">
             <span>Đẳng cấp & Tinh tế 🚀</span>
           </div>

@@ -4,7 +4,7 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 
 export const metadata: Metadata = {
-  title: "Câu Hỏi Thường Gặp (FAQ) — Ivi Hoàn tiền",
+  title: "Câu Hỏi Thường Gặp (FAQ) — iviback",
   description: "Giải đáp các thắc mắc về hệ thống hoàn tiền thông minh.",
 };
 

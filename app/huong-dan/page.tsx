@@ -5,7 +5,7 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Hướng Dẫn — Ivi Hoàn tiền",
+  title: "Hướng Dẫn — iviback",
   description: "Cách sử dụng nền tảng hoàn tiền: 3 bước đơn giản để mua sắm thông minh.",
 };
 

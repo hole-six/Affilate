@@ -305,7 +305,7 @@ export function LandingPage() {
                 <h2 className="text-[36px] md:text-[44px] font-black text-ink leading-tight tracking-tight">
                   Trở thành bậc thầy <br/><span className="text-primary">mua sắm thông minh</span>
                 </h2>
-                <p className="text-[18px] text-mute leading-relaxed">Đăng ký tài khoản ngay để nhận đặc quyền hoàn tiền lên tới 30% và hàng ngàn voucher độc quyền mỗi ngày.</p>
+                <p className="text-[18px] text-mute leading-relaxed">Đăng ký tài khoản ngay để nhận đặc quyền hoàn tiền lên tới 80% và hàng ngàn voucher độc quyền mỗi ngày.</p>
                 <div className="flex flex-wrap gap-xl pt-sm">
                   <div className="flex items-center gap-sm font-bold text-[16px] text-ink bg-white px-md py-xs rounded-full border border-primary/10 shadow-sm">
                     <ShieldCheck className="text-primary" size={20} />

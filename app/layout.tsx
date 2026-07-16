@@ -12,13 +12,13 @@ const beVietnamPro = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Ivi Hoàn tiền",
+  title: "iviback",
   description: "Nền tảng affiliate hoàn tiền tích hợp Web + Zalo",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Ivi Hoàn tiền",
+    title: "iviback",
   },
   icons: {
     icon: [

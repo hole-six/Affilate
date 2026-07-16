@@ -4,13 +4,20 @@ import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { ShopeeIcon, TiktokIcon } from "@/components/icons/PlatformIcons";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Cửa Hàng — Nền Tảng Hỗ Trợ Hoàn Tiền",
   description: "Các đối tác và cửa hàng hỗ trợ hoàn tiền trên hệ thống của chúng tôi.",
 };
 
-export default function CuaHangPage() {
+export default async function CuaHangPage() {
+  const activeRule = await prisma.commissionRule.findFirst({
+    where: { active: true },
+    orderBy: { createdAt: "desc" },
+  });
+  const customerRate = Number(activeRule?.customerRate ?? 80);
+
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
       <MarketingHeader activePath="/cua-hang" />
@@ -47,7 +54,7 @@ export default function CuaHangPage() {
                 <div className="flex flex-col gap-sm w-full max-w-[200px]">
                   <div className="bg-canvas-soft text-ink font-bold py-2 px-4 rounded-xl border border-gray-100 flex justify-between items-center">
                     <span>Hoàn tiền tối đa</span>
-                    <span className="text-[#ee4d2d]">15%</span>
+                    <span className="text-[#ee4d2d]">{customerRate}%</span>
                   </div>
                   <div className="bg-canvas-soft text-ink font-bold py-2 px-4 rounded-xl border border-gray-100 flex justify-between items-center">
                     <span>Thời gian duyệt</span>
@@ -71,7 +78,7 @@ export default function CuaHangPage() {
                 <div className="flex flex-col gap-sm w-full max-w-[200px]">
                   <div className="bg-canvas-soft text-ink font-bold py-2 px-4 rounded-xl border border-gray-100 flex justify-between items-center">
                     <span>Hoàn tiền tối đa</span>
-                    <span className="text-primary">20%</span>
+                    <span className="text-primary">{customerRate}%</span>
                   </div>
                   <div className="bg-canvas-soft text-ink font-bold py-2 px-4 rounded-xl border border-gray-100 flex justify-between items-center">
                     <span>Thời gian duyệt</span>
