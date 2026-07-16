@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Sidebar, NavSection } from "@/components/layout/Sidebar";
 import { FloatingQuickAccess } from "@/components/customer/FloatingQuickAccess";
 import { MobileBottomNav } from "@/components/customer/MobileBottomNav";
-import { Home, RotateCcw, Gift, Wallet, ShoppingBag, Send, BookOpen } from "lucide-react";
+import { Home, RotateCcw, Gift, Wallet, ShoppingBag, Send, BookOpen, Settings } from "lucide-react";
 
 const sections: NavSection[] = [
   {
@@ -21,6 +21,7 @@ const sections: NavSection[] = [
     title: "Cá nhân",
     items: [
       { href: "/app/telegram", label: "Liên kết Telegram", icon: <Send size={20} strokeWidth={2.25} /> },
+      { href: "/app/settings", label: "Cài đặt", icon: <Settings size={20} strokeWidth={2.25} /> },
     ],
   },
   {

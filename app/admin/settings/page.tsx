@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CommissionRuleForm } from "@/components/admin/CommissionRuleForm";
 import { CategoryRateForm } from "@/components/admin/CategoryRateForm";
-import { Settings, Code2, Info, Tags } from "lucide-react";
+import { ChangePasswordForm } from "@/components/account/ChangePasswordForm";
+import { Settings, Code2, Info, Tags, ShieldCheck } from "lucide-react";
 
 export default async function AdminSettingsPage() {
   const [activeRule, categoryRates] = await Promise.all([
@@ -82,6 +83,17 @@ export default async function AdminSettingsPage() {
             </p>
           </div>
         </div>
+      </Card>
+
+      {/* Bảo mật tài khoản */}
+      <Card variant="default" className="border border-gray-100">
+        <h2 className="display-xs mb-lg flex items-center gap-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
+            <ShieldCheck size={16} strokeWidth={1.75} />
+          </span>
+          Bảo mật tài khoản
+        </h2>
+        <ChangePasswordForm />
       </Card>
     </div>
   );

@@ -84,6 +84,9 @@ export function LoginForm({ next }: { next?: string }) {
       <div className="flex flex-col gap-sm">
         <div className="flex items-center justify-between">
           <label className="text-[13px] font-bold text-ink">Mật khẩu</label>
+          <a href="/forgot-password" className="text-[13px] font-bold text-primary hover:text-primary-active hover:underline transition-colors">
+            Quên mật khẩu?
+          </a>
         </div>
         <div className="relative">
           <Lock size={18} strokeWidth={2} className="pointer-events-none absolute left-lg top-1/2 -translate-y-1/2 text-mute" />
