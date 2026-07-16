@@ -59,7 +59,7 @@ const FEATURES = [
   {
     icon: Wallet,
     title: "Rút tiền từ 10.000đ",
-    description: "Đủ ngưỡng tối thiểu là rút được ngay về ngân hàng hoặc Momo, không phí ẩn.",
+    description: "Đủ ngưỡng tối thiểu là rút được ngay về ngân hàng, không phí ẩn.",
   },
   {
     icon: Send,
@@ -102,7 +102,7 @@ const FAQ_ITEMS = [
   {
     question: "Rút tiền tối thiểu bao nhiêu?",
     answer:
-      "Mức rút tối thiểu là 10.000đ. Bạn có thể nhận về tài khoản ngân hàng hoặc ví Momo sau khi đơn hàng được duyệt.",
+      "Mức rút tối thiểu là 10.000đ. Bạn có thể nhận về tài khoản ngân hàng sau khi đơn hàng được duyệt.",
   },
   {
     question: "Có mất phí sử dụng không?",

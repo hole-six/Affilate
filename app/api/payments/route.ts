@@ -11,20 +11,19 @@ export async function POST(req: NextRequest) {
   const { customerId, periodLabel } = await req.json();
   if (!customerId) return NextResponse.json({ error: "Thiếu khách hàng" }, { status: 400 });
 
-  // Validate: khách phải có ít nhất 1 phương thức thanh toán
+  // Validate: khách phải có thông tin tài khoản ngân hàng
   const customer = await prisma.customer.findUnique({
     where: { id: customerId },
-    select: { bankAccountNumber: true, momoNumber: true, fullName: true },
+    select: { bankAccountNumber: true, fullName: true },
   });
 
   if (!customer) {
     return NextResponse.json({ error: "Không tìm thấy khách hàng" }, { status: 404 });
   }
 
-  const hasPaymentInfo = !!(customer.bankAccountNumber || customer.momoNumber);
-  if (!hasPaymentInfo) {
+  if (!customer.bankAccountNumber) {
     return NextResponse.json({
-      error: `Khách hàng "${customer.fullName}" chưa cập nhật thông tin chuyển khoản (ngân hàng hoặc Momo). Vui lòng cập nhật trước khi tạo phiếu.`,
+      error: `Khách hàng "${customer.fullName}" chưa cập nhật thông tin tài khoản ngân hàng. Vui lòng cập nhật trước khi tạo phiếu.`,
     }, { status: 400 });
   }
 

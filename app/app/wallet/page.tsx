@@ -61,8 +61,6 @@ export default async function CustomerWalletPage({ searchParams }: { searchParam
         bankName: customer.bankName,
         bankAccountNumber: customer.bankAccountNumber,
         bankAccountName: customer.bankAccountName,
-        momoNumber: customer.momoNumber,
-        momoName: customer.momoName,
       }}
     />
   );

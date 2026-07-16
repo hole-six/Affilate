@@ -17,7 +17,7 @@ const FAQ_ITEMS = [
   {
     question: "Rút tiền tối thiểu bao nhiêu?",
     answer:
-      "Mức rút tối thiểu là 10.000đ. Bạn có thể nhận về tài khoản ngân hàng hoặc ví Momo sau khi đơn hàng được duyệt.",
+      "Mức rút tối thiểu là 10.000đ. Bạn có thể nhận về tài khoản ngân hàng sau khi đơn hàng được duyệt.",
   },
   {
     question: "Có mất phí sử dụng không?",

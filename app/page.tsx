@@ -44,7 +44,7 @@ const jsonLd = {
           name: "Rút tiền tối thiểu bao nhiêu?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Mức rút tối thiểu là 10.000đ. Bạn có thể nhận về tài khoản ngân hàng hoặc ví Momo sau khi đơn hàng được duyệt.",
+            text: "Mức rút tối thiểu là 10.000đ. Bạn có thể nhận về tài khoản ngân hàng sau khi đơn hàng được duyệt.",
           },
         },
         {

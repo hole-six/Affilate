@@ -51,8 +51,6 @@ export default async function AdminPaymentsPage() {
       bankName: o.customer.bankName,
       bankAccountNumber: o.customer.bankAccountNumber,
       bankAccountName: o.customer.bankAccountName,
-      momoNumber: o.customer.momoNumber,
-      momoName: o.customer.momoName,
     };
     cur.amount += Number(o.customerRewardAmount);
     cur.count += 1;

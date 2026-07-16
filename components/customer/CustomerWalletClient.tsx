@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Wallet, Clock, CheckCircle2, Building2, Smartphone, Edit2, AlertCircle, X, Loader2 } from "lucide-react";
+import { Wallet, Clock, CheckCircle2, Building2, Edit2, AlertCircle, X, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/Pagination";
@@ -34,8 +34,6 @@ type PaymentInfo = {
   bankName: string | null;
   bankAccountNumber: string | null;
   bankAccountName: string | null;
-  momoNumber: string | null;
-  momoName: string | null;
 };
 
 type Props = {
@@ -53,7 +51,6 @@ type Props = {
 export function CustomerWalletClient({ stats, history, totalPages, currentPage, paymentInfo: initialPaymentInfo }: Props) {
   const router = useRouter();
   const [requestAmount, setRequestAmount] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<"bank" | "momo">("bank");
   const [error, setError] = useState<string | null>(null);
 
   // Profile State
@@ -65,8 +62,6 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
   const [formBankName, setFormBankName] = useState(initialPaymentInfo.bankName || "");
   const [formBankAccountNumber, setFormBankAccountNumber] = useState(initialPaymentInfo.bankAccountNumber || "");
   const [formBankAccountName, setFormBankAccountName] = useState(initialPaymentInfo.bankAccountName || "");
-  const [formMomoNumber, setFormMomoNumber] = useState(initialPaymentInfo.momoNumber || "");
-  const [formMomoName, setFormMomoName] = useState(initialPaymentInfo.momoName || "");
 
   const handleRequestAll = () => {
     setRequestAmount(stats.available.toString());
@@ -82,12 +77,8 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
       setError("Số dư không đủ");
       return;
     }
-    if (paymentMethod === "bank" && (!paymentInfo.bankName || !paymentInfo.bankAccountNumber)) {
+    if (!paymentInfo.bankName || !paymentInfo.bankAccountNumber) {
       setError("Vui lòng cập nhật thông tin Ngân hàng trước khi rút");
-      return;
-    }
-    if (paymentMethod === "momo" && !paymentInfo.momoNumber) {
-      setError("Vui lòng cập nhật thông tin Momo trước khi rút");
       return;
     }
     setError(null);
@@ -105,8 +96,6 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
           bankName: formBankName,
           bankAccountNumber: formBankAccountNumber,
           bankAccountName: formBankAccountName,
-          momoNumber: formMomoNumber,
-          momoName: formMomoName,
         }),
       });
       if (!res.ok) throw new Error("Failed to save");
@@ -125,34 +114,19 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
     setFormBankName(paymentInfo.bankName || "");
     setFormBankAccountNumber(paymentInfo.bankAccountNumber || "");
     setFormBankAccountName(paymentInfo.bankAccountName || "");
-    setFormMomoNumber(paymentInfo.momoNumber || "");
-    setFormMomoName(paymentInfo.momoName || "");
     setIsModalOpen(true);
   };
 
   const renderAccountInfoBox = () => {
-    if (paymentMethod === "bank") {
-      if (paymentInfo.bankName && paymentInfo.bankAccountNumber) {
-        return (
-          <div className="rounded-lg bg-white p-sm shadow-sm ring-1 ring-black/5">
-            <div className="text-[13px] font-bold text-gray-900">{paymentInfo.bankName}</div>
-            <div className="text-[12px] font-medium text-gray-500 uppercase">
-              {paymentInfo.bankAccountNumber} - {paymentInfo.bankAccountName}
-            </div>
+    if (paymentInfo.bankName && paymentInfo.bankAccountNumber) {
+      return (
+        <div className="rounded-lg bg-white p-sm shadow-sm ring-1 ring-black/5">
+          <div className="text-[13px] font-bold text-gray-900">{paymentInfo.bankName}</div>
+          <div className="text-[12px] font-medium text-gray-500 uppercase">
+            {paymentInfo.bankAccountNumber} - {paymentInfo.bankAccountName}
           </div>
-        );
-      }
-    } else {
-      if (paymentInfo.momoNumber) {
-        return (
-          <div className="rounded-lg bg-white p-sm shadow-sm ring-1 ring-black/5">
-            <div className="text-[13px] font-bold text-gray-900">Ví Momo</div>
-            <div className="text-[12px] font-medium text-gray-500 uppercase">
-              {paymentInfo.momoNumber} - {paymentInfo.momoName}
-            </div>
-          </div>
-        );
-      }
+        </div>
+      );
     }
 
     return (
@@ -264,37 +238,6 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
                 <div className="mt-xs flex items-center justify-between">
                   <span className="text-[11px] font-medium text-gray-400">Tối thiểu 10.000 VNĐ</span>
                   {error && <span className="text-[12px] font-bold text-red-500">{error}</span>}
-                </div>
-              </div>
-
-              {/* Payment Method */}
-              <div>
-                <label className="mb-sm block text-[13px] font-bold text-gray-600">Phương thức nhận</label>
-                <div className="grid grid-cols-2 gap-sm">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("bank")}
-                    className={`flex h-14 flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all ${
-                      paymentMethod === "bank"
-                        ? "border-[#e86a33] bg-[#fff0e6] text-[#e86a33]"
-                        : "border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Building2 size={18} strokeWidth={2.5} />
-                    <span className="text-[12px] font-bold">Ngân hàng</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("momo")}
-                    className={`flex h-14 flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all ${
-                      paymentMethod === "momo"
-                        ? "border-[#e86a33] bg-[#fff0e6] text-[#e86a33]"
-                        : "border-gray-100 bg-white text-gray-500 hover:border-gray-200 hover:bg-gray-50"
-                    }`}
-                  >
-                    <Smartphone size={18} strokeWidth={2.5} />
-                    <span className="text-[12px] font-bold">Momo</span>
-                  </button>
                 </div>
               </div>
 
@@ -428,38 +371,6 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
                         type="text"
                         value={formBankAccountName}
                         onChange={(e) => setFormBankAccountName(e.target.value)}
-                        placeholder="VD: NGUYEN VAN A"
-                        className="h-11 w-full rounded-xl border border-gray-200 px-md text-[14px] font-medium uppercase focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33]"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="h-px w-full bg-gray-100" />
-
-                {/* Momo Section */}
-                <div>
-                  <h4 className="mb-sm flex items-center gap-xs text-[14px] font-bold text-gray-900">
-                    <Smartphone size={16} className="text-[#a50064]" />
-                    Ví điện tử Momo
-                  </h4>
-                  <div className="space-y-sm">
-                    <div>
-                      <label className="mb-xs block text-[12px] font-bold text-gray-600">Số điện thoại Momo</label>
-                      <input 
-                        type="text"
-                        value={formMomoNumber}
-                        onChange={(e) => setFormMomoNumber(e.target.value)}
-                        placeholder="VD: 09..."
-                        className="h-11 w-full rounded-xl border border-gray-200 px-md text-[14px] font-medium focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33]"
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-xs block text-[12px] font-bold text-gray-600">Tên chủ ví</label>
-                      <input 
-                        type="text"
-                        value={formMomoName}
-                        onChange={(e) => setFormMomoName(e.target.value)}
                         placeholder="VD: NGUYEN VAN A"
                         className="h-11 w-full rounded-xl border border-gray-200 px-md text-[14px] font-medium uppercase focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33]"
                       />

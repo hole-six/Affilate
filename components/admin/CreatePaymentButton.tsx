@@ -26,7 +26,7 @@ export function CreatePaymentButton({
     if (!hasPaymentInfo) {
       await modal.alert({
         title: "Chưa có thông tin thanh toán",
-        message: `Khách hàng "${customerName ?? ""}" chưa cập nhật số tài khoản ngân hàng hoặc ví Momo. Vui lòng vào trang Khách hàng → cập nhật thông tin thanh toán trước khi tạo phiếu.`,
+        message: `Khách hàng "${customerName ?? ""}" chưa cập nhật số tài khoản ngân hàng. Vui lòng vào trang Khách hàng → cập nhật thông tin thanh toán trước khi tạo phiếu.`,
         iconType: "danger",
       });
       return;

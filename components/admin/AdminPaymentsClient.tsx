@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import {
-  Search, Wallet, ClipboardList, CreditCard, Smartphone,
+  Search, Wallet, ClipboardList, CreditCard,
   Copy, Check, X, Eye, Receipt, AlertCircle,
   CheckCircle2, Clock, Image as ImageIcon, ExternalLink,
   ChevronDown, ChevronUp, ShoppingBag,
@@ -15,7 +15,6 @@ import { MarkPaidForm } from "@/components/admin/MarkPaidForm";
 type CustomerPending = {
   id: string; name: string; code: string; amount: number; count: number;
   bankName: string | null; bankAccountNumber: string | null; bankAccountName: string | null;
-  momoNumber: string | null; momoName: string | null;
 };
 
 type PaymentBatch = {
@@ -62,7 +61,6 @@ function CopyInfoBtn({ c }: { c: CustomerPending }) {
   const go = () => {
     const lines = [`${c.name} (${c.code})`];
     if (c.bankAccountNumber) lines.push(`${c.bankName} — ${c.bankAccountNumber} — ${c.bankAccountName}`);
-    if (c.momoNumber) lines.push(`Momo: ${c.momoNumber} — ${c.momoName}`);
     lines.push(`Số tiền: ${formatCurrency(c.amount)}`);
     navigator.clipboard.writeText(lines.join("\n"));
     setOk(true); setTimeout(() => setOk(false), 1400);
@@ -170,16 +168,6 @@ function BatchDetailModal({ batchId, onClose }: { batchId: string; onClose: () =
                         <p className="font-mono text-[11px] text-gray-500">{batch.customer.bankAccountNumber} — {batch.customer.bankAccountName}</p>
                       </div>
                       <CopyBtn value={batch.customer.bankAccountNumber} />
-                    </div>
-                  )}
-                  {batch.customer.momoNumber && (
-                    <div className="flex items-center gap-sm rounded-xl bg-purple-50 p-sm ring-1 ring-purple-100">
-                      <Smartphone size={14} className="text-[#a50064] shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-bold text-[#a50064]">Ví Momo</p>
-                        <p className="font-mono text-[11px] text-purple-500">{batch.customer.momoNumber} — {batch.customer.momoName}</p>
-                      </div>
-                      <CopyBtn value={batch.customer.momoNumber} />
                     </div>
                   )}
                 </div>
@@ -298,7 +286,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
     if (!search) return true;
     const q = search.toLowerCase();
     return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
-      || c.momoNumber?.includes(q) || c.bankAccountNumber?.includes(q);
+      || c.bankAccountNumber?.includes(q);
   });
 
   const filteredWaiting = waitingList.filter((c) => {
@@ -408,30 +396,17 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
                   </div>
 
                   {/* Payment info */}
-                  {c.bankAccountNumber || c.momoNumber ? (
+                  {c.bankAccountNumber ? (
                     <div className="flex flex-col gap-[6px]">
-                      {c.bankAccountNumber && (
-                        <div className="flex items-center gap-sm rounded-xl bg-gray-50 p-sm ring-1 ring-gray-100">
-                          <CreditCard size={13} className="text-[#e86a33] shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <div className="text-[11px] font-bold text-gray-800 truncate">{c.bankName}</div>
-                            <div className="font-mono text-[11px] text-gray-500">{c.bankAccountNumber}</div>
-                            <div className="text-[10px] text-gray-400 uppercase truncate">{c.bankAccountName}</div>
-                          </div>
-                          <CopyBtn value={c.bankAccountNumber} />
+                      <div className="flex items-center gap-sm rounded-xl bg-gray-50 p-sm ring-1 ring-gray-100">
+                        <CreditCard size={13} className="text-[#e86a33] shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[11px] font-bold text-gray-800 truncate">{c.bankName}</div>
+                          <div className="font-mono text-[11px] text-gray-500">{c.bankAccountNumber}</div>
+                          <div className="text-[10px] text-gray-400 uppercase truncate">{c.bankAccountName}</div>
                         </div>
-                      )}
-                      {c.momoNumber && (
-                        <div className="flex items-center gap-sm rounded-xl bg-purple-50 p-sm ring-1 ring-purple-100">
-                          <Smartphone size={13} className="text-[#a50064] shrink-0" />
-                          <div className="min-w-0 flex-1">
-                            <div className="text-[11px] font-bold text-[#a50064]">Momo</div>
-                            <div className="font-mono text-[11px] text-purple-500">{c.momoNumber}</div>
-                            <div className="text-[10px] text-purple-300 uppercase truncate">{c.momoName}</div>
-                          </div>
-                          <CopyBtn value={c.momoNumber} />
-                        </div>
-                      )}
+                        <CopyBtn value={c.bankAccountNumber} />
+                      </div>
                     </div>
                   ) : (
                     <div className="flex items-center gap-sm rounded-xl bg-amber-50 p-sm ring-1 ring-amber-100">
@@ -448,7 +423,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
                         customerId={c.id}
                         customerName={c.name}
                         amount={c.amount}
-                        hasPaymentInfo={!!(c.bankAccountNumber || c.momoNumber)}
+                        hasPaymentInfo={!!c.bankAccountNumber}
                       />
                     </div>
                   </div>
