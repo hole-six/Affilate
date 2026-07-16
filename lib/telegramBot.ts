@@ -80,6 +80,10 @@ export function buildMainMenuKeyboard(): TelegramInlineKeyboard {
       ],
       [
         { text: "🔗 Link của tôi", callback_data: "links" },
+        { text: "🏷️ Ưu đãi", callback_data: "deals" },
+      ],
+      [
+        { text: "🎁 Mời bạn", callback_data: "referral" },
         { text: "📖 Hướng dẫn", callback_data: "help" },
       ],
     ],
@@ -104,6 +108,8 @@ export function buildTelegramHelpMessage(): string {
     "💰 /wallet — xem số dư hoàn tiền",
     "📦 /orders — 5 đơn hàng gần nhất",
     "🔗 /links — 5 link đã tạo gần nhất",
+    "🏷️ /deals — ưu đãi hot đang chạy",
+    "🎁 /referral — link mời bạn & hoa hồng giới thiệu",
     "📖 /help — xem lại hướng dẫn này",
     "",
     "Ví dụ: <code>https://shopee.vn/...</code>",
@@ -177,6 +183,56 @@ export function buildOrderApprovedMessage(params: {
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+export function buildReferralBonusMessage(params: {
+  bonusAmount: number;
+  friendOrderExternalId: string;
+}): string {
+  return [
+    "🎁 <b>Bạn vừa nhận hoa hồng giới thiệu!</b>",
+    "",
+    `Một người bạn bạn mời vừa có đơn hàng được duyệt (mã <code>${escapeHtml(params.friendOrderExternalId)}</code>).`,
+    `Hoa hồng giới thiệu: <b>${formatCurrency(params.bonusAmount)}</b>`,
+    "",
+    "Gõ /wallet để xem tổng số dư hoặc /referral để xem link mời bạn của bạn.",
+  ].join("\n");
+}
+
+export function buildReferralInfoMessage(params: {
+  inviteUrl: string;
+  referralPercent: number;
+  maxReferralOrders: number;
+  referralValidityMonths: number;
+  referredCount: number;
+  totalBonusEarned: number;
+}): string {
+  return [
+    "🎁 <b>Mời bạn bè — nhận hoa hồng giới thiệu</b>",
+    "",
+    `Mời bạn bè đăng ký bằng link dưới đây, bạn sẽ nhận <b>${params.referralPercent}% hoa hồng</b> từ ${params.maxReferralOrders} đơn hàng đầu tiên của họ (trong vòng ${params.referralValidityMonths} tháng kể từ ngày họ tham gia).`,
+    "",
+    `🔗 ${params.inviteUrl}`,
+    "",
+    `👥 Số bạn đã mời: <b>${params.referredCount}</b>`,
+    `💰 Tổng hoa hồng giới thiệu đã nhận: <b>${formatCurrency(params.totalBonusEarned)}</b>`,
+  ].join("\n");
+}
+
+export function buildDealsListMessage(
+  deals: { title: string; discountPercent: number | null; url: string | null }[]
+): string {
+  if (deals.length === 0) {
+    return "🏷️ Hiện chưa có ưu đãi nào đang chạy. Quay lại sau nhé!";
+  }
+
+  const lines = deals.map((d) => {
+    const discount = d.discountPercent ? ` (giảm ${d.discountPercent}%)` : "";
+    const title = `${escapeHtml(d.title)}${discount}`;
+    return d.url ? `🏷️ <a href="${d.url}">${title}</a>` : `🏷️ ${title}`;
+  });
+
+  return ["🏷️ <b>Ưu đãi hot đang chạy:</b>", "", ...lines].join("\n");
 }
 
 export function buildPaymentPaidMessage(params: {

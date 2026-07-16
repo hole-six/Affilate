@@ -8,7 +8,7 @@ import { parseImportCsv } from "@/lib/csvImport";
 import { parseShopeeAffiliateCsv } from "@/lib/shopeeAffiliateCsv";
 import { getActiveCommissionRule, splitCommission } from "@/lib/commission";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
-import { buildOrderApprovedMessage } from "@/lib/telegramBot";
+import { buildOrderApprovedMessage, buildReferralBonusMessage } from "@/lib/telegramBot";
 import { notifyCustomerInApp } from "@/lib/notifications";
 
 // Chuẩn hoá output từ cả 2 parser về cùng shape dùng trong route
@@ -493,6 +493,14 @@ export async function POST(req: NextRequest) {
                 message: `Bạn vừa nhận ${bonusAmount.toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
                 link: "/app/referral",
               });
+
+              void notifyCustomerTelegram(
+                customerData.referredById,
+                buildReferralBonusMessage({
+                  bonusAmount,
+                  friendOrderExternalId: orderExternalId,
+                })
+              );
             }
           }
         }

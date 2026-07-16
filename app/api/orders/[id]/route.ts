@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
-import { buildOrderApprovedMessage } from "@/lib/telegramBot";
+import { buildOrderApprovedMessage, buildReferralBonusMessage } from "@/lib/telegramBot";
 import { notifyCustomerInApp } from "@/lib/notifications";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -148,6 +148,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             message: `Bạn vừa nhận ${bonusAmount.toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
             link: "/app/referral",
           });
+
+          void notifyCustomerTelegram(
+            customerData.referredById,
+            buildReferralBonusMessage({
+              bonusAmount,
+              friendOrderExternalId: updated.orderExternalId,
+            })
+          );
         }
       }
     }

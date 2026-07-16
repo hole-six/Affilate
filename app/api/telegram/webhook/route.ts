@@ -4,12 +4,14 @@ import {
   answerTelegramCallbackQuery,
   buildAffiliateReplyMessage,
   buildConvertLinkPromptMessage,
+  buildDealsListMessage,
   buildLinkExpiredMessage,
   buildLinkPromptMessage,
   buildLinkSuccessMessage,
   buildLinksListMessage,
   buildMainMenuKeyboard,
   buildOrdersListMessage,
+  buildReferralInfoMessage,
   buildTelegramHelpMessage,
   buildUnsupportedPlatformMessage,
   buildWalletMessage,
@@ -198,6 +200,41 @@ export async function POST(req: NextRequest) {
       links.map((l) => ({ trackingCode: l.trackingCode, shortUrl: l.shortUrl, createdAt: l.createdAt }))
     );
     processingStatus = "processed_links";
+  } else if (command === "/referral") {
+    const [activeRule, referredCount, referralOrders] = await Promise.all([
+      prisma.commissionRule.findFirst({ where: { active: true }, orderBy: { createdAt: "desc" } }),
+      prisma.customer.count({ where: { referredById: customer.id } }),
+      prisma.order.findMany({ where: { customerId: customer.id, sourceType: "referral" } }),
+    ]);
+
+    const referralRate = activeRule?.referralRate ? Number(activeRule.referralRate) : 0.05;
+    const totalBonusEarned = referralOrders.reduce((s, o) => s + Number(o.customerRewardAmount), 0);
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://iviback.vn";
+
+    replyText = buildReferralInfoMessage({
+      inviteUrl: `${appUrl}/register?ref=${customer.customerCode}`,
+      referralPercent: Math.round(referralRate * 1000) / 10,
+      maxReferralOrders: activeRule?.maxReferralOrders ?? 5,
+      referralValidityMonths: activeRule?.referralValidityMonths ?? 6,
+      referredCount,
+      totalBonusEarned,
+    });
+    processingStatus = "processed_referral";
+  } else if (command === "/deals") {
+    const deals = await prisma.dealPost.findMany({
+      where: { status: "active" },
+      orderBy: { createdAt: "desc" },
+      take: 5,
+    });
+
+    replyText = buildDealsListMessage(
+      deals.map((d) => ({
+        title: d.title,
+        discountPercent: d.discountPercent,
+        url: d.shortUrl ?? d.affiliateUrl,
+      }))
+    );
+    processingStatus = "processed_deals";
   } else if (!originalUrl) {
     replyText = buildTelegramHelpMessage();
     processingStatus = "processed_no_url";
@@ -211,7 +248,7 @@ export async function POST(req: NextRequest) {
       const platform = await prisma.platform.findUnique({ where: { code: platformCode } });
 
       if (!platform) {
-        replyText = "He thong chua cau hinh nen tang phu hop de doi link.";
+        replyText = "😕 Hệ thống chưa cấu hình nền tảng phù hợp để đổi link này.";
         processingStatus = "processed_platform_not_found";
       } else {
         const created = await createTrackingLink({
