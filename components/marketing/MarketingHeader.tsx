@@ -24,10 +24,10 @@ export function MarketingHeader({ activePath = "/" }: { activePath?: string }) {
           <img
             src="/icontitle.png"
             alt="Ivi Hoàn tiền logo"
-            className="w-12 h-12 object-cover rounded-full"
+            className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full shrink-0"
           />
           <span
-            className="font-bold text-[#FF6B35] text-[18px] leading-tight"
+            className="font-bold text-[#FF6B35] text-[15px] md:text-[18px] leading-tight whitespace-nowrap"
             style={{ fontFamily: "'Nunito', sans-serif" }}
           >
             Ivi Hoàn tiền
@@ -60,11 +60,11 @@ export function MarketingHeader({ activePath = "/" }: { activePath?: string }) {
         {/* ── CTA + Hamburger ── */}
         <div className="flex items-center gap-3">
           <Link
-            href="/app"
-            className="bg-[#FF6B35] text-white rounded-full px-5 py-2 font-bold text-[14px] hover:bg-[#e85a25] shadow-md transition-all duration-200 active:scale-95"
+            href="/login"
+            className="bg-[#FF6B35] text-white rounded-full px-4 py-2 md:px-5 font-bold text-[13px] md:text-[14px] whitespace-nowrap hover:bg-[#e85a25] shadow-md transition-all duration-200 active:scale-95"
             style={{ fontFamily: "'Nunito', sans-serif" }}
           >
-            Mở web app 🎀
+            Mở app
           </Link>
 
           {/* Hamburger (mobile only) */}
@@ -121,11 +121,11 @@ export function MarketingHeader({ activePath = "/" }: { activePath?: string }) {
 
           <div className="mt-2 pt-3 border-t border-[#FFE4D6]">
             <Link
-              href="/app"
+              href="/login"
               onClick={() => setMenuOpen(false)}
               className="block w-full text-center bg-[#FF6B35] text-white rounded-full px-5 py-2.5 font-bold text-[14px] hover:bg-[#e85a25] shadow-md transition-all duration-200"
             >
-              Mở web app 🎀
+              Mở app
             </Link>
           </div>
         </div>

@@ -52,9 +52,7 @@ export function CustomerTopNav({ userName }: { userName: string }) {
         {/* User Menu */}
         <div className="flex items-center gap-md">
           <div className="hidden sm:flex items-center gap-sm bg-canvas-soft border border-primary-pale/50 pl-1 pr-3 py-1 rounded-full cursor-pointer hover:bg-primary-pale/20 transition-colors">
-            <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-primary to-accent-orange text-white flex items-center justify-center font-bold text-[14px] shadow-sm">
-              {userName.charAt(0).toUpperCase()}
-            </div>
+            <img src="/pig_logo.png" alt="" className="h-8 w-8 rounded-full object-contain shadow-sm" />
             <span className="text-[14px] font-bold text-ink truncate max-w-[120px]">{userName}</span>
           </div>
           <Link href="/api/auth/logout" className="p-2 text-mute hover:text-negative bg-canvas-soft rounded-full hover:bg-negative/10 transition-colors" title="Đăng xuất">

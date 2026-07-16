@@ -158,7 +158,7 @@ export function LandingPage() {
                 Cách thông minh hơn để mua Shopee & TikTok Shop — hoàn tiền tự động cho mọi đơn, tiền về thẳng ví của bạn.
               </p>
               <div className="flex flex-col sm:flex-row gap-md pt-md">
-                <Link href="/register" className="bg-gradient-to-r from-primary to-primary-active hover:shadow-lg hover:-translate-y-0.5 text-white px-2xl py-lg rounded-2xl font-bold text-[16px] flex items-center justify-center gap-sm transition-all shadow-primary/30 shadow-md">
+                <Link href="/login" className="bg-gradient-to-r from-primary to-primary-active hover:shadow-lg hover:-translate-y-0.5 text-white px-2xl py-lg rounded-2xl font-bold text-[16px] flex items-center justify-center gap-sm transition-all shadow-primary/30 shadow-md">
                   Bắt đầu tiết kiệm ngay
                   <ArrowRight size={20} />
                 </Link>
