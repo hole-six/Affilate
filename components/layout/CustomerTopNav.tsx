@@ -23,7 +23,7 @@ export function CustomerTopNav({ userName }: { userName: string }) {
         <Link href="/app" className="flex items-center gap-sm hover:opacity-90 transition-opacity">
           <img src="/pig_logo.png" alt="Logo" className="h-11 w-11 object-contain rounded-full shadow-sm border-2 border-white" />
           <div className="flex flex-col">
-            <span className="text-[18px] font-black text-primary leading-tight">Lvi Hoàn Tiền</span>
+            <span className="text-[18px] font-black text-primary leading-tight">Ivi Hoàn tiền</span>
             <span className="text-[12px] font-bold text-mute leading-none">Hoàn tiền là thích! 💗</span>
           </div>
         </Link>

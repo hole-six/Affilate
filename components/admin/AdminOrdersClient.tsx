@@ -137,7 +137,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
       <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden flex flex-col gap-0 w-full max-w-[100vw]">
 
         {/* Summary Header */}
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200 p-lg grid grid-cols-2 sm:grid-cols-4 gap-md">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200 p-lg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng giá trị đơn</span>
             <span className="text-[20px] font-bold text-gray-900 leading-none">
@@ -165,7 +165,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         </div>
 
         <div className="responsive-table overflow-x-auto">
-          <table className="w-full text-left text-[13px]">
+          <table className="w-full text-left text-[13px] min-w-[900px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Đơn hàng / Tracking</th>

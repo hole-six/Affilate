@@ -112,7 +112,7 @@ export function AdminLinksClient({ links, totalPages, currentPage, counts, total
           </div>
 
           <div className="responsive-table overflow-x-auto">
-            <table className="w-full text-left text-[13px]">
+            <table className="w-full text-left text-[13px] min-w-[800px]">
               <thead>
                 <tr className="border-b border-ink/5 bg-canvas-soft/60">
                   <th className="px-md py-sm font-bold uppercase tracking-wider text-mute text-[11px]">Sản phẩm</th>

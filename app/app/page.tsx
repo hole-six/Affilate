@@ -117,7 +117,7 @@ export default async function CustomerHomePage() {
       </div>
 
       {/* ═══ 4 STAT CARDS ═══ */}
-      <div className="grid grid-cols-2 gap-md lg:grid-cols-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-md">
         {/* Card 1: Chờ duyệt */}
         <div className="group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
           <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50 opacity-60" />
@@ -191,10 +191,10 @@ export default async function CustomerHomePage() {
       </div>
 
       {/* ═══ BOTTOM PANELS ═══ */}
-      <div className="grid grid-cols-1 gap-lg lg:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-lg xl:grid-cols-[2fr_1fr]">
 
         {/* LỊCH SỬ ĐƠN HÀNG với ảnh preview */}
-        <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/[0.06]">
+        <div className="rounded-3xl bg-white p-md sm:p-xl shadow-sm ring-1 ring-black/[0.06] overflow-hidden">
           <div className="mb-lg flex items-center justify-between border-b border-gray-100 pb-md">
             <h2 className="flex items-center gap-sm text-[15px] font-bold text-gray-900">
               <img src="/heothongbao.png" alt="" className="h-8 w-8 object-contain" />
@@ -229,7 +229,7 @@ export default async function CustomerHomePage() {
                 return (
                   <li
                     key={order.id}
-                    className="flex items-center gap-md py-md px-xs hover:bg-orange-50/30 rounded-xl transition-colors"
+                    className="flex items-center gap-sm sm:gap-md py-md px-xs hover:bg-orange-50/30 rounded-xl transition-colors"
                   >
                     {/* Ảnh sản phẩm */}
                     <ProductThumb image={productImage} color={platformColor} platform={platformCode} />
@@ -250,12 +250,12 @@ export default async function CustomerHomePage() {
                     </div>
 
                     {/* Số tiền + trạng thái */}
-                    <div className="flex flex-col items-end gap-[3px] shrink-0">
-                      <span className="text-[13px] font-black text-emerald-600">
+                    <div className="flex flex-col items-end gap-[3px] shrink-0 max-w-[92px] sm:max-w-none">
+                      <span className="text-[12px] sm:text-[13px] font-black text-emerald-600 whitespace-nowrap">
                         +{formatCurrency(order.customerRewardAmount)}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-sm py-[2px] rounded-full ${
+                        className={`text-[9px] sm:text-[10px] font-bold px-xs sm:px-sm py-[2px] rounded-full whitespace-nowrap ${
                           order.payoutStatus === "paid"
                             ? "bg-emerald-100 text-emerald-600"
                             : order.payoutStatus === "processing"

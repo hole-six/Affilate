@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
         <div className="pointer-events-none absolute -bottom-6 right-32 h-24 w-24 rounded-full bg-[#ffa07a] opacity-20" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#ffe0cc] opacity-40" />
 
-        <div className="relative z-10 flex items-center justify-between gap-lg flex-wrap">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-lg flex-wrap">
           <div className="flex items-center gap-lg">
             <img
               src="/heodashboard.png"
@@ -85,7 +85,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* ═══ 4 KPI CARDS ═══ */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-md">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-md">
         {/* Khách hàng */}
         <div className="group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] transition-all duration-200 hover:-translate-y-1 hover:shadow-md">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-sky-50 opacity-60" />
@@ -152,7 +152,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* ═══ DOANH THU + VẬN HÀNH ═══ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-lg">
 
         {/* Cột trái: TÀI CHÍNH */}
         <div className="lg:col-span-2 flex flex-col gap-lg">
@@ -169,13 +169,13 @@ export default async function AdminDashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-xl">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-xl lg:col-span-2">
                 <div>
                   <div className="text-[12px] font-semibold text-gray-400 uppercase tracking-wider mb-1">
                     Tổng hoa hồng nhận về
                   </div>
                   <div className="flex items-end gap-sm">
-                    <div className="text-[36px] font-black tracking-tight text-gray-900 leading-none">
+                    <div className="text-[28px] sm:text-[36px] font-black tracking-tight text-gray-900 leading-none">
                       {formatCurrency(commission)}
                     </div>
                     <TrendingUp size={18} className="text-emerald-500 mb-1" />
@@ -186,7 +186,7 @@ export default async function AdminDashboardPage() {
                     Hệ thống thực giữ
                   </div>
                   <div className="flex items-end gap-sm">
-                    <div className="text-[36px] font-black tracking-tight text-[#e86a33] leading-none">
+                    <div className="text-[28px] sm:text-[36px] font-black tracking-tight text-[#e86a33] leading-none">
                       {formatCurrency(profit)}
                     </div>
                     <CircleDollarSign size={18} className="text-[#e86a33] mb-1" />

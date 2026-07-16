@@ -2,13 +2,17 @@ import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { CommissionRuleForm } from "@/components/admin/CommissionRuleForm";
-import { Settings, Code2, Info } from "lucide-react";
+import { CategoryRateForm } from "@/components/admin/CategoryRateForm";
+import { Settings, Code2, Info, Tags } from "lucide-react";
 
 export default async function AdminSettingsPage() {
-  const activeRule = await prisma.commissionRule.findFirst({
-    where: { active: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const [activeRule, categoryRates] = await Promise.all([
+    prisma.commissionRule.findFirst({
+      where: { active: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.categoryCommissionRate.findMany({ orderBy: { sortOrder: "asc" } }),
+  ]);
 
   return (
     <div className="flex flex-col gap-2xl">
@@ -32,6 +36,24 @@ export default async function AdminSettingsPage() {
           referralRate={Number(activeRule?.referralRate ?? 0.05) * 100}
           maxReferralOrders={activeRule?.maxReferralOrders ?? 5}
           referralValidityMonths={activeRule?.referralValidityMonths ?? 6}
+        />
+      </Card>
+
+      {/* Category commission rate table (uoc tinh cashback) */}
+      <Card variant="default" className="border border-gray-100">
+        <h2 className="display-xs mb-lg flex items-center gap-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
+            <Tags size={16} strokeWidth={1.75} />
+          </span>
+          Tỷ lệ hoa hồng theo ngành hàng (ước tính cashback)
+        </h2>
+        <CategoryRateForm
+          initialRows={categoryRates.map((c) => ({
+            name: c.name,
+            keywords: c.keywords,
+            rate: Number(c.rate),
+            isDefault: c.isDefault,
+          }))}
         />
       </Card>
 

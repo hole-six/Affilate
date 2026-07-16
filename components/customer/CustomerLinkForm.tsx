@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Store, Check, Copy, ExternalLink, Link2, Plus, Package, Sparkles } from "lucide-react";
+import { Store, Check, Copy, ExternalLink, Link2, Plus, Package, Sparkles, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { Card } from "@/components/ui/Card";
 import { ShopeeIcon, TiktokIcon } from "@/components/icons/PlatformIcons";
+import { formatCurrency } from "@/lib/format";
 
 type Option = { id: string; code: string; label: string };
 type LinkResult = {
@@ -16,6 +17,8 @@ type LinkResult = {
   shortCode: string;
   productTitle: string | null;
   productImage: string | null;
+  productPrice: number | string | null;
+  estimatedCashback: number | string | null;
 };
 
 // Brand icons render their own colors, so the wrapper skips tinting for them.
@@ -32,6 +35,7 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
   const router = useRouter();
   const [platformId, setPlatformId] = useState(platforms[0]?.id ?? "");
   const [originalUrl, setOriginalUrl] = useState("");
+  const [productPrice, setProductPrice] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LinkResult | null>(null);
@@ -50,7 +54,12 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
     const res = await fetch("/api/links", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ originalUrl, platformId, channelSource: "web" }),
+      body: JSON.stringify({
+        originalUrl,
+        platformId,
+        channelSource: "web",
+        productPrice: productPrice ? Number(productPrice) : undefined,
+      }),
     });
 
     setLoading(false);
@@ -69,8 +78,11 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
       shortCode: data.link.shortCode,
       productTitle: data.link.productTitle ?? null,
       productImage: data.link.productImage ?? null,
+      productPrice: data.link.productPrice ?? null,
+      estimatedCashback: data.link.estimatedCashback ?? null,
     });
     setOriginalUrl("");
+    setProductPrice("");
     router.refresh();
   }
 
@@ -143,20 +155,35 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
             Dán link {selectedPlatform?.label ?? "sản phẩm"}
           </span>
         </div>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-md sm:flex-row">
-          <div className="flex-1">
-            <TextInput
-              placeholder={`Dán link ${selectedPlatform?.label ?? "sản phẩm"} muốn hoàn tiền vào đây...`}
-              required
-              value={originalUrl}
-              onChange={(e) => setOriginalUrl(e.target.value)}
-              className="h-12 bg-gray-50 border-gray-200 focus:border-[#e86a33] focus:ring-[#e86a33]/20"
-            />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-md">
+          <div className="flex flex-col gap-md sm:flex-row sm:items-end">
+            <div className="flex-1">
+              <TextInput
+                placeholder={`Dán link ${selectedPlatform?.label ?? "sản phẩm"} muốn hoàn tiền vào đây...`}
+                required
+                value={originalUrl}
+                onChange={(e) => setOriginalUrl(e.target.value)}
+                className="h-12 bg-gray-50 border-gray-200 focus:border-[#e86a33] focus:ring-[#e86a33]/20"
+              />
+            </div>
+            <div className="sm:w-[180px]">
+              <TextInput
+                type="number"
+                min={0}
+                placeholder="Giá sản phẩm (tuỳ chọn)"
+                value={productPrice}
+                onChange={(e) => setProductPrice(e.target.value)}
+                className="h-12 bg-gray-50 border-gray-200 focus:border-[#e86a33] focus:ring-[#e86a33]/20"
+              />
+            </div>
           </div>
-          <Button 
-            type="submit" 
-            disabled={loading || !platformId} 
-            className="h-12 bg-[#e86a33] text-white hover:bg-[#d65d2a] hover:shadow-md hover:shadow-[#e86a33]/30 active:bg-[#c25324] focus-visible:ring-[#e86a33]"
+          <p className="text-[11px] text-gray-400">
+            Nhập giá sản phẩm để xem ước tính số tiền hoàn — Shopee chưa cho hệ thống tự lấy giá.
+          </p>
+          <Button
+            type="submit"
+            disabled={loading || !platformId}
+            className="h-12 w-fit bg-[#e86a33] text-white hover:bg-[#d65d2a] hover:shadow-md hover:shadow-[#e86a33]/30 active:bg-[#c25324] focus-visible:ring-[#e86a33]"
           >
             {loading ? "Đang tạo..." : (
               <>
@@ -195,14 +222,33 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
                 <p className="line-clamp-2 text-[14px] font-bold text-gray-900 leading-snug">
                   {result.productTitle ?? "Sản phẩm mua sắm"}
                 </p>
-                <div className="mt-sm flex items-center gap-xs">
+                <div className="mt-sm flex items-center gap-xs flex-wrap">
                   <span className="rounded-md bg-[#e86a33]/10 px-sm py-[2px] text-[11px] font-bold text-[#e86a33]">
                     {selectedPlatform?.label ?? "Sản phẩm"}
                   </span>
+                  {result.productPrice != null && (
+                    <span className="text-[12px] font-semibold text-gray-500">
+                      {formatCurrency(result.productPrice)}
+                    </span>
+                  )}
                   <span className="font-mono text-[11px] text-gray-400 truncate">{result.trackingCode}</span>
                 </div>
               </div>
             </div>
+
+            {result.estimatedCashback != null && Number(result.estimatedCashback) > 0 && (
+              <div className="mt-md flex items-center gap-sm rounded-xl bg-emerald-50 px-md py-sm ring-1 ring-emerald-100">
+                <Wallet size={16} strokeWidth={2.25} className="text-emerald-600 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[13px] font-black text-emerald-700 leading-tight">
+                    Hoàn tiền ước tính {formatCurrency(result.estimatedCashback)}
+                  </p>
+                  <p className="text-[11px] text-emerald-600/80 leading-tight">
+                    Số tiền thực nhận có thể khác, tuỳ hoa hồng Shopee ghi nhận cho đơn này
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Panel phai: LINK HOAN TIEN CUA BAN */}

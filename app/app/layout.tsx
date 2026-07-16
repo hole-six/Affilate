@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Sidebar, NavSection } from "@/components/layout/Sidebar";
 import { FloatingQuickAccess } from "@/components/customer/FloatingQuickAccess";
+import { MobileBottomNav } from "@/components/customer/MobileBottomNav";
 import { Home, RotateCcw, Gift, Wallet, ShoppingBag, Send, BookOpen } from "lucide-react";
 
 const sections: NavSection[] = [
@@ -80,12 +81,13 @@ export default async function CustomerAppLayout({ children }: { children: React.
         sections={sections}
       />
       <main className="relative z-10 flex-1 overflow-y-auto w-full">
-        <div className="min-h-full p-md sm:p-xl md:p-2xl fade-in w-full max-w-[100vw]">
+        <div className="min-h-full p-md sm:p-xl md:p-2xl pb-[88px] md:pb-2xl fade-in w-full max-w-[100vw]">
           {children}
         </div>
       </main>
 
       <FloatingQuickAccess unreadCount={unreadCount} />
+      <MobileBottomNav />
     </div>
   );
 }

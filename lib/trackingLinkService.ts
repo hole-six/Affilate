@@ -3,6 +3,8 @@ import { normalizeUrl, buildAffiliateUrl, resolveShortLink } from "./linkConvers
 import { generateTrackingCode, buildShopeeSubIds } from "./tracking";
 import { buildShortUrl, generateShortCode } from "./shortLink";
 import { fetchProductInfo } from "./productInfo";
+import { fetchShopeeProductDetail } from "./shopeeProductApi";
+import { estimateCashback } from "./cashbackEstimate";
 
 export async function createTrackingLink(params: {
   originalUrl: string;
@@ -10,6 +12,7 @@ export async function createTrackingLink(params: {
   customerId: string;
   channelSource: "web" | "zalo" | "telegram";
   createdByUserId?: string | null;
+  manualPrice?: number | null;
 }) {
   const [platform, customer] = await Promise.all([
     prisma.platform.findUnique({ where: { id: params.platformId } }),
@@ -39,7 +42,21 @@ export async function createTrackingLink(params: {
     platformCode: platform.code,
   });
 
-  const productInfo = await fetchProductInfo(normalizedUrl);
+  const isShopee = platform.code.toUpperCase() === "SHOPEE";
+  const [productInfo, shopeeDetail] = await Promise.all([
+    fetchProductInfo(normalizedUrl),
+    isShopee ? fetchShopeeProductDetail(normalizedUrl) : Promise.resolve(null),
+  ]);
+
+  const productTitle = productInfo?.title ?? shopeeDetail?.name ?? null;
+  const productImage = productInfo?.image ?? shopeeDetail?.image ?? null;
+  // Shopee chan API lay gia tu server (403 anti-bot, da xac nhan qua test that),
+  // nen gia nhap tay luc tao link la nguon chinh — auto-fetch chi la bonus neu
+  // Shopee sau nay mo lai.
+  const productPrice = params.manualPrice && params.manualPrice > 0 ? params.manualPrice : shopeeDetail?.price ?? null;
+  const productSold = shopeeDetail?.sold ?? null;
+
+  const cashback = productPrice != null ? await estimateCashback(productTitle, productPrice) : null;
 
   const link = await prisma.trackingLink.create({
     data: {
@@ -50,8 +67,11 @@ export async function createTrackingLink(params: {
       originalUrl: params.originalUrl,
       normalizedUrl,
       affiliateUrl,
-      productTitle: productInfo?.title ?? null,
-      productImage: productInfo?.image ?? null,
+      productTitle,
+      productImage,
+      productPrice,
+      productSold,
+      estimatedCashback: cashback?.estimatedCashback ?? null,
       shortCode,
       shortUrl,
       ...subIds,
@@ -66,5 +86,6 @@ export async function createTrackingLink(params: {
     shortCode,
     shortUrl,
     subId: subIds.subId2,
+    estimatedCashbackCategory: cashback?.categoryName ?? null,
   };
 }

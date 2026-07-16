@@ -81,7 +81,7 @@ export function RefundHistoryClient({ links, totalPages, currentPage, totalCount
             const Icon = pStyle.icon;
             
             return (
-              <div key={l.id} className="group flex items-center justify-between gap-lg rounded-2xl border border-gray-100 p-md transition-all hover:border-gray-200 hover:bg-gray-50 hover:shadow-sm">
+              <div key={l.id} className="group flex flex-col sm:flex-row sm:items-center justify-between gap-md rounded-2xl border border-gray-100 p-md transition-all hover:border-gray-200 hover:bg-gray-50 hover:shadow-sm">
                 <div className="flex flex-1 items-center gap-md min-w-0">
                   <ProductThumb image={l.productImage} color={pStyle.color} Icon={Icon} />
                   <div className="min-w-0 flex-1">
@@ -99,18 +99,18 @@ export function RefundHistoryClient({ links, totalPages, currentPage, totalCount
                   </div>
                 </div>
                 
-                <div className="flex shrink-0 items-center gap-sm">
+                <div className="flex shrink-0 items-center gap-sm mt-sm sm:mt-0">
                   <button 
                     onClick={() => handleCopy(l.shortUrl ?? "")}
                     className="flex h-9 items-center gap-xs rounded-lg bg-gray-100 px-sm text-[13px] font-bold text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900"
                   >
                     <Copy size={14} strokeWidth={2.5} />
-                    <span className="hidden sm:inline">Copy</span>
+                    <span className="inline">Copy</span>
                   </button>
                   <a href={l.shortUrl ?? "#"} target="_blank" rel="noreferrer">
                     <button className="flex h-9 items-center gap-xs rounded-lg bg-[#2bc48a] px-sm text-[13px] font-bold text-white transition-colors hover:bg-[#25ad7a] hover:shadow-md hover:shadow-[#2bc48a]/20">
                       <ExternalLink size={14} strokeWidth={2.5} />
-                      <span className="hidden sm:inline">Mở</span>
+                      <span className="inline">Mở</span>
                     </button>
                   </a>
                 </div>

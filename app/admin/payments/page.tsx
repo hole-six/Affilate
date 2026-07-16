@@ -113,7 +113,7 @@ export default async function AdminPaymentsPage() {
       >
         <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#ffcba4] opacity-30" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#ffe0cc] opacity-40" />
-        <div className="relative z-10 flex items-center justify-between gap-lg flex-wrap">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-lg flex-wrap">
           <div className="flex items-center gap-lg">
             <img src="/heovitien.png" alt="" className="h-20 w-20 object-contain drop-shadow-lg shrink-0" />
             <div>

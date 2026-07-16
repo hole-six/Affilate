@@ -43,7 +43,7 @@ export function Table(props: TableHTMLAttributes<HTMLTableElement>) {
 
   return (
     <div className="responsive-table overflow-x-auto rounded-2xl bg-canvas shadow-sm ring-1 ring-ink/5 w-full">
-      <table ref={tableRef} className="w-full border-collapse text-left text-[14px]" {...props} />
+      <table ref={tableRef} className="w-full min-w-[600px] border-collapse text-left text-[14px]" {...props} />
     </div>
   );
 }

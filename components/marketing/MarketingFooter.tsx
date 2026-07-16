@@ -7,8 +7,8 @@ export function MarketingFooter() {
         {/* Brand & Info */}
         <div className="space-y-lg max-w-sm">
           <div className="flex items-center gap-sm">
-            <img src="/anhlogo.png" alt="lvi Hoàn Tiền" className="h-12 w-auto object-contain drop-shadow-sm" />
-            <span className="text-[24px] font-black text-primary tracking-tight">lvi Hoàn Tiền</span>
+            <img src="/anhlogo.png" alt="Ivi Hoàn tiền" className="h-12 w-auto object-contain drop-shadow-sm" />
+            <span className="text-[24px] font-black text-primary tracking-tight">Ivi Hoàn tiền</span>
           </div>
           <p className="text-mute text-[15px] leading-relaxed font-medium">
             Nền tảng hoàn tiền affiliate hàng đầu Việt Nam. Mang lại giá trị thật cho hàng triệu người tiêu dùng trên mọi mặt trận mua sắm.
@@ -36,7 +36,7 @@ export function MarketingFooter() {
       {/* Copyright */}
       <div className="border-t border-primary/10 px-lg py-lg bg-white">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-sm">
-          <p className="text-mute font-medium text-[14px]">© 2024 Lvi Hoàn Tiền. Đã đăng ký bản quyền.</p>
+          <p className="text-mute font-medium text-[14px]">© 2024 Ivi Hoàn tiền. Đã đăng ký bản quyền.</p>
           <div className="flex gap-lg text-[14px] text-primary font-bold">
             <span>Đẳng cấp & Tinh tế 🚀</span>
           </div>

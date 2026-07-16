@@ -10,8 +10,9 @@ export function FloatingQuickAccess({ unreadCount }: { unreadCount: number }) {
 
   return (
     <>
-      {/* Nút nổi cố định — luôn hiện trên mọi trang trong /app */}
-      <div className="fixed bottom-lg right-lg z-40 flex flex-col items-center gap-sm">
+      {/* Nút nổi cố định — luôn hiện trên mọi trang trong /app.
+          Nâng lên trên bottom nav mobile (nav ~58px + safe-area), giữ nguyên vị trí ở desktop. */}
+      <div className="fixed right-lg z-40 flex flex-col items-center gap-sm bottom-[calc(58px+env(safe-area-inset-bottom)+16px)] md:bottom-lg">
         <button
           onClick={() => setShowSupport(true)}
           title="Liên hệ hỗ trợ"

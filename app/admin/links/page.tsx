@@ -71,7 +71,7 @@ export default async function AdminLinksPage({ searchParams }: { searchParams: {
       >
         <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#c7d2fe] opacity-30" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-40 w-40 rounded-full bg-[#dde4ff] opacity-40" />
-        <div className="relative z-10 flex items-center justify-between gap-lg flex-wrap">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-lg flex-wrap">
           <div className="flex items-center gap-lg">
             <img src="/heochaomung.png" alt="" className="h-20 w-20 object-contain drop-shadow-lg shrink-0" />
             <div>
@@ -87,7 +87,7 @@ export default async function AdminLinksPage({ searchParams }: { searchParams: {
       </div>
 
       {/* ── STAT CARDS ── */}
-      <div className="grid grid-cols-3 gap-md">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-md">
         <div className="group relative overflow-hidden rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/[0.06] hover:-translate-y-1 hover:shadow-md transition-all">
           <div className="absolute inset-0 bg-gradient-to-br from-indigo-50 to-blue-50 opacity-60" />
           <div className="relative flex items-center gap-md">

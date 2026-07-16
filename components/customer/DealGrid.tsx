@@ -124,7 +124,7 @@ export function DealGrid({ deals, totalPages, currentPage }: { deals: Deal[], to
   return (
     <div>
       {/* Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-md">
+      <div className="grid grid-cols-2 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-md">
         {deals.map((deal) => (
           <DealCard key={deal.id} deal={deal} />
         ))}

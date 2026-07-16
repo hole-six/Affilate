@@ -131,6 +131,9 @@ model TrackingLink {
   affiliateUrl       String   @map("affiliate_url")
   productTitle       String?  @map("product_title")
   productImage       String?  @map("product_image")
+  productPrice       Decimal? @map("product_price")
+  productSold        Int?     @map("product_sold")
+  estimatedCashback  Decimal? @map("estimated_cashback")
   subId1             String?  @map("sub_id1")
   subId2             String?  @map("sub_id2")
   subId3             String?  @map("sub_id3")
@@ -326,6 +329,22 @@ model CommissionRule {
   createdAt              DateTime  @default(now()) @map("created_at")
   
   @@map("commission_rules")
+}
+
+// Tỷ lệ hoa hồng gộp (chưa trừ thuế/chia 80-20) theo ngành hàng Shopee, dùng để
+// ước tính cashback ngay lúc khách dán link — vì Shopee không có API trả trước
+// % hoa hồng thật của từng sản phẩm, chỉ biết chính xác sau khi đối soát CSV.
+model CategoryCommissionRate {
+  id        String   @id @default(uuid())
+  name      String
+  keywords  String // các từ khoá tiêu đề sản phẩm, phân tách bằng dấu phẩy
+  rate      Decimal // % hoa hồng gộp ước tính cho ngành hàng này
+  sortOrder Int      @default(0) @map("sort_order")
+  isDefault Boolean  @default(false) @map("is_default") // dùng khi không khớp từ khoá nào
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("category_commission_rates")
 }
 
 model PaymentBatch {

@@ -34,10 +34,11 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { originalUrl, platformId, channelSource = "web" } = body as {
+  const { originalUrl, platformId, channelSource = "web", productPrice } = body as {
     originalUrl?: string;
     platformId?: string;
     channelSource?: "web" | "zalo" | "telegram";
+    productPrice?: number;
   };
 
   if (!originalUrl || !platformId) {
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
       customerId,
       channelSource,
       createdByUserId: session.userId,
+      manualPrice: typeof productPrice === "number" && productPrice > 0 ? productPrice : null,
     });
 
     return NextResponse.json({

@@ -175,7 +175,7 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
         <div className="flex items-center gap-md">
           <img src="/heovitien.png" alt="" className="h-14 w-14 object-contain" />
           <div>
-            <h1 className="text-[28px] font-black tracking-tight text-gray-900">
+            <h1 className="text-[24px] sm:text-[28px] font-black tracking-tight text-gray-900">
               Thanh Toán
             </h1>
             <p className="mt-1 text-[14px] font-medium text-gray-500">
@@ -185,7 +185,7 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
         </div>
 
         {/* STAT CARDS */}
-        <div className="grid grid-cols-1 gap-md sm:grid-cols-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-md">
           {/* Available (Orange Card) */}
           <div className="relative overflow-hidden rounded-2xl bg-[#e86a33] p-xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-200">
             <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white opacity-10" />
@@ -225,7 +225,7 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-xl lg:grid-cols-[1fr_2fr] items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-xl lg:grid-cols-[1fr_2fr] items-start">
           {/* LEFT COLUMN: PAYMENT REQUEST FORM */}
           <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/5">
             <h2 className="text-[16px] font-bold text-gray-900 mb-xl">Tạo yêu cầu thanh toán</h2>
@@ -334,14 +334,14 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
               <span className="text-[13px] font-medium text-gray-400">{history.length} giao dịch</span>
             </div>
 
-            <div className="responsive-table overflow-x-auto">
-              <table className="w-full text-left">
+            <div className="responsive-table overflow-x-auto -mx-xl">
+              <table className="w-full text-left min-w-[500px]">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="py-sm px-sm text-[11px] font-bold uppercase tracking-wider text-gray-400">Thời gian</th>
-                    <th className="py-sm px-sm text-[11px] font-bold uppercase tracking-wider text-gray-400">Số tiền</th>
-                    <th className="py-sm px-sm text-[11px] font-bold uppercase tracking-wider text-gray-400">Trạng thái</th>
-                    <th className="py-sm px-sm text-[11px] font-bold uppercase tracking-wider text-gray-400">Mã phiếu</th>
+                    <th className="py-sm px-md text-[11px] font-bold uppercase tracking-wider text-gray-400">Thời gian</th>
+                    <th className="py-sm px-md text-[11px] font-bold uppercase tracking-wider text-gray-400">Số tiền</th>
+                    <th className="py-sm px-md text-[11px] font-bold uppercase tracking-wider text-gray-400">Trạng thái</th>
+                    <th className="py-sm px-md text-[11px] font-bold uppercase tracking-wider text-gray-400">Mã phiếu</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -354,16 +354,16 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
                   ) : (
                     history.map((tx, idx) => (
                       <tr key={idx} className="border-b border-gray-50 last:border-0 hover:bg-gray-50">
-                        <td className="py-md px-sm text-[13px] font-medium text-gray-600" data-label="Thời gian">{tx.time}</td>
-                        <td className="py-md px-sm text-[13px] font-bold text-gray-900" data-label="Số tiền">{tx.amount}</td>
-                        <td className="py-md px-sm text-[13px] font-medium text-gray-600" data-label="Trạng thái">
+                        <td className="py-md px-md text-[13px] font-medium text-gray-600">{tx.time}</td>
+                        <td className="py-md px-md text-[13px] font-bold text-gray-900">{tx.amount}</td>
+                        <td className="py-md px-md text-[13px] font-medium text-gray-600">
                           <span className={`inline-flex items-center rounded-md px-2 py-1 text-[11px] font-bold ${
                             tx.status === 'paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-600'
                           }`}>
                             {tx.status === 'paid' ? 'Đã nhận' : tx.status}
                           </span>
                         </td>
-                        <td className="py-md px-sm text-[13px] font-mono text-gray-500" data-label="Mã phiếu">{tx.code}</td>
+                        <td className="py-md px-md text-[13px] font-mono text-gray-500">{tx.code}</td>
                       </tr>
                     ))
                   )}

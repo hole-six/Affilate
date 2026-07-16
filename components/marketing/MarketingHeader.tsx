@@ -23,14 +23,14 @@ export function MarketingHeader({ activePath = "/" }: { activePath?: string }) {
         >
           <img
             src="/icontitle.png"
-            alt="Lvi Hoàn Tiền logo"
+            alt="Ivi Hoàn tiền logo"
             className="w-12 h-12 object-cover rounded-full"
           />
           <span
             className="font-bold text-[#FF6B35] text-[18px] leading-tight"
             style={{ fontFamily: "'Nunito', sans-serif" }}
           >
-            Lvi Hoàn Tiền
+            Ivi Hoàn tiền
           </span>
         </Link>
 

@@ -47,12 +47,12 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-xl fade-in pb-2xl">
       {/* HEADER CARD */}
-      <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-black/5 p-2xl flex items-center justify-between">
+      <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-black/5 p-lg sm:p-2xl flex items-center justify-between gap-md">
         {/* Subtle decorative background gradient */}
         <div className="absolute top-0 right-0 h-full w-1/2 bg-gradient-to-l from-[#fff0e6] to-transparent opacity-60" />
         
         <div className="relative z-10">
-          <h1 className="text-[32px] font-black tracking-tight text-gray-900">
+          <h1 className="text-[24px] sm:text-[32px] font-black tracking-tight text-gray-900">
             Tạo link hoàn tiền
           </h1>
           <p className="mt-xs text-[15px] text-gray-500 font-medium">
