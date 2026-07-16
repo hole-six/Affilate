@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { ChangePasswordForm } from "@/components/account/ChangePasswordForm";
+import { PwaInstallSettingsCard } from "@/components/pwa/PwaInstallPrompt";
 
 export default async function CustomerSettingsPage() {
   const session = await getSession();
@@ -12,6 +13,8 @@ export default async function CustomerSettingsPage() {
   return (
     <div className="flex flex-col gap-2xl">
       <PageHeader title="Cài đặt tài khoản" subtitle="Quản lý bảo mật tài khoản của bạn." />
+
+      <PwaInstallSettingsCard />
 
       <Card variant="default" className="border border-gray-100">
         <h2 className="display-xs mb-lg flex items-center gap-sm">

@@ -1,10 +1,21 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { formatCurrency } from "@/lib/format";
-import { Users, TrendingUp, CheckCircle2, Copy } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { Users, TrendingUp, CheckCircle2, Gift } from "lucide-react";
 import { useModal } from "@/components/ui/ModalProvider";
 import { Button } from "@/components/ui/Button";
+
+type BonusHistoryEntry = {
+  id: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+  friendName: string | null;
+  friendCode: string | null;
+  originalOrderExternalId: string;
+  shopName: string | null;
+};
 
 interface Props {
   customerCode: string;
@@ -13,9 +24,16 @@ interface Props {
   referralRate: number;
   maxReferralOrders: number;
   referralValidityMonths: number;
+  bonusHistory: BonusHistoryEntry[];
 }
 
-export function ReferralClient({ customerCode, totalFriends, totalCommission, referralRate, maxReferralOrders, referralValidityMonths }: Props) {
+const STATUS_LABEL: Record<string, { text: string; className: string }> = {
+  approved: { text: "Đã cộng ví", className: "bg-green-50 text-green-600" },
+  pending: { text: "Đang chờ duyệt", className: "bg-amber-50 text-amber-600" },
+  clawback: { text: "Đã thu hồi", className: "bg-red-50 text-red-500" },
+};
+
+export function ReferralClient({ customerCode, totalFriends, totalCommission, referralRate, maxReferralOrders, referralValidityMonths, bonusHistory }: Props) {
   const modal = useModal();
   const [referralLink, setReferralLink] = useState("");
 
@@ -95,23 +113,60 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
             </div>
           </div>
           
-          {/* List Friends (Empty state for now, can be expanded) */}
-          <div className="rounded-3xl bg-gray-50 p-xl ring-1 ring-black/5 border border-gray-100 flex flex-col items-center justify-center h-[200px] text-center">
-             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-gray-400 mb-md">
-               <Users size={32} />
-             </div>
-             {totalFriends === 0 ? (
-               <>
-                 <h3 className="text-[15px] font-bold text-gray-700">Chưa có ai đăng ký</h3>
-                 <p className="text-[13px] text-gray-500 mt-1">Gửi link cho bạn bè ngay để nhận quà!</p>
-               </>
-             ) : (
-               <>
-                 <h3 className="text-[15px] font-bold text-gray-700">Bạn đã mời được {totalFriends} người bạn</h3>
-                 <p className="text-[13px] text-gray-500 mt-1">Hoa hồng sẽ tự động cập nhật khi họ mua sắm.</p>
-               </>
-             )}
-          </div>
+          {/* Lịch sử hoa hồng giới thiệu — truy vết từng khoản về đúng bạn bè + đơn hàng gốc */}
+          {bonusHistory.length === 0 ? (
+            <div className="rounded-3xl bg-gray-50 p-xl ring-1 ring-black/5 border border-gray-100 flex flex-col items-center justify-center h-[200px] text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-gray-400 mb-md">
+                <Users size={32} />
+              </div>
+              {totalFriends === 0 ? (
+                <>
+                  <h3 className="text-[15px] font-bold text-gray-700">Chưa có ai đăng ký</h3>
+                  <p className="text-[13px] text-gray-500 mt-1">Gửi link cho bạn bè ngay để nhận quà!</p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-[15px] font-bold text-gray-700">Bạn đã mời được {totalFriends} người bạn</h3>
+                  <p className="text-[13px] text-gray-500 mt-1">Hoa hồng sẽ tự động cập nhật khi họ mua sắm.</p>
+                </>
+              )}
+            </div>
+          ) : (
+            <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/5">
+              <h2 className="text-[16px] font-bold text-gray-900 mb-lg">Lịch sử hoa hồng giới thiệu</h2>
+              <div className="flex flex-col gap-sm max-h-[420px] overflow-y-auto">
+                {bonusHistory.map((entry) => {
+                  const status = STATUS_LABEL[entry.status] ?? { text: entry.status, className: "bg-gray-100 text-gray-500" };
+                  return (
+                    <div
+                      key={entry.id}
+                      className="flex items-center gap-md rounded-2xl bg-gray-50 p-md ring-1 ring-black/5"
+                    >
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-[#e86a33]">
+                        <Gift size={18} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[14px] font-bold text-gray-900">
+                          {entry.friendName ?? "Bạn bè"}
+                          {entry.friendCode ? ` (${entry.friendCode})` : ""}
+                        </div>
+                        <div className="truncate text-[12px] text-gray-400">
+                          Từ đơn <code>{entry.originalOrderExternalId}</code>
+                          {entry.shopName ? ` — ${entry.shopName}` : ""} · {formatDate(entry.createdAt)}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="text-[14px] font-black text-green-600">+{formatCurrency(entry.amount)}</div>
+                        <span className={`inline-block rounded-full px-2 py-[2px] text-[10px] font-bold ${status.className}`}>
+                          {status.text}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column */}
@@ -129,8 +184,8 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
                 <div className="flex gap-md">
                   <CheckCircle2 className="text-[#e86a33] shrink-0 mt-0.5" size={20} />
                   <div className="w-full">
-                    <h3 className="text-[14px] font-bold text-gray-900">Nhận {referralRate * 100}% hoa hồng</h3>
-                    <p className="text-[13px] text-gray-500 mt-1">Hưởng {referralRate * 100}% trên tổng hoa hồng của mỗi đơn hàng bạn bè thực hiện thành công.</p>
+                    <h3 className="text-[14px] font-bold text-gray-900">Nhận thêm {referralRate * 100}% hoa hồng</h3>
+                    <p className="text-[13px] text-gray-500 mt-1">Bạn nhận thêm {referralRate * 100}% trên số tiền hoàn mà bạn bè nhận được ở mỗi đơn hàng thành công — cộng trực tiếp vào ví của bạn.</p>
                   </div>
                 </div>
 
@@ -153,8 +208,8 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
                 <div className="flex gap-md">
                   <CheckCircle2 className="text-[#e86a33] shrink-0 mt-0.5" size={20} />
                   <div>
-                    <h3 className="text-[14px] font-bold text-gray-900">Bạn bè vẫn nhận 100%</h3>
-                    <p className="text-[13px] text-gray-500 mt-1">Người được mời vẫn được hoàn tiền đầy đủ 100% như bình thường, không bị ảnh hưởng.</p>
+                    <h3 className="text-[14px] font-bold text-gray-900">Bạn bè không bị ảnh hưởng</h3>
+                    <p className="text-[13px] text-gray-500 mt-1">Người được mời vẫn nhận đủ % hoàn tiền như bình thường — khoản hoa hồng bạn nhận thêm không trừ bớt gì từ phần của họ.</p>
                   </div>
                 </div>
               </div>
