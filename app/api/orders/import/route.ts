@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { parseImportCsv } from "@/lib/csvImport";
 import { parseShopeeAffiliateCsv } from "@/lib/shopeeAffiliateCsv";
-import { getActiveCommissionRule, splitCommission } from "@/lib/commission";
+import { getActiveCommissionRule, splitCommission, isWithinReferralWindow } from "@/lib/commission";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
 import { buildOrderApprovedMessage, buildReferralBonusMessage } from "@/lib/telegramBot";
 import { notifyCustomerInApp } from "@/lib/notifications";
@@ -440,10 +440,12 @@ export async function POST(req: NextRequest) {
           const validMonths = rule?.referralValidityMonths ?? 6;
           const referralRate = rule?.referralRate ? Number(rule.referralRate) : 0.05;
 
-          const expirationDate = new Date(customerData.createdAt);
-          expirationDate.setMonth(expirationDate.getMonth() + validMonths);
+          // Đối chiếu theo ngày ĐƠN HÀNG thực sự phát sinh (row.orderedAt/completedAt),
+          // không phải thời điểm import CSV — vì đối soát có thể trễ nhiều tuần
+          // so với lúc đơn phát sinh.
+          const referenceDate = row.orderedAt ?? row.completedAt ?? new Date();
 
-          if (new Date() <= expirationDate) {
+          if (isWithinReferralWindow(customerData.createdAt, validMonths, referenceDate)) {
             const f1OrderCount = await prisma.order.count({
               where: {
                 customerId: resolvedCustomerId,

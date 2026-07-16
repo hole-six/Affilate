@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
 import { buildOrderApprovedMessage, buildReferralBonusMessage } from "@/lib/telegramBot";
 import { notifyCustomerInApp } from "@/lib/notifications";
+import { isWithinReferralWindow } from "@/lib/commission";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession();
@@ -96,9 +97,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       const validMonths = activeRule?.referralValidityMonths ?? 6;
       const referralRate = activeRule?.referralRate ? Number(activeRule.referralRate) : 0.05;
 
-      const expirationDate = new Date(customerData.createdAt);
-      expirationDate.setMonth(expirationDate.getMonth() + validMonths);
-      const isTimeValid = new Date() <= expirationDate;
+      // Đối chiếu theo ngày ĐƠN HÀNG thực sự phát sinh (orderedAt/completedAt),
+      // không phải thời điểm admin duyệt/đối soát — vì Shopee/TikTok có thể
+      // trả hoa hồng trễ 15-30 ngày, nếu dùng "now" một đơn phát sinh hợp lệ
+      // trong hạn 6 tháng có thể bị từ chối oan chỉ vì duyệt trễ.
+      const referenceDate = updated.orderedAt ?? updated.completedAt ?? new Date();
+      const isTimeValid = isWithinReferralWindow(customerData.createdAt, validMonths, referenceDate);
 
       if (isTimeValid) {
         const f1OrderCount = await prisma.order.count({

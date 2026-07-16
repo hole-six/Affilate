@@ -40,3 +40,27 @@ export function splitCommission(
 
   return { customerRewardAmount, systemProfitAmount, customerRate, systemRate };
 }
+
+/**
+ * Kiểm tra một mốc thời gian (ngày đơn hàng thực sự phát sinh) có còn nằm
+ * trong hạn hoa hồng giới thiệu (N tháng kể từ khi F1 đăng ký) hay không.
+ * Dùng cộng tháng "an toàn" (clamp về ngày cuối tháng đích) để tránh lỗi
+ * tràn ngày của Date.setMonth thô — vd 31/8 + 6 tháng phải là 28/2 (hoặc
+ * 29/2 năm nhuận), không phải bị tràn thành 2-3/3.
+ */
+export function isWithinReferralWindow(
+  customerCreatedAt: Date,
+  validMonths: number,
+  referenceDate: Date
+): boolean {
+  const start = new Date(customerCreatedAt);
+  const targetMonthIndex = start.getMonth() + validMonths;
+  const daysInTargetMonth = new Date(start.getFullYear(), targetMonthIndex + 1, 0).getDate();
+
+  const expirationDate = new Date(start);
+  expirationDate.setDate(1);
+  expirationDate.setMonth(targetMonthIndex);
+  expirationDate.setDate(Math.min(start.getDate(), daysInTargetMonth));
+
+  return referenceDate.getTime() <= expirationDate.getTime();
+}
