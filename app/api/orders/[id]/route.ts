@@ -170,6 +170,31 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         where: { id: refOrder.id },
         data: { orderStatus: "clawback" },
       });
+
+      // Nếu hoa hồng giới thiệu đã được trả cho người giới thiệu rồi,
+      // phải trừ lại ví của họ — nếu không họ vẫn giữ tiền cho một đơn
+      // hàng gốc đã bị Shopee đòi lại hoa hồng.
+      if (refOrder.payoutStatus === "paid") {
+        await prisma.order.create({
+          data: {
+            platformId: refOrder.platformId,
+            orderExternalId: `CLAWBACK-${refOrder.orderExternalId}`,
+            customerId: refOrder.customerId,
+            trackingCode: "REFERRAL",
+            channel: "CLAWBACK",
+            itemName: `[Clawback hoa hồng giới thiệu] ${updated.orderExternalId}`,
+            orderAmount: refOrder.orderAmount,
+            grossCommissionAmount: 0,
+            netCommissionAmount: 0,
+            commissionAmount: 0,
+            customerRewardAmount: -Number(refOrder.customerRewardAmount),
+            systemProfitAmount: 0,
+            orderStatus: "clawback",
+            payoutStatus: "unpaid",
+            sourceType: "clawback",
+          },
+        });
+      }
     }
 
     if (updated.payoutStatus === "paid" && targetCustomerId) {

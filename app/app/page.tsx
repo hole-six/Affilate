@@ -30,20 +30,26 @@ export default async function CustomerHomePage() {
   if (!session) redirect("/login");
   if (session.role === "admin" || !session.customerId) redirect("/admin");
 
-  const customer = await prisma.customer.findUnique({
-    where: { id: session.customerId },
-    include: {
-      orders: {
-        orderBy: { createdAt: "desc" },
-        take: 6,
-        include: {
-          trackingLink: { select: { productImage: true, productTitle: true } },
-          platform: { select: { code: true, name: true } },
+  const [customer, activeRule] = await Promise.all([
+    prisma.customer.findUnique({
+      where: { id: session.customerId },
+      include: {
+        orders: {
+          orderBy: { createdAt: "desc" },
+          take: 6,
+          include: {
+            trackingLink: { select: { productImage: true, productTitle: true } },
+            platform: { select: { code: true, name: true } },
+          },
         },
+        trackingLinks: { orderBy: { createdAt: "desc" }, take: 3 },
       },
-      trackingLinks: { orderBy: { createdAt: "desc" }, take: 3 },
-    },
-  });
+    }),
+    prisma.commissionRule.findFirst({
+      where: { active: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
 
   const allOrders = customer?.orders ?? [];
   const totalIncome = allOrders.reduce((s, o) => s + Number(o.customerRewardAmount), 0);
@@ -59,6 +65,9 @@ export default async function CustomerHomePage() {
 
   const firstName = (customer?.fullName ?? session.fullName).split(" ").at(-1) ?? "bạn";
   const customerCode = customer?.customerCode ?? "";
+  const referralRate = activeRule?.referralRate ? Number(activeRule.referralRate) : 0.05;
+  const maxReferralOrders = activeRule?.maxReferralOrders ?? 5;
+  const referralValidityMonths = activeRule?.referralValidityMonths ?? 6;
 
   // Sinh QR server-side thành data URL (không cần client lib)
   const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://ivihoantien.com"}/register?ref=${customerCode}`;
@@ -284,7 +293,13 @@ export default async function CustomerHomePage() {
         {/* PANEL PHẢI */}
         <div className="flex flex-col gap-lg">
           {/* Giới thiệu bạn bè với QR */}
-          <InviteSection customerCode={customerCode} qrDataUrl={qrDataUrl} />
+          <InviteSection
+            customerCode={customerCode}
+            qrDataUrl={qrDataUrl}
+            referralRate={referralRate}
+            maxReferralOrders={maxReferralOrders}
+            referralValidityMonths={referralValidityMonths}
+          />
 
           {/* Truy cập nhanh */}
           <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/[0.06]">

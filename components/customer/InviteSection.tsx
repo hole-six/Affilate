@@ -7,12 +7,22 @@ import { Star } from "lucide-react";
 type Props = {
   customerCode: string;
   qrDataUrl: string; // generated server-side
+  referralRate: number;
+  maxReferralOrders: number;
+  referralValidityMonths: number;
 };
 
-export function InviteSection({ customerCode, qrDataUrl }: Props) {
+export function InviteSection({
+  customerCode,
+  qrDataUrl,
+  referralRate,
+  maxReferralOrders,
+  referralValidityMonths,
+}: Props) {
   const [inviteUrl, setInviteUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const referralPercent = Math.round(referralRate * 1000) / 10; // vd: 0.05 -> 5
 
   useEffect(() => {
     setInviteUrl(`${window.location.origin}/register?ref=${customerCode}`);
@@ -35,8 +45,8 @@ export function InviteSection({ customerCode, qrDataUrl }: Props) {
 
       <p className="text-[13px] text-gray-400 mb-md leading-relaxed">
         Mời bạn bè tham gia và nhận{" "}
-        <span className="font-bold text-[#e86a33]">10% hoa hồng</span> từ đơn
-        hàng của họ mãi mãi!
+        <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span> từ{" "}
+        {maxReferralOrders} đơn hàng đầu tiên của họ!
       </p>
 
       {/* Stars + badge */}
@@ -44,7 +54,9 @@ export function InviteSection({ customerCode, qrDataUrl }: Props) {
         {[1, 2, 3, 4, 5].map((i) => (
           <Star key={i} size={12} className="text-amber-400 fill-amber-400" />
         ))}
-        <span className="text-[11px] text-gray-400 ml-1">20% hoa hồng đơn đầu</span>
+        <span className="text-[11px] text-gray-400 ml-1">
+          {referralPercent}% hoa hồng / {maxReferralOrders} đơn đầu
+        </span>
       </div>
 
       {/* Link display */}
@@ -177,8 +189,8 @@ export function InviteSection({ customerCode, qrDataUrl }: Props) {
 
               <p className="text-[11px] text-gray-400 text-center leading-relaxed">
                 ⭐ Bạn nhận{" "}
-                <span className="font-bold text-[#e86a33]">20% hoa hồng</span>{" "}
-                từ đơn đầu tiên của họ
+                <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span>{" "}
+                từ {maxReferralOrders} đơn đầu tiên của họ (trong {referralValidityMonths} tháng)
               </p>
             </div>
           </div>

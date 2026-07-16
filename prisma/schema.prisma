@@ -28,6 +28,7 @@ model User {
   commissionRules  CommissionRule[] @relation("CommissionRuleCreatedBy")
   paidBatches      PaymentBatch[]  @relation("PaidBy")
   auditLogs        AuditLog[]      @relation("AuditActor")
+  passwordResetTokens PasswordResetToken[]
   notifications    Notification[]
   chatMessages     ChatMessage[]
 
@@ -538,4 +539,18 @@ model DealPost {
   @@index([status])
   @@index([createdAt])
   @@map("deal_posts")
+}
+
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }

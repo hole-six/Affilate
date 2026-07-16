@@ -273,6 +273,25 @@ export async function POST(req: NextRequest) {
 
       const resolvedCustomerId = existing?.customerId ?? trackingLink?.customerId;
 
+      // ============================================================
+      // KHOÁ SỐ TIỀN KHI ĐƠN ĐÃ THANH TOÁN THẬT
+      // Nếu chỉ khoá orderStatus mà vẫn ghi đè số tiền theo CSV mới, một
+      // lần re-import với số liệu Shopee đã sửa (hoặc lệch cột) có thể âm
+      // thầm đổi lịch sử số tiền đã thực trả cho khách — dù trạng thái
+      // đơn vẫn hiển thị "approved". Khoá luôn toàn bộ field tiền theo
+      // đúng số đã ghi nhận lúc thanh toán.
+      // ============================================================
+      const resolvedOrderAmount = isFullyPaid ? Number(existing!.orderAmount ?? 0) : orderAmount;
+      const resolvedGrossCommissionAmount = isFullyPaid
+        ? Number(existing!.grossCommissionAmount ?? 0)
+        : grossCommissionAmount;
+      const resolvedNetCommissionAmount = isFullyPaid
+        ? Number(existing!.netCommissionAmount ?? 0)
+        : netCommissionAmount;
+      const resolvedCommissionAmount = isFullyPaid ? Number(existing!.commissionAmount) : commissionAmount;
+      const resolvedCustomerRewardAmount = isFullyPaid ? existing!.customerRewardAmount : split.customerRewardAmount;
+      const resolvedSystemProfitAmount = isFullyPaid ? existing!.systemProfitAmount : split.systemProfitAmount;
+
       const updatedOrder = await prisma.order.upsert({
         where: { platformId_orderExternalId: { platformId, orderExternalId } },
         update: {
@@ -288,12 +307,12 @@ export async function POST(req: NextRequest) {
           shopId: row.shopId,
           itemId: row.itemId,
           itemName: row.itemName,
-          orderAmount,
-          grossCommissionAmount,
-          netCommissionAmount,
-          commissionAmount,
-          customerRewardAmount: split.customerRewardAmount,
-          systemProfitAmount: split.systemProfitAmount,
+          orderAmount: resolvedOrderAmount,
+          grossCommissionAmount: resolvedGrossCommissionAmount,
+          netCommissionAmount: resolvedNetCommissionAmount,
+          commissionAmount: resolvedCommissionAmount,
+          customerRewardAmount: resolvedCustomerRewardAmount,
+          systemProfitAmount: resolvedSystemProfitAmount,
           orderStatus: resolvedOrderStatus,
           productAffiliateStatus: row.productAffiliateStatus ?? row.orderStatus,
           subId1: row.subId1,
@@ -363,6 +382,32 @@ export async function POST(req: NextRequest) {
             where: { id: refOrder.id },
             data: { orderStatus: "clawback" },
           });
+
+          // Nếu hoa hồng giới thiệu đã được trả cho người giới thiệu rồi,
+          // phải trừ lại ví của họ — nếu không họ vẫn giữ tiền cho một đơn
+          // hàng gốc đã bị Shopee đòi lại hoa hồng.
+          if (refOrder.payoutStatus === "paid") {
+            await prisma.order.create({
+              data: {
+                platformId: refOrder.platformId,
+                orderExternalId: `CLAWBACK-${refOrder.orderExternalId}`,
+                customerId: refOrder.customerId,
+                trackingCode: "REFERRAL",
+                channel: "CLAWBACK",
+                itemName: `[Clawback hoa hồng giới thiệu] ${orderExternalId}`,
+                orderAmount: refOrder.orderAmount,
+                grossCommissionAmount: 0,
+                netCommissionAmount: 0,
+                commissionAmount: 0,
+                customerRewardAmount: -Number(refOrder.customerRewardAmount),
+                systemProfitAmount: 0,
+                orderStatus: "clawback",
+                payoutStatus: "unpaid",
+                sourceType: "clawback",
+                importBatchId: batch.id,
+              },
+            });
+          }
         }
       }
 

@@ -1,12 +1,12 @@
 module.exports = {
   apps: [
     {
-      name: "website-aff",
-      script: "node_modules/next/dist/bin/next",
-      args: "start",
+      name: "affiliate-hoantien",
+      script: "npm",
+      args: "start -- -p 4500",
+      cwd: "/var/www/affiliate-hoantien",
       env: {
         NODE_ENV: "production",
-        PORT: 3000,
       },
     },
   ],

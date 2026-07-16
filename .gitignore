@@ -11,3 +11,6 @@ public/uploads/*
 prisma/dev.db
 prisma/dev.db-journal
 __pycache__/
+prisma/prod.db
+prisma/prod.db-journal
+.env.backup-*
