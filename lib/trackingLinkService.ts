@@ -50,11 +50,12 @@ export async function createTrackingLink(params: {
 
   const productTitle = productInfo?.title ?? shopeeDetail?.name ?? null;
   const productImage = productInfo?.image ?? shopeeDetail?.image ?? null;
-  // Shopee chan API lay gia tu server (403 anti-bot, da xac nhan qua test that),
-  // nen gia nhap tay luc tao link la nguon chinh — auto-fetch chi la bonus neu
-  // Shopee sau nay mo lai.
-  const productPrice = params.manualPrice && params.manualPrice > 0 ? params.manualPrice : shopeeDetail?.price ?? null;
-  const productSold = shopeeDetail?.sold ?? null;
+  // Ưu tiên: nhập tay > JSON-LD (Googlebot scrape) > Shopee internal API
+  const productPrice =
+    (params.manualPrice && params.manualPrice > 0)
+      ? params.manualPrice
+      : (productInfo?.price ?? shopeeDetail?.price ?? null);
+  const productSold = shopeeDetail?.sold ?? productInfo?.sold ?? null;
 
   const cashback = productPrice != null ? await estimateCashback(productTitle, productPrice) : null;
 
