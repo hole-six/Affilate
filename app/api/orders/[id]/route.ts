@@ -105,15 +105,17 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       const isTimeValid = isWithinReferralWindow(customerData.createdAt, validMonths, referenceDate);
 
       if (isTimeValid) {
-        const f1OrderCount = await prisma.order.count({
+        // Giới hạn 5 đơn là TỔNG cho người giới thiệu (A), tính gộp trên tất
+        // cả bạn bè A đã mời — không phải 5 đơn riêng cho từng người bạn.
+        const referrerBonusCount = await prisma.order.count({
           where: {
-            customerId: targetCustomerId,
+            customerId: customerData.referredById,
+            sourceType: "referral",
             orderStatus: "approved",
-            sourceType: { not: "referral" },
           },
         });
 
-        if (f1OrderCount <= maxOrders) {
+        if (referrerBonusCount < maxOrders) {
           const bonusAmount = Number(updated.customerRewardAmount) * referralRate;
           await prisma.order.upsert({
             where: { platformId_orderExternalId: { platformId: updated.platformId, orderExternalId: `REF-${updated.orderExternalId}` } },
