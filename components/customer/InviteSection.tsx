@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Copy, Check, Share2, QrCode, X } from "lucide-react";
 import { Star } from "lucide-react";
 
@@ -22,10 +23,12 @@ export function InviteSection({
   const [inviteUrl, setInviteUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const referralPercent = Math.round(referralRate * 1000) / 10; // vd: 0.05 -> 5
 
   useEffect(() => {
     setInviteUrl(`${window.location.origin}/register?ref=${customerCode}`);
+    setMounted(true);
   }, [customerCode]);
 
   function handleCopy() {
@@ -46,7 +49,7 @@ export function InviteSection({
       <p className="text-[13px] text-gray-400 mb-md leading-relaxed">
         Mời bạn bè tham gia và nhận{" "}
         <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span> từ{" "}
-        {maxReferralOrders} đơn hàng đầu tiên của họ!
+        {maxReferralOrders} đơn hàng đầu tiên (tính chung cho tất cả bạn bè bạn mời)!
       </p>
 
       {/* Stars + badge */}
@@ -103,8 +106,10 @@ export function InviteSection({
         </button>
       </div>
 
-      {/* QR Modal */}
-      {showQR && (
+      {/* QR Modal — portal ra document.body để thoát khỏi stacking context của
+          div "fade-in" bọc ngoài trong layout /app, tránh bị kẹt phía sau
+          MobileBottomNav dù z-index cao hơn (xem PwaInstallPrompt.tsx). */}
+      {showQR && mounted && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-md"
           onClick={() => setShowQR(false)}
@@ -190,11 +195,12 @@ export function InviteSection({
               <p className="text-[11px] text-gray-400 text-center leading-relaxed">
                 ⭐ Bạn nhận{" "}
                 <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span>{" "}
-                từ {maxReferralOrders} đơn đầu tiên của họ (trong {referralValidityMonths} tháng)
+                từ {maxReferralOrders} đơn đầu tiên, tính chung cho tất cả bạn bè bạn mời (trong {referralValidityMonths} tháng mỗi người)
               </p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

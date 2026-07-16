@@ -193,7 +193,7 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
                   <CheckCircle2 className="text-[#e86a33] shrink-0 mt-0.5" size={20} />
                   <div>
                     <h3 className="text-[14px] font-bold text-gray-900">Áp dụng cho {maxReferralOrders} đơn đầu tiên</h3>
-                    <p className="text-[13px] text-gray-500 mt-1">Hoa hồng giới thiệu được tính cho {maxReferralOrders} đơn hàng đầu tiên của mỗi người bạn mà bạn mời.</p>
+                    <p className="text-[13px] text-gray-500 mt-1">{maxReferralOrders} đơn hàng đầu tiên này tính chung cho tất cả bạn bè bạn mời, không phải riêng cho mỗi người.</p>
                   </div>
                 </div>
 
