@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Share, SquarePlus } from "lucide-react";
 
 const DISMISS_KEY = "pwa_install_dismissed_at";
@@ -26,7 +27,15 @@ function isStandalone(): boolean {
 }
 
 function IosStepsModal({ onClose }: { onClose: () => void }) {
-  return (
+  // Portal ra document.body: div bọc ngoài trong layout /app có class "fade-in"
+  // (dùng CSS animation trên transform/opacity) tạo stacking context riêng,
+  // khiến modal "fixed" lồng bên trong bị kẹt phía SAU thanh điều hướng dưới
+  // (MobileBottomNav) dù z-index cao hơn — portal ra body để thoát hẳn context đó.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center p-md sm:items-center" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
@@ -71,7 +80,8 @@ function IosStepsModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
