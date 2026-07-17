@@ -24,6 +24,12 @@ export type TelegramInlineKeyboard = {
   inline_keyboard: { text: string; callback_data: string }[][];
 };
 
+export type TelegramReplyKeyboard = {
+  keyboard: { text: string }[][];
+  resize_keyboard: true;
+  is_persistent: true;
+};
+
 const URL_REGEX = /(https?:\/\/[^\s]+)/gi;
 
 function escapeHtml(value: string): string {
@@ -88,6 +94,47 @@ export function buildMainMenuKeyboard(): TelegramInlineKeyboard {
       ],
     ],
   };
+}
+
+// Menu nút bấm cố định ngay dưới ô nhập tin nhắn (ReplyKeyboard) — tiện hơn
+// inline keyboard vì không bị trôi mất khi cuộn lên, luôn nằm sẵn chờ bấm.
+// Dùng chung 1 danh sách cho cả hiển thị nút lẫn nhận diện text khi bấm, để
+// nhãn nút và lệnh tương ứng không bao giờ lệch nhau.
+const QUICK_MENU_ITEMS: { label: string; command: string }[][] = [
+  [{ label: "🔄 Đổi link nhanh", command: "/newlink" }],
+  [
+    { label: "💰 Số dư ví", command: "/wallet" },
+    { label: "📦 Đơn hàng", command: "/orders" },
+  ],
+  [
+    { label: "🔗 Link của tôi", command: "/links" },
+    { label: "🏷️ Ưu đãi", command: "/deals" },
+  ],
+  [
+    { label: "🎁 Mời bạn", command: "/referral" },
+    { label: "📖 Hướng dẫn", command: "/help" },
+  ],
+];
+
+export function buildReplyKeyboardMenu(): TelegramReplyKeyboard {
+  return {
+    keyboard: QUICK_MENU_ITEMS.map((row) => row.map((item) => ({ text: item.label }))),
+    resize_keyboard: true,
+    is_persistent: true,
+  };
+}
+
+// Khi khách bấm 1 nút trên ReplyKeyboard, Telegram gửi lại đúng chuỗi label
+// đó dưới dạng tin nhắn thường (không phải callback_query) — hàm này map
+// ngược label về command tương ứng để tái dùng toàn bộ logic xử lý lệnh sẵn có.
+export function matchQuickMenuCommand(text: string): string | null {
+  const trimmed = text.trim();
+  for (const row of QUICK_MENU_ITEMS) {
+    for (const item of row) {
+      if (item.label === trimmed) return item.command;
+    }
+  }
+  return null;
 }
 
 export function buildConvertLinkPromptMessage(): string {
@@ -311,7 +358,7 @@ export function mapDetectedPlatformToCode(url: string): "SHOPEE" | "TIKTOK" | nu
 export async function sendTelegramTextMessage(params: {
   chatId: string;
   message: string;
-  keyboard?: TelegramInlineKeyboard;
+  keyboard?: TelegramInlineKeyboard | TelegramReplyKeyboard;
 }): Promise<TelegramSendResult> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -353,6 +400,29 @@ export async function sendTelegramTextMessage(params: {
       simulated: false,
       error: error instanceof Error ? error.message : "Unknown error",
     };
+  }
+}
+
+// Đổi tên hiển thị thật của bot trên Telegram (tên trong header chat, danh
+// bạ...). Lưu ý: @username của bot (vd @affiliate_hoantien_lehoa_bot) KHÔNG
+// đổi được qua API — chỉ đổi được qua lệnh /setusername trong chat @BotFather.
+export async function setBotDisplayName(name: string): Promise<{ ok: boolean; error?: string }> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return { ok: false, error: "Thiếu TELEGRAM_BOT_TOKEN trong .env" };
+
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${token}/setMyName`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok || !data?.ok) {
+      return { ok: false, error: data?.description || `HTTP ${response.status}` };
+    }
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Unknown error" };
   }
 }
 

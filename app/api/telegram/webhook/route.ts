@@ -9,15 +9,16 @@ import {
   buildLinkPromptMessage,
   buildLinkSuccessMessage,
   buildLinksListMessage,
-  buildMainMenuKeyboard,
   buildOrdersListMessage,
   buildReferralInfoMessage,
+  buildReplyKeyboardMenu,
   buildTelegramHelpMessage,
   buildUnsupportedPlatformMessage,
   buildWalletMessage,
   extractFirstUrl,
   extractTelegramMessage,
   mapDetectedPlatformToCode,
+  matchQuickMenuCommand,
   sendTelegramTextMessage,
 } from "@/lib/telegramBot";
 import { createTrackingLink } from "@/lib/trackingLinkService";
@@ -80,8 +81,12 @@ export async function POST(req: NextRequest) {
   let command: string;
   let args: string[] = [];
 
+  const quickMenuCommand = isCallback ? null : matchQuickMenuCommand(normalizedText);
+
   if (isCallback) {
     command = `/${normalizedText.toLowerCase()}`;
+  } else if (quickMenuCommand) {
+    command = quickMenuCommand;
   } else {
     const parts = normalizedText.split(/\s+/);
     command = parts[0]?.toLowerCase() ?? "";
@@ -271,7 +276,7 @@ export async function POST(req: NextRequest) {
   const sendResult = await sendTelegramTextMessage({
     chatId: incoming.chatId,
     message: replyText,
-    keyboard: buildMainMenuKeyboard(),
+    keyboard: buildReplyKeyboardMenu(),
   });
 
   if (isCallback && incoming.callbackQueryId) {

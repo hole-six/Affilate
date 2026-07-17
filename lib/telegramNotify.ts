@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { buildMainMenuKeyboard, sendTelegramTextMessage } from "./telegramBot";
+import { buildReplyKeyboardMenu, sendTelegramTextMessage } from "./telegramBot";
 
 // Gửi thông báo real-time cho khách hàng qua Telegram khi có sự kiện quan trọng
 // (đơn được duyệt, đã thanh toán...). Bỏ qua im lặng nếu khách chưa liên kết
@@ -16,7 +16,7 @@ export async function notifyCustomerTelegram(customerId: string, message: string
     const result = await sendTelegramTextMessage({
       chatId: customer.telegramUserId,
       message,
-      keyboard: buildMainMenuKeyboard(),
+      keyboard: buildReplyKeyboardMenu(),
     });
 
     await prisma.telegramMessageLog.create({
