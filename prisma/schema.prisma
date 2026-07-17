@@ -64,12 +64,30 @@ model Customer {
   zaloMessageLogs  ZaloMessageLog[]
   telegramMessageLogs TelegramMessageLog[]
   telegramLinkCodes   TelegramLinkCode[]
+  withdrawRequests    WithdrawRequest[]
 
   @@index([phone])
   @@index([zaloUserId])
   @@index([telegramUserId])
   @@index([referredById])
   @@map("customers")
+}
+
+// Yêu cầu rút tiền do khách chủ động gửi — admin chỉ tạo phiếu thanh toán
+// khi có yêu cầu ở đây (không tự động quét toàn bộ khách có số dư), giúp
+// admin dễ quản lý, không bị loạn danh sách.
+model WithdrawRequest {
+  id         String    @id @default(uuid())
+  customerId String    @map("customer_id")
+  customer   Customer  @relation(fields: [customerId], references: [id])
+  amount     Decimal // số dư khả dụng tại thời điểm gửi yêu cầu (chỉ để hiển thị)
+  status     String    @default("pending") // pending | fulfilled | cancelled
+  createdAt  DateTime  @default(now()) @map("created_at")
+  resolvedAt DateTime? @map("resolved_at")
+
+  @@index([customerId])
+  @@index([status])
+  @@map("withdraw_requests")
 }
 
 // Mã liên kết ngắn hạn để đồng bộ tài khoản Telegram với đúng customer đang
