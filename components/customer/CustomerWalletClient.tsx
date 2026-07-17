@@ -114,6 +114,9 @@ export function CustomerWalletClient({
   const [formBankName, setFormBankName] = useState(initialPaymentInfo.bankName || "");
   const [formBankAccountNumber, setFormBankAccountNumber] = useState(initialPaymentInfo.bankAccountNumber || "");
   const [formBankAccountName, setFormBankAccountName] = useState(initialPaymentInfo.bankAccountName || "");
+  const [bankSearch, setBankSearch] = useState(initialPaymentInfo.bankName || "");
+  const [showBankOptions, setShowBankOptions] = useState(false);
+  const filteredBanks = VIETNAM_BANKS.filter((b) => b.toLowerCase().includes(bankSearch.trim().toLowerCase()));
 
   const hasBankInfo = !!(paymentInfo.bankName && paymentInfo.bankAccountNumber && paymentInfo.bankAccountName);
   const canRequest = stats.available >= MIN_WITHDRAW_AMOUNT && hasBankInfo && !pendingRequest;
@@ -166,7 +169,15 @@ export function CustomerWalletClient({
     setFormBankName(paymentInfo.bankName || "");
     setFormBankAccountNumber(paymentInfo.bankAccountNumber || "");
     setFormBankAccountName(paymentInfo.bankAccountName || "");
+    setBankSearch(paymentInfo.bankName || "");
+    setShowBankOptions(false);
     setIsModalOpen(true);
+  };
+
+  const selectBank = (bank: string) => {
+    setFormBankName(bank);
+    setBankSearch(bank);
+    setShowBankOptions(false);
   };
 
   const renderAccountInfoBox = () => {
@@ -395,18 +406,41 @@ export function CustomerWalletClient({
                     Chuyển khoản Ngân hàng
                   </h4>
                   <div className="space-y-sm">
-                    <div>
+                    <div className="relative">
                       <label className="mb-xs block text-[12px] font-bold text-gray-600">Ngân hàng</label>
-                      <select
-                        value={formBankName}
-                        onChange={(e) => setFormBankName(e.target.value)}
+                      <input
+                        type="text"
+                        value={bankSearch}
+                        onChange={(e) => {
+                          setBankSearch(e.target.value);
+                          setFormBankName("");
+                          setShowBankOptions(true);
+                        }}
+                        onFocus={() => setShowBankOptions(true)}
+                        onBlur={() => setTimeout(() => setShowBankOptions(false), 150)}
+                        placeholder="Gõ để tìm ngân hàng..."
                         className="h-11 w-full rounded-xl border border-gray-200 bg-white px-md text-[14px] font-medium text-gray-900 focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33]"
-                      >
-                        <option value="">-- Chọn ngân hàng --</option>
-                        {VIETNAM_BANKS.map((b) => (
-                          <option key={b} value={b}>{b}</option>
-                        ))}
-                      </select>
+                      />
+                      {showBankOptions && (
+                        <div className="absolute z-10 mt-xs max-h-[220px] w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg">
+                          {filteredBanks.length === 0 ? (
+                            <div className="px-md py-sm text-[13px] text-gray-400">Không tìm thấy ngân hàng phù hợp</div>
+                          ) : (
+                            filteredBanks.map((b) => (
+                              <button
+                                key={b}
+                                type="button"
+                                onMouseDown={() => selectBank(b)}
+                                className={`block w-full px-md py-sm text-left text-[13px] font-medium transition-colors hover:bg-orange-50 ${
+                                  b === formBankName ? "bg-orange-50 text-[#e86a33]" : "text-gray-700"
+                                }`}
+                              >
+                                {b}
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="mb-xs block text-[12px] font-bold text-gray-600">Số tài khoản</label>

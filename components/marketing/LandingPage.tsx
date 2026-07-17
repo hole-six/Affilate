@@ -17,6 +17,7 @@ import { Reveal } from "@/components/marketing/Reveal";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { PublicFloatingSupport } from "@/components/marketing/PublicFloatingSupport";
 
 const PIG_FEATURES = [
   {
@@ -331,6 +332,7 @@ export function LandingPage() {
       </main>
 
       <MarketingFooter />
+      <PublicFloatingSupport />
     </div>
   );
 }
