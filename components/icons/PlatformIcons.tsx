@@ -1,73 +1,43 @@
 type IconProps = { size?: number; className?: string };
 
-export function FacebookIcon({ size = 22, className = "" }: IconProps) {
+function Icons8Image({
+  size = 22,
+  className = "",
+  style,
+  slug,
+  alt,
+}: IconProps & { style: string; slug: string; alt: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <rect width="48" height="48" rx="10" fill="#1877F2" />
-      <path
-        d="M27.5 24.5h-3.2V38h-5.5V24.5H16.5V19.6h2.3v-2.7c0-3.15 1.5-5.9 6.1-5.9h4v4.6h-2.6c-1.05 0-1.4.5-1.4 1.5v2.5h4l-.4 4.9Z"
-        fill="#fff"
-      />
-    </svg>
+    <img
+      src={`https://img.icons8.com/${style}/96/${slug}.png`}
+      alt={alt}
+      width={size}
+      height={size}
+      loading="lazy"
+      className={className}
+      style={{ width: size, height: size, objectFit: "contain" }}
+    />
   );
 }
 
-export function ZaloIcon({ size = 22, className = "" }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <rect width="48" height="48" rx="10" fill="#0068FF" />
-      <path
-        d="M14 27.5c0-6.35 4.9-11.3 10.9-11.3 5.55 0 10.15 4.3 10.75 9.85.06.5.1 1 .1 1.5 0 6.35-4.9 11.3-10.9 11.3-1.75 0-3.4-.4-4.85-1.15L14 39l1.6-5.35c-1-1.75-1.6-3.85-1.6-6.15Z"
-        fill="#fff"
-      />
-      <text x="24" y="29.5" textAnchor="middle" fontSize="10" fontWeight="800" fontFamily="Arial, sans-serif" fill="#0068FF">
-        Zalo
-      </text>
-    </svg>
-  );
+export function FacebookIcon(props: IconProps) {
+  return <Icons8Image {...props} style="color" slug="facebook-new" alt="Facebook" />;
 }
 
-export function YoutubeIcon({ size = 22, className = "" }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <rect width="48" height="48" rx="10" fill="#FF0000" />
-      <path d="M20 17.5v13l11.5-6.5L20 17.5Z" fill="#fff" />
-    </svg>
-  );
+export function ZaloIcon(props: IconProps) {
+  return <Icons8Image {...props} style="color" slug="zalo" alt="Zalo" />;
 }
 
-export function InstagramIcon({ size = 22, className = "" }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <defs>
-        <linearGradient id="ig-grad" x1="0" y1="48" x2="48" y2="0">
-          <stop offset="0" stopColor="#FEE411" />
-          <stop offset="0.3" stopColor="#F0090C" />
-          <stop offset="0.65" stopColor="#CD1BCF" />
-          <stop offset="1" stopColor="#6228D7" />
-        </linearGradient>
-      </defs>
-      <rect width="48" height="48" rx="10" fill="url(#ig-grad)" />
-      <rect x="13" y="13" width="22" height="22" rx="7" stroke="#fff" strokeWidth="2.4" fill="none" />
-      <circle cx="24" cy="24" r="6" stroke="#fff" strokeWidth="2.4" fill="none" />
-      <circle cx="31.5" cy="16.5" r="1.6" fill="#fff" />
-    </svg>
-  );
+export function YoutubeIcon(props: IconProps) {
+  return <Icons8Image {...props} style="color" slug="youtube-play" alt="Youtube" />;
 }
 
-export function ThreadsIcon({ size = 22, className = "" }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <rect width="48" height="48" rx="10" fill="#000000" />
-      <path
-        d="M24 12c-7 0-11 4.6-11 12s4 12 11 12c5.4 0 8.7-2.6 9.6-6.9.4-1.9-.6-3.3-2.1-3.7-1.3-.4-2.6.2-3.1 1.6-.5 1.5-1.8 2.6-4 2.6-3.1 0-4.7-2-4.9-4.6 3.4-.2 6-.9 7.6-2.1 1.8-1.3 2.5-3.2 1.9-5.3-.7-2.5-3.1-4-6.4-4-3.9 0-6.9 2-7.9 5.5"
-        stroke="#fff"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-        fill="none"
-      />
-    </svg>
-  );
+export function InstagramIcon(props: IconProps) {
+  return <Icons8Image {...props} style="color" slug="instagram-new" alt="Instagram" />;
+}
+
+export function ThreadsIcon(props: IconProps) {
+  return <Icons8Image {...props} style="ios-filled" slug="threads" alt="Threads" />;
 }
 
 export function ShopeeIcon({ size = 22, className = "" }: IconProps) {
@@ -124,29 +94,6 @@ export function GoogleIcon({ size = 22, className = "" }: IconProps) {
   );
 }
 
-export function TiktokIcon({ size = 22, className = "" }: IconProps) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-    >
-      <rect width="48" height="48" rx="10" fill="#000000" />
-      <path
-        d="M29.5 9h-4.6v20.6c0 2.3-1.86 4.17-4.15 4.17a4.16 4.16 0 0 1-4.15-4.17c0-2.3 1.86-4.16 4.15-4.16.4 0 .78.06 1.15.17v-4.7a8.9 8.9 0 0 0-1.15-.08c-4.85 0-8.79 3.96-8.79 8.85s3.94 8.85 8.79 8.85 8.79-3.96 8.79-8.85V18.2a11.1 11.1 0 0 0 6.46 2.06v-4.63c-2.99-.08-5.6-1.62-7.2-3.98A8.7 8.7 0 0 1 29.5 9Z"
-        fill="#FE2C55"
-      />
-      <path
-        d="M28.4 8h-4.6v20.6c0 2.3-1.86 4.17-4.15 4.17a4.16 4.16 0 0 1-4.15-4.17c0-2.3 1.86-4.16 4.15-4.16.4 0 .78.06 1.15.17v-4.7a8.9 8.9 0 0 0-1.15-.08c-4.85 0-8.79 3.96-8.79 8.85s3.94 8.85 8.79 8.85 8.79-3.96 8.79-8.85V17.2a11.1 11.1 0 0 0 6.46 2.06v-4.63c-2.99-.08-5.6-1.62-7.2-3.98A8.7 8.7 0 0 1 28.4 8Z"
-        fill="#25F4EE"
-      />
-      <path
-        d="M28.95 8.5h-4.6v20.6c0 2.3-1.86 4.17-4.15 4.17a4.16 4.16 0 0 1-4.15-4.17c0-2.3 1.86-4.16 4.15-4.16.4 0 .78.06 1.15.17v-4.7a8.9 8.9 0 0 0-1.15-.08c-4.85 0-8.79 3.96-8.79 8.85s3.94 8.85 8.79 8.85 8.79-3.96 8.79-8.85V17.7a11.1 11.1 0 0 0 6.46 2.06v-4.63c-2.99-.08-5.6-1.62-7.2-3.98A8.7 8.7 0 0 1 28.95 8.5Z"
-        fill="#fff"
-      />
-    </svg>
-  );
+export function TiktokIcon(props: IconProps) {
+  return <Icons8Image {...props} style="color" slug="tiktok" alt="Tiktok" />;
 }

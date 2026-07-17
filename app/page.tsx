@@ -44,6 +44,14 @@ const jsonLd = {
       name: "iviback",
       url: "https://iviback.vn",
       logo: "https://iviback.vn/icontitle.png",
+      telephone: "+84965965439",
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+84965965439",
+        contactType: "customer service",
+        areaServed: "VN",
+        availableLanguage: "Vietnamese",
+      },
       sameAs: [
         "https://www.facebook.com/share/1BShYKizDV/?mibextid=wwXIfr",
         "https://www.tiktok.com/@vi_ha790?_r=1&_t=ZS-983XgTM1aum",

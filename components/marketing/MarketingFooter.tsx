@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Phone } from "lucide-react";
 import {
   FacebookIcon,
   ZaloIcon,
@@ -72,9 +73,13 @@ export function MarketingFooter() {
       <div className="border-t border-primary/10 px-lg py-lg bg-white">
         <div className="max-w-[1200px] mx-auto flex flex-col md:flex-row justify-between items-center gap-sm">
           <p className="text-mute font-medium text-[14px]">© {new Date().getFullYear()} iviback. Đã đăng ký bản quyền.</p>
-          <div className="flex gap-lg text-[14px] text-primary font-bold">
-            <span>Đẳng cấp & Tinh tế 🚀</span>
-          </div>
+          <a
+            href="tel:0965965439"
+            className="flex items-center gap-xs text-[14px] text-primary font-bold hover:text-primary-active transition-colors"
+          >
+            <Phone size={16} strokeWidth={2.5} />
+            Hotline: 0965.965.439
+          </a>
         </div>
       </div>
     </footer>
