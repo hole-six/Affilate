@@ -26,7 +26,10 @@ export async function GET(req: NextRequest) {
   res.cookies.set(GOOGLE_OAUTH_STATE_COOKIE, state, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    // Dựa theo giao thức THỰC của request (qua x-forwarded-proto), không ép
+    // cứng theo NODE_ENV — nếu không, domain chưa có SSL sẽ bị trình duyệt
+    // âm thầm từ chối lưu cookie này, gây lỗi "hết hạn phiên" khi callback.
+    secure: origin.startsWith("https://"),
     path: "/",
     maxAge: 60 * 10,
   });

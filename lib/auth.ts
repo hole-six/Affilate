@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
@@ -10,6 +10,18 @@ import {
   verifyAccessToken,
   verifyRefreshToken,
 } from "./session";
+
+// Cookie "Secure" chỉ nên bật khi request THỰC SỰ qua HTTPS — không phải cứ
+// production là bật cứng. Trong giai đoạn domain mới (iviback.vn) chưa kịp
+// cấp SSL, nếu ép Secure=true, trình duyệt sẽ âm thầm từ chối lưu cookie khi
+// truy cập qua HTTP, khiến đăng nhập/Google OAuth báo "hết hạn phiên" dù mọi
+// thứ khác đều đúng. Dùng header x-forwarded-proto (Nginx set) để biết chính
+// xác request đang tới qua giao thức nào.
+function isSecureRequest(): boolean {
+  const proto = headers().get("x-forwarded-proto");
+  if (proto) return proto === "https";
+  return process.env.NODE_ENV === "production";
+}
 
 export async function getSession(): Promise<SessionPayload | null> {
   const accessPayload = await verifyAccessToken(cookies().get(ACCESS_TOKEN_COOKIE)?.value);
@@ -25,7 +37,7 @@ export async function getSession(): Promise<SessionPayload | null> {
     cookies().set(ACCESS_TOKEN_COOKIE, newAccessToken, {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: isSecureRequest(),
       path: "/",
       maxAge: ACCESS_TOKEN_TTL_SECONDS,
     });
@@ -39,19 +51,19 @@ export async function getSession(): Promise<SessionPayload | null> {
 export async function setSessionCookie(payload: SessionPayload) {
   const accessToken = await createAccessToken(payload);
   const refreshToken = await createRefreshToken(payload);
-  const isProd = process.env.NODE_ENV === "production";
+  const secure = isSecureRequest();
 
   cookies().set(ACCESS_TOKEN_COOKIE, accessToken, {
     httpOnly: true,
     sameSite: "lax",
-    secure: isProd,
+    secure,
     path: "/",
     maxAge: ACCESS_TOKEN_TTL_SECONDS,
   });
   cookies().set(REFRESH_TOKEN_COOKIE, refreshToken, {
     httpOnly: true,
     sameSite: "lax",
-    secure: isProd,
+    secure,
     path: "/",
     maxAge: REFRESH_TOKEN_TTL_SECONDS,
   });

@@ -44,11 +44,16 @@ export async function middleware(req: NextRequest) {
     }
   }
 
+  // Dựa theo giao thức THỰC của request (x-forwarded-proto do Nginx set),
+  // không ép cứng theo NODE_ENV — tránh cookie bị trình duyệt âm thầm từ
+  // chối lưu khi domain chưa có SSL.
+  const isHttps = (req.headers.get("x-forwarded-proto") ?? req.nextUrl.protocol.replace(":", "")) === "https";
+
   if (refreshedAccessToken) {
     response.cookies.set(ACCESS_TOKEN_COOKIE, refreshedAccessToken, {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: isHttps,
       path: "/",
       maxAge: ACCESS_TOKEN_TTL_SECONDS,
     });
