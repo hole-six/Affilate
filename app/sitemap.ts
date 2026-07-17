@@ -13,6 +13,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/faq", priority: 0.7, changeFrequency: "monthly" },
     { path: "/huong-dan", priority: 0.7, changeFrequency: "monthly" },
     { path: "/login", priority: 0.5, changeFrequency: "yearly" },
+    { path: "/dieu-khoan-su-dung", priority: 0.3, changeFrequency: "yearly" },
+    { path: "/chinh-sach-bao-mat", priority: 0.3, changeFrequency: "yearly" },
   ];
 
   return routes.map((r) => ({

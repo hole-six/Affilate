@@ -56,8 +56,8 @@ export function MarketingFooter() {
             <h5 className="font-black text-[18px] text-ink">Hỗ trợ</h5>
             <ul className="space-y-md text-mute font-medium text-[15px]">
               <li><Link className="hover:text-primary hover:translate-x-1 inline-block transition-all" href="/faq">Trung tâm trợ giúp</Link></li>
-              <li><a className="hover:text-primary hover:translate-x-1 inline-block transition-all" href="#">Điều khoản sử dụng</a></li>
-              <li><a className="hover:text-primary hover:translate-x-1 inline-block transition-all" href="#">Chính sách bảo mật</a></li>
+              <li><Link className="hover:text-primary hover:translate-x-1 inline-block transition-all" href="/dieu-khoan-su-dung">Điều khoản sử dụng</Link></li>
+              <li><Link className="hover:text-primary hover:translate-x-1 inline-block transition-all" href="/chinh-sach-bao-mat">Chính sách bảo mật</Link></li>
             </ul>
           </div>
           <div className="space-y-md">
