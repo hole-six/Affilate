@@ -61,7 +61,13 @@ export async function middleware(req: NextRequest) {
 
   // Set referral cookie if present on any route matched
   if (refCode) {
-    response.cookies.set("ref_code", refCode, { maxAge: 60 * 60 * 24 * 30 }); // 30 days
+    response.cookies.set("ref_code", refCode, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isHttps,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
   }
 
   return response;
