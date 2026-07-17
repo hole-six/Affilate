@@ -6,6 +6,7 @@ import { useState } from "react";
 const NAV_LINKS = [
   { label: "Trang chủ", href: "/" },
   { label: "Cửa hàng", href: "/cua-hang" },
+  { label: "Ưu đãi", href: "/uu-dai" },
   { label: "Hướng dẫn", href: "/huong-dan" },
   { label: "FAQ", href: "/faq" },
 ];
