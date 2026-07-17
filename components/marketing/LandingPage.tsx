@@ -153,7 +153,7 @@ export function LandingPage() {
 
               <h1 className="text-[40px] md:text-[56px] font-black leading-tight text-ink tracking-tight">
                 Để tiền tự về ví{" "}
-                <img src="/icontitle.png" alt="" className="inline-block h-[0.9em] w-[0.9em] object-cover rounded-full align-middle" />
+                <img src="/icontitle.png" alt="iviback" className="inline-block h-[0.9em] w-[0.9em] object-cover rounded-full align-middle" />
               </h1>
               <p className="text-[18px] text-mute max-w-lg leading-relaxed">
                 Cách thông minh hơn để mua Shopee & TikTok Shop — hoàn tiền tự động cho mọi đơn, tiền về thẳng ví của bạn.
@@ -171,7 +171,7 @@ export function LandingPage() {
 
             {/* Mobile-only banner */}
             <div className="mt-2xl rounded-[24px] overflow-hidden shadow-lg md:hidden">
-              <img src="/section1.png" alt="" className="w-full h-auto object-cover" />
+              <img src="/section1.png" alt="Heo hoàn tiền iviback cùng điện thoại mua sắm" className="w-full h-auto object-cover" />
             </div>
           </div>
         </section>
@@ -181,7 +181,7 @@ export function LandingPage() {
           <div className="max-w-[1200px] mx-auto px-lg grid grid-cols-1 sm:grid-cols-2 gap-lg">
             {PIG_FEATURES.map((f) => (
               <div key={f.title} className={`flex items-center gap-lg rounded-3xl ${f.bg} p-lg`}>
-                <img src={f.image} alt="" className="h-16 w-16 shrink-0 object-contain" />
+                <img src={f.image} alt={f.title} className="h-16 w-16 shrink-0 object-contain" />
                 <div>
                   <h3 className="font-black text-[18px] text-ink mb-xs">{f.title}</h3>
                   <p className="text-mute text-[14px] leading-relaxed">{f.description}</p>
@@ -275,7 +275,7 @@ export function LandingPage() {
 
               {/* Support 24/7 */}
               <div className="bg-white rounded-[40px] p-2xl flex flex-col justify-between border border-primary/10 shadow-lg shadow-primary/5 hover:-translate-y-1 transition-transform group">
-                <img src="/heothongbao.png" alt="" className="h-16 w-16 object-contain" />
+                <img src="/heothongbao.png" alt="Bot Telegram thông báo đơn hàng" className="h-16 w-16 object-contain" />
                 <div className="mt-xl">
                   <h4 className="font-black text-[20px] text-ink mb-xs">Bot Telegram</h4>
                   <p className="text-mute text-[14px] leading-relaxed">Theo dõi đơn hàng tự động thông minh không cần mở ứng dụng.</p>
@@ -284,7 +284,7 @@ export function LandingPage() {
 
               {/* Coupons */}
               <div className="bg-gradient-to-br from-[#fff0e6] to-white rounded-[40px] p-2xl flex flex-col justify-between border border-primary/10 shadow-lg shadow-primary/5 hover:-translate-y-1 transition-transform group">
-                <img src="/heogiamgia.png" alt="" className="h-16 w-16 object-contain" />
+                <img src="/heogiamgia.png" alt="Mã giảm giá và voucher độc quyền" className="h-16 w-16 object-contain" />
                 <div className="mt-xl">
                   <h4 className="font-black text-[20px] text-ink mb-xs">Mã giảm giá</h4>
                   <p className="text-mute text-[14px] leading-relaxed">Kho voucher độc quyền Freeship và giảm sâu lên tới 50%.</p>

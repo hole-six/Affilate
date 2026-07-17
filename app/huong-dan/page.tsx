@@ -6,7 +6,16 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Hướng Dẫn — iviback",
-  description: "Cách sử dụng nền tảng hoàn tiền: 3 bước đơn giản để mua sắm thông minh.",
+  description: "Cách sử dụng nền tảng hoàn tiền iviback: 3 bước đơn giản để mua sắm Shopee, TikTok Shop và nhận hoàn tiền tự động.",
+  alternates: { canonical: "/huong-dan" },
+  openGraph: {
+    title: "Hướng Dẫn — iviback",
+    description: "Cách sử dụng nền tảng hoàn tiền iviback: 3 bước đơn giản để mua sắm Shopee, TikTok Shop và nhận hoàn tiền tự động.",
+    type: "website",
+    locale: "vi_VN",
+    url: "/huong-dan",
+    siteName: "iviback",
+  },
 };
 
 const STEPS = [

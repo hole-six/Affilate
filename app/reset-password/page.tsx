@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ResetPasswordForm } from "./ResetPasswordForm";
+
+export const metadata: Metadata = {
+  title: "Đặt lại mật khẩu — iviback",
+  description: "Tạo mật khẩu mới cho tài khoản iviback.",
+  robots: { index: false, follow: false },
+};
 
 export default function ResetPasswordPage({
   searchParams,

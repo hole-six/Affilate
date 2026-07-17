@@ -7,8 +7,17 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Cửa Hàng — Nền Tảng Hỗ Trợ Hoàn Tiền",
-  description: "Các đối tác và cửa hàng hỗ trợ hoàn tiền trên hệ thống của chúng tôi.",
+  title: "Cửa Hàng — iviback | Nền Tảng Hỗ Trợ Hoàn Tiền",
+  description: "Danh sách sàn thương mại điện tử được iviback hỗ trợ hoàn tiền: Shopee, TikTok Shop và nhiều đối tác khác.",
+  alternates: { canonical: "/cua-hang" },
+  openGraph: {
+    title: "Cửa Hàng — iviback",
+    description: "Danh sách sàn thương mại điện tử được iviback hỗ trợ hoàn tiền: Shopee, TikTok Shop và nhiều đối tác khác.",
+    type: "website",
+    locale: "vi_VN",
+    url: "/cua-hang",
+    siteName: "iviback",
+  },
 };
 
 export default async function CuaHangPage() {

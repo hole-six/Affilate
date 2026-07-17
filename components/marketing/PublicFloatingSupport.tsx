@@ -46,7 +46,7 @@ export function PublicFloatingSupport() {
                 style={{ background: "linear-gradient(135deg,#fff3ee,#fde8d8)" }}
               >
                 <div className="flex items-center gap-sm">
-                  <img src="/heoQA.png" alt="" className="h-10 w-10 object-contain" />
+                  <img src="/heoQA.png" alt="Hỗ trợ khách hàng iviback" className="h-10 w-10 object-contain" />
                   <div>
                     <h3 className="text-[16px] font-black text-gray-900">Hỗ trợ nhanh</h3>
                     <p className="text-[12px] text-gray-500">Liên hệ với Ví Heo qua các kênh dưới đây</p>

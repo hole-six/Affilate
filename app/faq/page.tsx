@@ -5,7 +5,16 @@ import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 
 export const metadata: Metadata = {
   title: "Câu Hỏi Thường Gặp (FAQ) — iviback",
-  description: "Giải đáp các thắc mắc về hệ thống hoàn tiền thông minh.",
+  description: "Giải đáp các thắc mắc về hệ thống hoàn tiền thông minh: rút tiền, phí sử dụng, sàn hỗ trợ và liên kết Telegram.",
+  alternates: { canonical: "/faq" },
+  openGraph: {
+    title: "Câu Hỏi Thường Gặp (FAQ) — iviback",
+    description: "Giải đáp các thắc mắc về hệ thống hoàn tiền thông minh: rút tiền, phí sử dụng, sàn hỗ trợ và liên kết Telegram.",
+    type: "website",
+    locale: "vi_VN",
+    url: "/faq",
+    siteName: "iviback",
+  },
 };
 
 const FAQ_ITEMS = [
@@ -34,16 +43,27 @@ const FAQ_ITEMS = [
   },
 ];
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQ_ITEMS.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
+};
+
 export default function FaqPage() {
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <MarketingHeader activePath="/faq" />
 
       <main className="pt-[80px]">
         {/* Header Hero */}
         <section className="bg-gradient-to-b from-[#fff0e6] to-white py-3xl relative overflow-hidden">
           <div className="max-w-[1200px] mx-auto px-lg relative z-10 text-center">
-            <img src="/heoQA.png" alt="" className="mx-auto h-24 w-24 object-contain mb-md" />
+            <img src="/heoQA.png" alt="Câu hỏi thường gặp iviback" className="mx-auto h-24 w-24 object-contain mb-md" />
             <h1 className="text-[40px] md:text-[56px] font-black text-ink tracking-tight mb-md">
               Câu Hỏi <span className="text-primary">Thường Gặp</span>
             </h1>

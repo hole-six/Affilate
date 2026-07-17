@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { ForgotPasswordForm } from "./ForgotPasswordForm";
+
+export const metadata: Metadata = {
+  title: "Quên mật khẩu — iviback",
+  description: "Đặt lại mật khẩu tài khoản iviback của bạn.",
+  robots: { index: false, follow: false },
+};
 
 export default function ForgotPasswordPage() {
   return (

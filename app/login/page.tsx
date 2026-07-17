@@ -1,7 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { LoginForm } from "./LoginForm";
 import { ArrowLeft } from "lucide-react";
 import { TrustBadgesCard } from "@/components/marketing/TrustBadgesCard";
+
+export const metadata: Metadata = {
+  title: "Đăng nhập — iviback",
+  description: "Đăng nhập vào iviback để quản lý ví hoàn tiền, đơn hàng và rút tiền dễ dàng.",
+  alternates: { canonical: "/login" },
+};
 
 export default function LoginPage({
   searchParams,

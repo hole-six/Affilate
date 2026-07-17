@@ -7,12 +7,23 @@ export const metadata: Metadata = {
   title: "iviback — Mua sắm Shopee, TikTok Shop nhận hoàn tiền tự động",
   description:
     "Dán link Shopee hoặc TikTok Shop, nhận link hoàn tiền tự động. Rút tiền từ 10.000đ, tích hợp bot Telegram, miễn phí hoàn toàn.",
+  alternates: { canonical: "/" },
   openGraph: {
     title: "iviback — Mua sắm thông minh, nhận hoàn tiền tự động",
     description:
       "Nền tảng affiliate hoàn tiền cho Shopee và TikTok Shop. Rút tiền từ 10.000đ, tích hợp bot Telegram.",
     type: "website",
     locale: "vi_VN",
+    url: "/",
+    siteName: "iviback",
+    images: [{ url: "/icontitle.png", width: 1536, height: 1024, alt: "iviback - Nền tảng hoàn tiền affiliate" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "iviback — Mua sắm thông minh, nhận hoàn tiền tự động",
+    description:
+      "Nền tảng affiliate hoàn tiền cho Shopee và TikTok Shop. Rút tiền từ 10.000đ, tích hợp bot Telegram.",
+    images: ["/icontitle.png"],
   },
 };
 
@@ -21,12 +32,24 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "WebSite",
+      "@id": "https://iviback.vn/#website",
+      url: "https://iviback.vn",
       name: "iviback",
       description: "Nền tảng affiliate hoàn tiền cho Shopee và TikTok Shop tại Việt Nam.",
+      inLanguage: "vi-VN",
     },
     {
       "@type": "Organization",
+      "@id": "https://iviback.vn/#organization",
       name: "iviback",
+      url: "https://iviback.vn",
+      logo: "https://iviback.vn/icontitle.png",
+      sameAs: [
+        "https://www.facebook.com/share/1BShYKizDV/?mibextid=wwXIfr",
+        "https://www.tiktok.com/@vi_ha790?_r=1&_t=ZS-983XgTM1aum",
+        "https://www.instagram.com/imviihaaa?igsh=M2RqZml1NHpzbmgx&utm_source=qr",
+        "https://youtube.com/@hoanphihoahongaff?si=aNywoErGCAi7BGxV",
+      ],
     },
     {
       "@type": "FAQPage",
