@@ -60,5 +60,11 @@ export async function POST(req: NextRequest) {
     data: { payoutStatus: "processing" },
   });
 
+  // Đóng yêu cầu rút tiền của khách (nếu có) — phiếu vừa tạo coi như đã xử lý yêu cầu đó.
+  await prisma.withdrawRequest.updateMany({
+    where: { customerId, status: "pending" },
+    data: { status: "fulfilled", resolvedAt: new Date() },
+  });
+
   return NextResponse.json({ batch });
 }

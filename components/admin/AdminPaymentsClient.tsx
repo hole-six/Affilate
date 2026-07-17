@@ -15,6 +15,7 @@ import { MarkPaidForm } from "@/components/admin/MarkPaidForm";
 type CustomerPending = {
   id: string; name: string; code: string; amount: number; count: number;
   bankName: string | null; bankAccountNumber: string | null; bankAccountName: string | null;
+  requestedAt: string | null;
 };
 
 type PaymentBatch = {
@@ -328,7 +329,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
         <div className="flex items-center gap-sm overflow-x-auto">
           {[
-            { id: "pending" as const, label: "Sẵn sàng thanh toán", count: pendingList.length, icon: <Wallet size={14} /> },
+            { id: "pending" as const, label: "Yêu cầu rút tiền", count: pendingList.length, icon: <Wallet size={14} /> },
             { id: "waiting" as const, label: "Chờ Shopee duyệt", count: waitingList.length, icon: <Clock size={14} /> },
             { id: "history" as const, label: "Lịch sử phiếu", count: batches.length, icon: <ClipboardList size={14} /> },
           ].map((t) => (
@@ -371,7 +372,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
         filteredPending.length === 0 ? (
           <div className="flex flex-col items-center gap-sm rounded-3xl bg-white py-3xl shadow-sm ring-1 ring-black/[0.06]">
             <img src="/heochodoi.png" alt="" className="h-16 w-16 object-contain opacity-70" />
-            <span className="text-[14px] font-bold text-gray-400">Không có công nợ chờ thanh toán 🎉</span>
+            <span className="text-[14px] font-bold text-gray-400">Chưa có khách nào yêu cầu rút tiền 🎉</span>
           </div>
         ) : (
           <div className="flex flex-col gap-lg">
@@ -383,10 +384,15 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#e86a33] to-[#d65d2a] text-white font-black text-[16px] shadow-md shadow-[#e86a33]/20">
                       {c.name.charAt(0).toUpperCase()}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="font-bold text-gray-900 truncate">{c.name}</div>
                       <div className="font-mono text-[11px] text-gray-400">{c.code}</div>
                     </div>
+                    {c.requestedAt && (
+                      <span className="shrink-0 rounded-full bg-amber-50 px-sm py-[3px] text-[10px] font-bold text-amber-600 ring-1 ring-amber-100">
+                        🔔 {formatDate(c.requestedAt)}
+                      </span>
+                    )}
                   </div>
 
                   {/* Amount */}

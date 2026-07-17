@@ -7,6 +7,7 @@ import { getSession } from "@/lib/auth";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
 import { buildPaymentPaidMessage } from "@/lib/telegramBot";
 import { notifyCustomerInApp } from "@/lib/notifications";
+import { sendMail, buildPaymentSentEmail } from "@/lib/mailer";
 
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession();
@@ -91,7 +92,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       paidByUserId: session.userId,
       paidAt: new Date(),
     },
-    include: { items: true },
+    include: { items: true, customer: { include: { user: true } } },
   });
 
   await prisma.order.updateMany({
@@ -114,6 +115,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     message: `Phiếu ${batch.paymentCode} — ${Number(batch.totalAmount).toLocaleString("vi-VN")}đ đã được chuyển vào tài khoản của bạn.`,
     link: "/app/wallet",
   });
+
+  const customerEmail = batch.customer.user?.email;
+  if (customerEmail) {
+    void sendMail({
+      to: customerEmail,
+      subject: `[Đã chuyển khoản] Phiếu ${batch.paymentCode}`,
+      html: buildPaymentSentEmail({
+        fullName: batch.customer.fullName,
+        amount: Number(batch.totalAmount),
+        paymentCode: batch.paymentCode,
+        bankAccountNumber: batch.customer.bankAccountNumber,
+        transferReference: batch.transferReference,
+      }),
+    });
+  }
 
   return NextResponse.json({ batch });
 }

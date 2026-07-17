@@ -18,7 +18,7 @@ export default async function CustomerWalletPage({ searchParams }: { searchParam
     where.paymentCode = { contains: q };
   }
 
-  const [customer, orders, paymentBatches, filteredCount] = await Promise.all([
+  const [customer, orders, paymentBatches, filteredCount, pendingRequest] = await Promise.all([
     prisma.customer.findUnique({ where: { id: session.customerId } }),
     prisma.order.findMany({ where: { customerId: session.customerId } }),
     prisma.paymentBatch.findMany({
@@ -28,6 +28,10 @@ export default async function CustomerWalletPage({ searchParams }: { searchParam
       take: limit,
     }),
     prisma.paymentBatch.count({ where }),
+    prisma.withdrawRequest.findFirst({
+      where: { customerId: session.customerId, status: "pending" },
+      orderBy: { createdAt: "desc" },
+    }),
   ]);
 
   const totalPages = Math.ceil(filteredCount / limit);
@@ -62,6 +66,15 @@ export default async function CustomerWalletPage({ searchParams }: { searchParam
         bankAccountNumber: customer.bankAccountNumber,
         bankAccountName: customer.bankAccountName,
       }}
+      pendingRequest={
+        pendingRequest
+          ? {
+              id: pendingRequest.id,
+              amount: Number(pendingRequest.amount),
+              createdAt: pendingRequest.createdAt.toISOString(),
+            }
+          : null
+      }
     />
   );
 }

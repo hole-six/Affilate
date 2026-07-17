@@ -1,18 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Wallet, Clock, CheckCircle2, Building2, Edit2, AlertCircle, X, Loader2 } from "lucide-react";
+import { Wallet, Clock, CheckCircle2, Building2, Edit2, AlertCircle, X, Loader2, BellRing } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/Pagination";
 
 export const VIETNAM_BANKS = [
+  // Ngân hàng quốc doanh / nhà nước chi phối
   "Vietcombank (Ngân hàng TMCP Ngoại thương VN)",
-  "Techcombank (Ngân hàng TMCP Kỹ thương VN)",
-  "MB (Ngân hàng TMCP Quân đội)",
+  "VietinBank (Ngân hàng TMCP Công thương VN)",
   "BIDV (Ngân hàng TMCP Đầu tư và Phát triển VN)",
   "Agribank (Ngân hàng NN&PTNT VN)",
-  "VietinBank (Ngân hàng TMCP Công thương VN)",
+  // Ngân hàng TMCP
+  "Techcombank (Ngân hàng TMCP Kỹ thương VN)",
+  "MB (Ngân hàng TMCP Quân đội)",
   "ACB (Ngân hàng TMCP Á Châu)",
   "VPBank (Ngân hàng TMCP VN Thịnh Vượng)",
   "TPBank (Ngân hàng TMCP Tiên Phong)",
@@ -22,11 +24,44 @@ export const VIETNAM_BANKS = [
   "SHB (Ngân hàng TMCP Sài Gòn - Hà Nội)",
   "SeABank (Ngân hàng TMCP Đông Nam Á)",
   "MSB (Ngân hàng TMCP Hàng Hải VN)",
-  "LienVietPostBank (Ngân hàng Bưu điện Liên Việt)",
+  "LPBank (Ngân hàng TMCP Lộc Phát VN)",
   "OCB (Ngân hàng TMCP Phương Đông)",
   "Nam A Bank (Ngân hàng TMCP Nam Á)",
-  "Timo (Ngân hàng số Timo)",
-  "Cake (Ngân hàng số Cake by VPBank)",
+  "Eximbank (Ngân hàng TMCP Xuất Nhập khẩu VN)",
+  "VietABank (Ngân hàng TMCP Việt Á)",
+  "NCB (Ngân hàng TMCP Quốc Dân)",
+  "Bac A Bank (Ngân hàng TMCP Bắc Á)",
+  "PVcomBank (Ngân hàng TMCP Đại Chúng VN)",
+  "Saigonbank (Ngân hàng TMCP Sài Gòn Công Thương)",
+  "KienlongBank (Ngân hàng TMCP Kiên Long)",
+  "VietBank (Ngân hàng TMCP Việt Nam Thương Tín)",
+  "BaoVietBank (Ngân hàng TMCP Bảo Việt)",
+  "PGBank (Ngân hàng TMCP Thịnh Vượng và Phát triển)",
+  "ABBank (Ngân hàng TMCP An Bình)",
+  "SCB (Ngân hàng TMCP Sài Gòn)",
+  "BVBank (Ngân hàng TMCP Bản Việt)",
+  "GPBank (Ngân hàng TM TNHH MTV Dầu Khí Toàn Cầu)",
+  "MBV (Ngân hàng TM TNHH MTV Đại Dương)",
+  "CBBank (Ngân hàng TM TNHH MTV Xây dựng VN)",
+  // Ngân hàng chính sách / hợp tác xã
+  "VBSP (Ngân hàng Chính sách Xã hội)",
+  "Co-opBank (Ngân hàng Hợp tác xã VN)",
+  // Ngân hàng 100% vốn nước ngoài / liên doanh tại VN
+  "HSBC Việt Nam",
+  "Standard Chartered Việt Nam",
+  "Shinhan Bank Việt Nam",
+  "Woori Bank Việt Nam",
+  "Public Bank Việt Nam (PBVN)",
+  "CIMB Việt Nam",
+  "UOB Việt Nam",
+  "Hong Leong Bank Việt Nam",
+  "Indovina Bank",
+  "ANZ Việt Nam",
+  // Ngân hàng số
+  "Cake by VPBank",
+  "Ubank by VPBank",
+  "Liobank by OCB",
+  "Timo",
   "Khác...",
 ];
 
@@ -35,6 +70,12 @@ type PaymentInfo = {
   bankAccountNumber: string | null;
   bankAccountName: string | null;
 };
+
+type PendingRequest = {
+  id: string;
+  amount: number;
+  createdAt: string;
+} | null;
 
 type Props = {
   stats: {
@@ -46,12 +87,23 @@ type Props = {
   totalPages: number;
   currentPage: number;
   paymentInfo: PaymentInfo;
+  pendingRequest: PendingRequest;
 };
 
-export function CustomerWalletClient({ stats, history, totalPages, currentPage, paymentInfo: initialPaymentInfo }: Props) {
+const MIN_WITHDRAW_AMOUNT = 10000;
+
+export function CustomerWalletClient({
+  stats,
+  history,
+  totalPages,
+  currentPage,
+  paymentInfo: initialPaymentInfo,
+  pendingRequest: initialPendingRequest,
+}: Props) {
   const router = useRouter();
-  const [requestAmount, setRequestAmount] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [pendingRequest, setPendingRequest] = useState<PendingRequest>(initialPendingRequest);
 
   // Profile State
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>(initialPaymentInfo);
@@ -63,26 +115,26 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
   const [formBankAccountNumber, setFormBankAccountNumber] = useState(initialPaymentInfo.bankAccountNumber || "");
   const [formBankAccountName, setFormBankAccountName] = useState(initialPaymentInfo.bankAccountName || "");
 
-  const handleRequestAll = () => {
-    setRequestAmount(stats.available.toString());
-  };
+  const hasBankInfo = !!(paymentInfo.bankName && paymentInfo.bankAccountNumber && paymentInfo.bankAccountName);
+  const canRequest = stats.available >= MIN_WITHDRAW_AMOUNT && hasBankInfo && !pendingRequest;
 
-  const handleSubmitRequest = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (Number(requestAmount) < 10000) {
-      setError("Số tiền rút tối thiểu là 10.000 VNĐ");
-      return;
-    }
-    if (Number(requestAmount) > stats.available) {
-      setError("Số dư không đủ");
-      return;
-    }
-    if (!paymentInfo.bankName || !paymentInfo.bankAccountNumber) {
-      setError("Vui lòng cập nhật thông tin Ngân hàng trước khi rút");
-      return;
-    }
+  const handleSubmitRequest = async () => {
     setError(null);
-    alert("Tính năng gửi yêu cầu thanh toán đang được phát triển!");
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/withdraw-requests", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Không thể gửi yêu cầu, vui lòng thử lại");
+        return;
+      }
+      setPendingRequest(data.request);
+      router.refresh();
+    } catch {
+      setError("Đã có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleSavePaymentInfo = async (e: React.FormEvent) => {
@@ -200,45 +252,22 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-xl lg:grid-cols-[1fr_2fr] items-start">
-          {/* LEFT COLUMN: PAYMENT REQUEST FORM */}
+          {/* LEFT COLUMN: PAYMENT REQUEST */}
           <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/5">
-            <h2 className="text-[16px] font-bold text-gray-900 mb-xl">Tạo yêu cầu thanh toán</h2>
-            
-            <form onSubmit={handleSubmitRequest} className="flex flex-col gap-lg">
+            <h2 className="text-[16px] font-bold text-gray-900 mb-xl">Yêu cầu rút tiền</h2>
+
+            <div className="flex flex-col gap-lg">
               {/* Available Balance */}
               <div>
                 <label className="mb-sm block text-[13px] font-bold text-gray-600">Số dư khả dụng</label>
-                <div className="flex h-12 w-full items-center rounded-xl bg-gray-50 px-md text-[14px] font-bold text-gray-900 ring-1 ring-gray-100">
+                <div className="flex h-12 w-full items-center rounded-xl bg-gray-50 px-md text-[15px] font-black text-gray-900 ring-1 ring-gray-100">
                   {formatCurrency(stats.available)}
                 </div>
-              </div>
-
-              {/* Request Amount */}
-              <div>
-                <label className="mb-sm block text-[13px] font-bold text-gray-600">Số tiền yêu cầu</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    value={requestAmount}
-                    onChange={(e) => setRequestAmount(e.target.value)}
-                    placeholder="0"
-                    className="h-12 w-full rounded-xl bg-white px-md pr-[100px] text-[15px] font-bold text-gray-900 ring-1 ring-gray-200 focus:outline-none focus:ring-2 focus:ring-[#e86a33]/50 transition-all"
-                  />
-                  <div className="absolute right-xs top-1/2 -translate-y-1/2 flex items-center gap-sm">
-                    <span className="text-[13px] font-bold text-gray-400">VNĐ</span>
-                    <button
-                      type="button"
-                      onClick={handleRequestAll}
-                      className="rounded-lg bg-gray-100 px-sm py-[6px] text-[12px] font-bold text-[#e86a33] transition-colors hover:bg-gray-200"
-                    >
-                      Toàn bộ
-                    </button>
-                  </div>
-                </div>
-                <div className="mt-xs flex items-center justify-between">
-                  <span className="text-[11px] font-medium text-gray-400">Tối thiểu 10.000 VNĐ</span>
-                  {error && <span className="text-[12px] font-bold text-red-500">{error}</span>}
-                </div>
+                {stats.available < MIN_WITHDRAW_AMOUNT && (
+                  <p className="mt-xs text-[11px] font-medium text-gray-400">
+                    Cần tối thiểu {formatCurrency(MIN_WITHDRAW_AMOUNT)} mới gửi được yêu cầu rút tiền
+                  </p>
+                )}
               </div>
 
               {/* Account Info */}
@@ -247,8 +276,8 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
                   <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
                     Thông tin tài khoản nhận
                   </span>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={openModal}
                     className="flex items-center gap-[4px] text-[12px] font-bold text-[#e86a33] hover:text-[#d65d2a]"
                   >
@@ -256,18 +285,42 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
                     Chỉnh sửa
                   </button>
                 </div>
-                
+
                 {renderAccountInfoBox()}
               </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="mt-sm flex h-12 w-full items-center justify-center rounded-xl bg-[#ffcca7] text-[15px] font-bold text-[#e86a33] transition-all hover:bg-[#ffbfa7] hover:text-[#d65d2a] active:scale-[0.98]"
-              >
-                Xác nhận thanh toán
-              </button>
-            </form>
+              {error && <p className="text-[12px] font-bold text-red-500">{error}</p>}
+
+              {pendingRequest ? (
+                <div className="flex items-start gap-sm rounded-xl bg-amber-50 p-md ring-1 ring-amber-100">
+                  <BellRing size={18} className="mt-[2px] shrink-0 text-amber-500" strokeWidth={2.25} />
+                  <div>
+                    <div className="text-[13px] font-bold text-amber-700">Đã gửi yêu cầu, đang chờ xử lý</div>
+                    <div className="text-[12px] text-amber-600">
+                      Bạn đã yêu cầu rút {formatCurrency(pendingRequest.amount)}. Admin sẽ xử lý và chuyển khoản sớm nhất.
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleSubmitRequest}
+                  disabled={!canRequest || submitting}
+                  className="flex h-12 w-full items-center justify-center gap-sm rounded-xl bg-[#e86a33] text-[15px] font-bold text-white transition-all hover:bg-[#d65d2a] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+                >
+                  {submitting ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    `Yêu cầu rút ${formatCurrency(stats.available)}`
+                  )}
+                </button>
+              )}
+              {!hasBankInfo && !pendingRequest && (
+                <p className="text-[11px] font-medium text-gray-400 -mt-sm">
+                  Cần cập nhật thông tin tài khoản ngân hàng trước khi gửi yêu cầu.
+                </p>
+              )}
+            </div>
           </div>
 
           {/* RIGHT COLUMN: TRANSACTION HISTORY */}
@@ -325,7 +378,7 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
           <div className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-xl fade-in-up">
             <div className="flex items-center justify-between border-b border-gray-100 p-lg">
               <h3 className="text-[18px] font-bold text-gray-900">Thông tin thanh toán</h3>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="rounded-full p-sm text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-900"
               >
@@ -344,7 +397,7 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
                   <div className="space-y-sm">
                     <div>
                       <label className="mb-xs block text-[12px] font-bold text-gray-600">Ngân hàng</label>
-                      <select 
+                      <select
                         value={formBankName}
                         onChange={(e) => setFormBankName(e.target.value)}
                         className="h-11 w-full rounded-xl border border-gray-200 bg-white px-md text-[14px] font-medium text-gray-900 focus:border-[#e86a33] focus:outline-none focus:ring-1 focus:ring-[#e86a33]"
@@ -357,7 +410,7 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
                     </div>
                     <div>
                       <label className="mb-xs block text-[12px] font-bold text-gray-600">Số tài khoản</label>
-                      <input 
+                      <input
                         type="text"
                         value={formBankAccountNumber}
                         onChange={(e) => setFormBankAccountNumber(e.target.value)}
@@ -367,7 +420,7 @@ export function CustomerWalletClient({ stats, history, totalPages, currentPage, 
                     </div>
                     <div>
                       <label className="mb-xs block text-[12px] font-bold text-gray-600">Tên chủ tài khoản</label>
-                      <input 
+                      <input
                         type="text"
                         value={formBankAccountName}
                         onChange={(e) => setFormBankAccountName(e.target.value)}

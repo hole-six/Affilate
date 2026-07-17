@@ -4,15 +4,22 @@ import { AdminPaymentsClient } from "@/components/admin/AdminPaymentsClient";
 
 export default async function AdminPaymentsPage() {
   const [
-    pendingOrders,   // approved + unpaid → đủ điều kiện tạo phiếu
+    pendingOrders,   // approved + unpaid, CHỈ của khách đã chủ động gửi yêu cầu rút tiền
     waitingOrders,   // pending (affiliate chưa xác nhận) → chưa được tạo phiếu
     batches,
     paidAgg,
     batchPendingCount,
+    withdrawRequests,
   ] = await Promise.all([
     // ✅ Đơn ĐỦ ĐIỀU KIỆN: Shopee đã xác nhận hoa hồng (orderStatus=approved) + chưa thanh toán
+    // + khách đang có 1 yêu cầu rút tiền "pending" — admin KHÔNG tự động thấy toàn bộ
+    // khách có số dư, chỉ thấy ai đã chủ động yêu cầu, để dễ quản lý hơn.
     prisma.order.findMany({
-      where: { payoutStatus: "unpaid", orderStatus: "approved" },
+      where: {
+        payoutStatus: "unpaid",
+        orderStatus: "approved",
+        customer: { withdrawRequests: { some: { status: "pending" } } },
+      },
       include: { customer: true },
     }),
     // ⏳ Đơn CHƯA ĐỦ điều kiện: tiếp thị liên kết chưa hoàn thành (orderStatus=pending)
@@ -36,7 +43,13 @@ export default async function AdminPaymentsPage() {
       _sum: { totalAmount: true },
     }),
     prisma.paymentBatch.count({ where: { status: { not: "paid" } } }),
+    prisma.withdrawRequest.findMany({
+      where: { status: "pending" },
+      orderBy: { createdAt: "asc" },
+    }),
   ]);
+
+  const requestedAtByCustomer = new Map(withdrawRequests.map((r) => [r.customerId, r.createdAt.toISOString()]));
 
   // Group approved orders by customer
   const byCustomer = new Map<string, any>();
@@ -51,13 +64,17 @@ export default async function AdminPaymentsPage() {
       bankName: o.customer.bankName,
       bankAccountNumber: o.customer.bankAccountNumber,
       bankAccountName: o.customer.bankAccountName,
+      requestedAt: requestedAtByCustomer.get(o.customer.id) ?? null,
     };
     cur.amount += Number(o.customerRewardAmount);
     cur.count += 1;
     byCustomer.set(o.customer.id, cur);
   }
 
-  const pendingList = Array.from(byCustomer.values());
+  // Sắp xếp theo thời gian yêu cầu — ai gửi trước xử lý trước
+  const pendingList = Array.from(byCustomer.values()).sort(
+    (a, b) => new Date(a.requestedAt ?? 0).getTime() - new Date(b.requestedAt ?? 0).getTime()
+  );
   const totalPendingAmount = pendingList.reduce((s, c) => s + c.amount, 0);
   const totalPaidAmount = Number(paidAgg._sum.totalAmount ?? 0);
 
@@ -118,8 +135,8 @@ export default async function AdminPaymentsPage() {
               <p className="text-[11px] font-bold uppercase tracking-widest text-[#e86a33]/60 mb-1">Đối soát & Chi trả</p>
               <h1 className="text-[26px] sm:text-[30px] font-black leading-tight text-[#2d1f14]">Thanh toán</h1>
               <p className="mt-1 text-[13px] text-[#a0816a]">
-                <span className="font-bold text-[#e86a33]">{pendingList.length}</span> khách đủ điều kiện •{" "}
-                Tổng nợ sẵn sàng:{" "}
+                <span className="font-bold text-[#e86a33]">{pendingList.length}</span> yêu cầu rút tiền •{" "}
+                Tổng cần trả:{" "}
                 <span className="font-bold text-[#e86a33]">{formatCurrency(totalPendingAmount)}</span>
               </p>
             </div>
@@ -136,7 +153,7 @@ export default async function AdminPaymentsPage() {
             <div>
               <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Chờ trả</div>
               <div className="text-[24px] font-black text-[#e86a33] tabular-nums leading-tight">{pendingList.length}</div>
-              <div className="text-[10px] text-gray-400">Shopee đã duyệt ✓</div>
+              <div className="text-[10px] text-gray-400">Khách đã yêu cầu rút</div>
             </div>
           </div>
         </div>

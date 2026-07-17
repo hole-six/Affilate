@@ -126,6 +126,61 @@ export function buildPasswordChangedEmail(params: { fullName: string }): string 
   `);
 }
 
+export function buildAdminWithdrawRequestEmail(params: {
+  customerName: string;
+  customerCode: string;
+  amount: number;
+}): string {
+  const amountText = new Intl.NumberFormat("vi-VN").format(Math.round(params.amount)) + "đ";
+  return emailShell(`
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:900;color:#2d1f14;">🔔 Khách yêu cầu rút tiền</h1>
+    <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#6b5847;">
+      Khách hàng <strong>${escapeHtml(params.customerName)}</strong> (<code>${escapeHtml(params.customerCode)}</code>) vừa gửi yêu cầu rút tiền.
+    </p>
+    <p style="margin:0 0 24px;font-size:28px;font-weight:900;color:${BRAND_COLOR};">${amountText}</p>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#a0816a;">
+      Vào trang Admin → Thanh toán để xem chi tiết và tạo phiếu.
+    </p>
+  `);
+}
+
+export function buildPaymentSentEmail(params: {
+  fullName: string;
+  amount: number;
+  paymentCode: string;
+  bankAccountNumber?: string | null;
+  transferReference?: string | null;
+}): string {
+  const amountText = new Intl.NumberFormat("vi-VN").format(Math.round(params.amount)) + "đ";
+  return emailShell(`
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:900;color:#2d1f14;">💸 Tiền đã được chuyển!</h1>
+    <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#6b5847;">Xin chào <strong>${escapeHtml(params.fullName)}</strong>,</p>
+    <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#6b5847;">
+      Chúng tôi vừa chuyển khoản thành công số tiền hoàn của bạn:
+    </p>
+    <p style="margin:0 0 20px;font-size:28px;font-weight:900;color:${BRAND_COLOR};">${amountText}</p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 20px;font-size:13px;color:#6b5847;">
+      <tr>
+        <td style="padding:4px 0;">Mã phiếu</td>
+        <td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.paymentCode)}</td>
+      </tr>
+      ${
+        params.bankAccountNumber
+          ? `<tr><td style="padding:4px 0;">Tài khoản nhận</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.bankAccountNumber)}</td></tr>`
+          : ""
+      }
+      ${
+        params.transferReference
+          ? `<tr><td style="padding:4px 0;">Mã giao dịch</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.transferReference)}</td></tr>`
+          : ""
+      }
+    </table>
+    <p style="margin:0;font-size:12px;line-height:1.6;color:#a0816a;">
+      Cảm ơn bạn đã đồng hành cùng hệ thống hoàn tiền! Kiểm tra tài khoản ngân hàng của bạn trong ít phút tới.
+    </p>
+  `);
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
