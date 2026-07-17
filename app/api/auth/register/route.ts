@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { setSessionCookie } from "@/lib/auth";
+import { sendMail, buildAdminNewRegistrationEmail } from "@/lib/mailer";
 
 async function generateCustomerCode(): Promise<string> {
   const count = await prisma.customer.count();
@@ -65,6 +66,22 @@ export async function POST(req: NextRequest) {
     fullName: user.fullName,
     customerId: customer.id,
   });
+
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+  if (adminEmail) {
+    void sendMail({
+      to: adminEmail,
+      subject: `[Đăng ký mới] ${fullName} (${customerCode})`,
+      html: buildAdminNewRegistrationEmail({
+        fullName,
+        email,
+        customerCode,
+        phone,
+        source: "email",
+        referredByCode: referredById ? refCode : null,
+      }),
+    });
+  }
 
   return NextResponse.json({ role: "customer", redirectTo: "/app" });
 }

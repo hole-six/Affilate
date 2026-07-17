@@ -166,19 +166,33 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
                 className="h-12 bg-gray-50 border-gray-200 focus:border-[#e86a33] focus:ring-[#e86a33]/20"
               />
             </div>
-            <div className="sm:w-[180px]">
-              <TextInput
+          </div>
+
+          {/* Ô nhập giá — nổi bật riêng để user không bỏ qua */}
+          <div className="flex items-center gap-md rounded-xl bg-amber-50 border border-amber-200 px-md py-sm">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100">
+              <Wallet size={15} className="text-amber-600" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-bold text-amber-800 mb-[3px]">Nhập giá để xem hoàn tiền ước tính</p>
+              <input
                 type="number"
                 min={0}
-                placeholder="Giá sản phẩm (tuỳ chọn)"
+                placeholder="VD: 183000"
                 value={productPrice}
                 onChange={(e) => setProductPrice(e.target.value)}
-                className="h-12 bg-gray-50 border-gray-200 focus:border-[#e86a33] focus:ring-[#e86a33]/20"
+                className="w-full bg-white rounded-lg border border-amber-200 px-sm py-[6px] text-[14px] font-bold text-gray-900 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 placeholder:font-normal placeholder:text-gray-400"
               />
             </div>
+            {productPrice && Number(productPrice) > 0 && (
+              <div className="shrink-0 text-right">
+                <p className="text-[10px] text-amber-600 font-medium">Giá nhập</p>
+                <p className="text-[14px] font-black text-amber-800">{formatCurrency(Number(productPrice))}</p>
+              </div>
+            )}
           </div>
-          <p className="text-[11px] text-gray-400">
-            Nhập giá sản phẩm để xem ước tính số tiền hoàn — Shopee chưa cho hệ thống tự lấy giá.
+          <p className="text-[11px] text-gray-400 -mt-xs">
+            Shopee không cho phép lấy giá tự động — nhập giá sản phẩm để xem ước tính số tiền sẽ được hoàn.
           </p>
           <Button
             type="submit"
@@ -222,32 +236,47 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
                 <p className="line-clamp-2 text-[14px] font-bold text-gray-900 leading-snug">
                   {result.productTitle ?? "Sản phẩm mua sắm"}
                 </p>
-                <div className="mt-sm flex items-center gap-xs flex-wrap">
+                <div className="mt-xs flex items-center gap-xs flex-wrap">
                   <span className="rounded-md bg-[#e86a33]/10 px-sm py-[2px] text-[11px] font-bold text-[#e86a33]">
                     {selectedPlatform?.label ?? "Sản phẩm"}
                   </span>
-                  {result.productPrice != null && (
-                    <span className="text-[12px] font-semibold text-gray-500">
-                      {formatCurrency(result.productPrice)}
-                    </span>
-                  )}
                   <span className="font-mono text-[11px] text-gray-400 truncate">{result.trackingCode}</span>
                 </div>
               </div>
             </div>
 
-            {result.estimatedCashback != null && Number(result.estimatedCashback) > 0 && (
-              <div className="mt-md flex items-center gap-sm rounded-xl bg-emerald-50 px-md py-sm ring-1 ring-emerald-100">
-                <Wallet size={16} strokeWidth={2.25} className="text-emerald-600 shrink-0" />
-                <div className="min-w-0">
-                  <p className="text-[13px] font-black text-emerald-700 leading-tight">
-                    Hoàn tiền ước tính {formatCurrency(result.estimatedCashback)}
-                  </p>
-                  <p className="text-[11px] text-emerald-600/80 leading-tight">
-                    Số tiền thực nhận có thể khác, tuỳ hoa hồng Shopee ghi nhận cho đơn này
-                  </p>
+            {/* Giá + Cashback — hiển thị ngay dưới thông tin sản phẩm */}
+            {(result.productPrice != null || (result.estimatedCashback != null && Number(result.estimatedCashback) > 0)) && (
+              <div className="mt-md flex items-center gap-md rounded-xl bg-gray-50 px-md py-sm ring-1 ring-gray-100">
+                {result.productPrice != null && (
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Giá sản phẩm</span>
+                    <span className="text-[15px] font-black text-gray-900 tabular-nums">
+                      {formatCurrency(result.productPrice)}
+                    </span>
+                  </div>
+                )}
+                {result.productPrice != null && result.estimatedCashback != null && Number(result.estimatedCashback) > 0 && (
+                  <div className="h-8 w-px bg-gray-200 shrink-0" />
+                )}
+                {result.estimatedCashback != null && Number(result.estimatedCashback) > 0 && (
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Hoàn tiền ước tính</span>
+                    <span className="text-[15px] font-black text-emerald-600 tabular-nums">
+                      {formatCurrency(result.estimatedCashback)}
+                    </span>
+                  </div>
+                )}
+                <div className="ml-auto">
+                  <Wallet size={18} strokeWidth={2} className="text-emerald-400" />
                 </div>
               </div>
+            )}
+
+            {result.estimatedCashback != null && Number(result.estimatedCashback) > 0 && (
+              <p className="mt-xs text-[11px] text-gray-400 leading-relaxed">
+                * Ước tính dựa trên tỷ lệ hoa hồng — số tiền thực nhận có thể khác tuỳ Shopee ghi nhận.
+              </p>
             )}
           </div>
 

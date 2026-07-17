@@ -144,6 +144,51 @@ export function buildAdminWithdrawRequestEmail(params: {
   `);
 }
 
+export function buildAdminNewRegistrationEmail(params: {
+  fullName: string;
+  email: string;
+  customerCode: string;
+  phone?: string | null;
+  source: "email" | "google";
+  referredByCode?: string | null;
+}): string {
+  const sourceLabel = params.source === "google" ? "Đăng ký qua Google" : "Đăng ký qua Email";
+  return emailShell(`
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:900;color:#2d1f14;">🎉 Khách hàng mới đăng ký</h1>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 20px;font-size:13px;color:#6b5847;">
+      <tr>
+        <td style="padding:4px 0;">Họ tên</td>
+        <td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.fullName)}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 0;">Email</td>
+        <td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.email)}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 0;">Mã khách hàng</td>
+        <td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.customerCode)}</td>
+      </tr>
+      ${
+        params.phone
+          ? `<tr><td style="padding:4px 0;">Điện thoại</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.phone)}</td></tr>`
+          : ""
+      }
+      <tr>
+        <td style="padding:4px 0;">Nguồn</td>
+        <td style="padding:4px 0;text-align:right;font-weight:700;">${sourceLabel}</td>
+      </tr>
+      ${
+        params.referredByCode
+          ? `<tr><td style="padding:4px 0;">Được giới thiệu bởi</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.referredByCode)}</td></tr>`
+          : ""
+      }
+    </table>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#a0816a;">
+      Vào trang Admin → Khách hàng để xem chi tiết.
+    </p>
+  `);
+}
+
 export function buildPaymentSentEmail(params: {
   fullName: string;
   amount: number;

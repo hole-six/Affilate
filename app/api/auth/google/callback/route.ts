@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { setSessionCookie } from "@/lib/auth";
 import { getRequestOrigin } from "@/lib/requestOrigin";
+import { sendMail, buildAdminNewRegistrationEmail } from "@/lib/mailer";
 
 const GOOGLE_OAUTH_STATE_COOKIE = "google_oauth_state";
 
@@ -104,6 +105,21 @@ export async function GET(req: NextRequest) {
         customerId: customer.id,
       },
     });
+
+    const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+    if (adminEmail) {
+      void sendMail({
+        to: adminEmail,
+        subject: `[Đăng ký mới] ${fullName} (${customerCode})`,
+        html: buildAdminNewRegistrationEmail({
+          fullName,
+          email,
+          customerCode,
+          source: "google",
+          referredByCode: referredById ? refCode : null,
+        }),
+      });
+    }
   }
 
   await setSessionCookie({
