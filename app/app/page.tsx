@@ -70,7 +70,7 @@ export default async function CustomerHomePage() {
   const referralValidityMonths = activeRule?.referralValidityMonths ?? 6;
 
   // Sinh QR server-side thành data URL (không cần client lib)
-  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://ivihoantien.com"}/register?ref=${customerCode}`;
+  const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://iviback.vn"}/register?ref=${customerCode}`;
   let qrDataUrl = "";
   try {
     qrDataUrl = await QRCode.toDataURL(inviteUrl, {
