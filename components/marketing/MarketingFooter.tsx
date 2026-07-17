@@ -10,7 +10,7 @@ import {
 
 const SOCIAL_LINKS = [
   { key: "facebook", label: "Facebook", href: "https://www.facebook.com/share/1BShYKizDV/?mibextid=wwXIfr", Icon: FacebookIcon },
-  { key: "zalo", label: "Zalo", href: "https://zalo.me/0965965439", Icon: ZaloIcon },
+  { key: "zalo", label: "Zalo", href: "https://zalo.me/g/cgmmvw504", Icon: ZaloIcon },
   { key: "youtube", label: "Youtube", href: "https://youtube.com/@hoanphihoahongaff?si=aNywoErGCAi7BGxV", Icon: YoutubeIcon },
   { key: "tiktok", label: "Tiktok", href: "https://www.tiktok.com/@vi_ha790?_r=1&_t=ZS-983XgTM1aum", Icon: TiktokIcon },
   { key: "instagram", label: "Instagram", href: "https://www.instagram.com/imviihaaa?igsh=M2RqZml1NHpzbmgx&utm_source=qr", Icon: InstagramIcon },

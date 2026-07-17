@@ -20,6 +20,15 @@ export const metadata: Metadata = {
   },
 };
 
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Trang chủ", item: "https://iviback.vn/" },
+    { "@type": "ListItem", position: 2, name: "Cửa Hàng", item: "https://iviback.vn/cua-hang" },
+  ],
+};
+
 export default async function CuaHangPage() {
   const activeRule = await prisma.commissionRule.findFirst({
     where: { active: true },
@@ -29,6 +38,7 @@ export default async function CuaHangPage() {
 
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <MarketingHeader activePath="/cua-hang" />
 
       <main className="pt-[80px]">

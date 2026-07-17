@@ -5,7 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { TrustBadgesCard } from "@/components/marketing/TrustBadgesCard";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập — iviback",
+  title: "Đăng Nhập Tài Khoản — iviback Hoàn Tiền Shopee, TikTok Shop",
   description: "Đăng nhập vào iviback để quản lý ví hoàn tiền, đơn hàng và rút tiền dễ dàng.",
   alternates: { canonical: "/login" },
 };

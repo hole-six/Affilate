@@ -183,7 +183,7 @@ export function LandingPage() {
               <div key={f.title} className={`flex items-center gap-lg rounded-3xl ${f.bg} p-lg`}>
                 <img src={f.image} alt={f.title} className="h-16 w-16 shrink-0 object-contain" />
                 <div>
-                  <h3 className="font-black text-[18px] text-ink mb-xs">{f.title}</h3>
+                  <h2 className="font-black text-[18px] text-ink mb-xs">{f.title}</h2>
                   <p className="text-mute text-[14px] leading-relaxed">{f.description}</p>
                 </div>
               </div>

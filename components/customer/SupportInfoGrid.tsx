@@ -26,9 +26,9 @@ const CHANNELS = [
   {
     key: "zalo",
     label: "Zalo",
-    handle: PHONE_DISPLAY,
-    cta: "Chat Zalo ngay",
-    href: `https://zalo.me/${PHONE_RAW}`,
+    handle: "Cộng đồng Zalo iviback",
+    cta: "Tham gia ngay",
+    href: "https://zalo.me/g/cgmmvw504",
     Icon: ZaloIcon,
   },
   {

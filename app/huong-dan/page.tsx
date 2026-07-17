@@ -5,11 +5,11 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Hướng Dẫn — iviback",
+  title: "Hướng Dẫn Sử Dụng — iviback Hoàn Tiền Shopee, TikTok Shop",
   description: "Cách sử dụng nền tảng hoàn tiền iviback: 3 bước đơn giản để mua sắm Shopee, TikTok Shop và nhận hoàn tiền tự động.",
   alternates: { canonical: "/huong-dan" },
   openGraph: {
-    title: "Hướng Dẫn — iviback",
+    title: "Hướng Dẫn Sử Dụng — iviback Hoàn Tiền Shopee, TikTok Shop",
     description: "Cách sử dụng nền tảng hoàn tiền iviback: 3 bước đơn giản để mua sắm Shopee, TikTok Shop và nhận hoàn tiền tự động.",
     type: "website",
     locale: "vi_VN",
@@ -33,9 +33,19 @@ const STEPS = [
   },
 ];
 
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Trang chủ", item: "https://iviback.vn/" },
+    { "@type": "ListItem", position: 2, name: "Hướng Dẫn", item: "https://iviback.vn/huong-dan" },
+  ],
+};
+
 export default function HuongDanPage() {
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <MarketingHeader activePath="/huong-dan" />
 
       <main className="pt-[80px]">

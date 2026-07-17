@@ -53,10 +53,20 @@ const faqJsonLd = {
   })),
 };
 
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Trang chủ", item: "https://iviback.vn/" },
+    { "@type": "ListItem", position: 2, name: "FAQ", item: "https://iviback.vn/faq" },
+  ],
+};
+
 export default function FaqPage() {
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <MarketingHeader activePath="/faq" />
 
       <main className="pt-[80px]">
