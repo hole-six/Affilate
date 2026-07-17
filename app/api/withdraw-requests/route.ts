@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { sendMail, buildAdminWithdrawRequestEmail } from "@/lib/mailer";
+import { sendMail, buildAdminWithdrawRequestEmail, buildCustomerWithdrawRequestEmail } from "@/lib/mailer";
 
 const MIN_WITHDRAW_AMOUNT = 10000;
 
@@ -13,7 +13,7 @@ export async function POST(_req: NextRequest) {
 
   const customer = await prisma.customer.findUnique({
     where: { id: session.customerId },
-    include: { orders: true },
+    include: { orders: true, user: true },
   });
   if (!customer) {
     return NextResponse.json({ error: "Không tìm thấy khách hàng" }, { status: 404 });
@@ -60,6 +60,21 @@ export async function POST(_req: NextRequest) {
         customerName: customer.fullName,
         customerCode: customer.customerCode,
         amount: available,
+      }),
+    });
+  }
+
+  // Gửi ngược về cho khách để họ phát hiện sớm nếu có ai đó chiếm được tài
+  // khoản và tự ý gửi yêu cầu rút tiền mà không phải chính chủ.
+  if (customer.user?.email) {
+    void sendMail({
+      to: customer.user.email,
+      subject: "🔒 Yêu cầu rút tiền vừa được tạo trên tài khoản của bạn",
+      html: buildCustomerWithdrawRequestEmail({
+        fullName: customer.fullName,
+        amount: available,
+        bankName: customer.bankName,
+        bankAccountNumber: customer.bankAccountNumber,
       }),
     });
   }

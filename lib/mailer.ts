@@ -189,6 +189,48 @@ export function buildAdminNewRegistrationEmail(params: {
   `);
 }
 
+export function buildCustomerWithdrawRequestEmail(params: {
+  fullName: string;
+  amount: number;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
+}): string {
+  const amountText = new Intl.NumberFormat("vi-VN").format(Math.round(params.amount)) + "đ";
+  const maskedAccount = params.bankAccountNumber
+    ? "•••• " + params.bankAccountNumber.slice(-4)
+    : null;
+  return emailShell(`
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:900;color:#2d1f14;">🔒 Yêu cầu rút tiền vừa được tạo</h1>
+    <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#6b5847;">Xin chào <strong>${escapeHtml(params.fullName)}</strong>,</p>
+    <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#6b5847;">
+      Chúng tôi vừa ghi nhận một yêu cầu rút tiền từ tài khoản của bạn:
+    </p>
+    <p style="margin:0 0 16px;font-size:28px;font-weight:900;color:${BRAND_COLOR};">${amountText}</p>
+    ${
+      params.bankName || maskedAccount
+        ? `<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin:0 0 20px;font-size:13px;color:#6b5847;">
+            ${
+              params.bankName
+                ? `<tr><td style="padding:4px 0;">Ngân hàng</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.bankName)}</td></tr>`
+                : ""
+            }
+            ${
+              maskedAccount
+                ? `<tr><td style="padding:4px 0;">Tài khoản nhận</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(maskedAccount)}</td></tr>`
+                : ""
+            }
+          </table>`
+        : ""
+    }
+    <div style="margin:0 0 8px;padding:14px 16px;border-radius:12px;background:#fef2f2;border:1px solid #fecaca;">
+      <p style="margin:0;font-size:13px;line-height:1.6;color:#991b1b;">
+        ⚠️ Nếu bạn <strong>không thực hiện</strong> yêu cầu này, tài khoản của bạn có thể đã bị người khác truy cập.
+        Vui lòng liên hệ hỗ trợ ngay lập tức để chúng tôi tạm khóa yêu cầu và bảo vệ số dư của bạn.
+      </p>
+    </div>
+  `);
+}
+
 export function buildPaymentSentEmail(params: {
   fullName: string;
   amount: number;
