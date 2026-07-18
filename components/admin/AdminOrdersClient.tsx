@@ -31,12 +31,13 @@ type Props = {
   customers: Option[];
   totalPages: number;
   currentPage: number;
-  counts: { all: number; unassigned: number; moneyIn: number; unpaid: number; paid: number; completed: number; clawback: number };
-  sums: { orderAmount: number; customerRewardAmount: number; systemProfitAmount: number; moneyInTotal: number };
+  counts: { all: number; unassigned: number; processing: number; moneyIn: number; unpaid: number; paid: number; completed: number; clawback: number };
+  sums: { orderAmount: number; customerRewardAmount: number; systemProfitAmount: number; moneyInTotal: number; unpaidTotal: number };
 };
 
 const orderStatusLabel: Record<string, string> = {
   pending: "Chờ xác nhận",
+  processing: "🕐 Đang đối soát",
   completed: "🗄️ Dữ liệu cũ — cần re-import",
   approved: "💰 Tiền đã về",
   cancelled: "Đã huỷ",
@@ -46,6 +47,7 @@ const orderStatusLabel: Record<string, string> = {
 
 const orderStatusTone: Record<string, "positive" | "negative" | "warning" | "neutral" | "info"> = {
   pending: "warning",
+  processing: "warning",
   completed: "info",
   approved: "positive",
   cancelled: "negative",
@@ -94,6 +96,9 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
         <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
         <TabButton active={currentTab === "unassigned"} onClick={() => handleTabChange("unassigned")} label="Chưa map khách" count={counts.unassigned} />
+        {counts.processing > 0 && (
+          <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="🕐 Đang đối soát" count={counts.processing} highlight />
+        )}
         <TabButton active={currentTab === "money_in"} onClick={() => handleTabChange("money_in")} label="💰 Tiền đã về" count={counts.moneyIn} />
         <TabButton active={currentTab === "unpaid"} onClick={() => handleTabChange("unpaid")} label="Chưa trả khách" count={counts.unpaid} />
         <TabButton active={currentTab === "paid"} onClick={() => handleTabChange("paid")} label="✅ Đã trả khách" count={counts.paid} />
@@ -112,6 +117,16 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
           <p className="text-[13px] text-blue-700 font-medium leading-relaxed">
             Đây là đơn được import <strong>trước khi hệ thống sửa lại logic đọc CSV</strong> nên còn kẹt ở trạng thái cũ, không phản ánh đúng thực tế.
             <strong> Import lại đúng file CSV đã dùng cho các đơn này</strong> — hệ thống sẽ tự phân loại lại chính xác thành "💰 Tiền đã về" hoặc "Đã huỷ" theo đúng trạng thái sản phẩm liên kết thật.
+          </p>
+        </div>
+      )}
+      {currentTab === "processing" && (
+        <div className="flex items-start gap-sm bg-amber-50 border border-amber-200 rounded-2xl px-lg py-md">
+          <img src="/heochodoi.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
+          <p className="text-[13px] text-amber-700 font-medium leading-relaxed">
+            Shopee đã báo <strong>"Hoàn thành"</strong> nhưng hoa hồng còn trong thời gian đối soát — hệ thống chỉ tính là
+            <strong> "💰 Tiền đã về"</strong> (và cho khách rút) sau <strong>15 ngày kể từ ngày hoàn thành</strong>.
+            Các đơn này sẽ tự chuyển tab khi đủ điều kiện ở lần import CSV tiếp theo.
           </p>
         </div>
       )}

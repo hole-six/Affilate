@@ -22,6 +22,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   }
 
   if (tab === "unassigned") where.customerId = null;
+  if (tab === "processing") where.orderStatus = "processing";
   if (tab === "money_in") where.orderStatus = "approved";
   if (tab === "unpaid") { where.orderStatus = "approved"; where.payoutStatus = { not: "paid" }; }
   if (tab === "paid") where.payoutStatus = "paid";
@@ -33,11 +34,12 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const orderBy = { [orderByField]: orderByDir };
 
   const [
-    allCount, unassignedCount, moneyInCount, unpaidCount, paidCount, completedCount, clawbackCount,
-    orders, customers, filteredCount, sumsAgg, moneyInSumAgg,
+    allCount, unassignedCount, processingCount, moneyInCount, unpaidCount, paidCount, completedCount, clawbackCount,
+    orders, customers, filteredCount, sumsAgg, moneyInSumAgg, unpaidSumAgg,
   ] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({ where: { customerId: null } }),
+    prisma.order.count({ where: { orderStatus: "processing" } }),
     prisma.order.count({ where: { orderStatus: "approved" } }),
     prisma.order.count({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } } }),
     prisma.order.count({ where: { payoutStatus: "paid" } }),
@@ -48,6 +50,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     prisma.order.count({ where }),
     prisma.order.aggregate({ where, _sum: { orderAmount: true, customerRewardAmount: true, systemProfitAmount: true } }),
     prisma.order.aggregate({ where: { orderStatus: "approved" }, _sum: { customerRewardAmount: true } }),
+    prisma.order.aggregate({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }),
   ]);
 
   const customerOptions = customers.map((c) => ({ id: c.id, label: `${c.fullName} (${c.customerCode})` }));
@@ -72,12 +75,16 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   }));
 
   const totalPages = Math.ceil(filteredCount / limit);
-  const counts = { all: allCount, unassigned: unassignedCount, moneyIn: moneyInCount, unpaid: unpaidCount, paid: paidCount, completed: completedCount, clawback: clawbackCount };
+  const counts = { all: allCount, unassigned: unassignedCount, processing: processingCount, moneyIn: moneyInCount, unpaid: unpaidCount, paid: paidCount, completed: completedCount, clawback: clawbackCount };
   const sums = {
     orderAmount: Number(sumsAgg._sum.orderAmount ?? 0),
     customerRewardAmount: Number(sumsAgg._sum.customerRewardAmount ?? 0),
     systemProfitAmount: Number(sumsAgg._sum.systemProfitAmount ?? 0),
     moneyInTotal: Number(moneyInSumAgg._sum.customerRewardAmount ?? 0),
+    // "Công nợ chưa trả" thật sự — approved nhưng CHƯA trả khách, khác với
+    // moneyInTotal (đã bao gồm cả phần đã trả khách rồi — dùng nhầm chỗ này
+    // trước đây khiến banner luôn hiện đúng số "tiền đã về" thay vì "còn nợ").
+    unpaidTotal: Number(unpaidSumAgg._sum.customerRewardAmount ?? 0),
   };
 
   return (
@@ -99,7 +106,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               <p className="mt-1 text-[13px] text-emerald-600">
                 <span className="font-bold text-emerald-700">{allCount.toLocaleString()}</span> đơn •{" "}
                 Công nợ chưa trả:{" "}
-                <span className="font-bold text-[#e86a33]">{formatCurrency(sums.moneyInTotal)}</span>
+                <span className="font-bold text-[#e86a33]">{formatCurrency(sums.unpaidTotal)}</span>
               </p>
             </div>
           </div>

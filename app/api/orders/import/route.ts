@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { parseImportCsv } from "@/lib/csvImport";
 import { parseShopeeAffiliateCsv } from "@/lib/shopeeAffiliateCsv";
-import { getActiveCommissionRule, splitCommission, isWithinReferralWindow } from "@/lib/commission";
+import { getActiveCommissionRule, splitCommission, isWithinReferralWindow, isSettlementReady } from "@/lib/commission";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
 import { buildOrderApprovedMessage, buildReferralBonusMessage } from "@/lib/telegramBot";
 import { notifyCustomerInApp } from "@/lib/notifications";
@@ -229,9 +229,17 @@ export async function POST(req: NextRequest) {
       // không tính tiền — nhưng các sản phẩm khác "Hoàn thành" thật trong
       // cùng đơn vẫn tính bình thường.
       //
-      //   Có ít nhất 1 sản phẩm "Hoàn thành" → "approved" (tiền đã về ví)
+      //   Có ít nhất 1 sản phẩm "Hoàn thành" → chờ đủ SETTLEMENT_DAYS kể từ
+      //                                        ngày hoàn thành mới "approved"
+      //                                        (tiền đã về ví); chưa đủ thì
+      //                                        "processing" (đang đối soát)
       //   TẤT CẢ sản phẩm đều "Đã hủy"       → "cancelled"
       //   Còn lại (đang chờ xử lý)           → "pending"
+      //
+      // Shopee báo "Hoàn thành" ngay khi giao hàng xong nhưng hoa hồng vẫn
+      // còn trong thời gian đối soát của Shopee — trước đây hệ thống tính
+      // "approved" (tiền đã về, cho rút luôn) ngay khi CSV báo hoàn thành,
+      // dẫn tới hiện "Tiền đã về" dù đối soát thật còn đang xử lý.
       // ============================================================
       const affStatuses = groupRows.map((r) => (r.productAffiliateStatus ?? "").toLowerCase());
       const anyCompleted = affStatuses.some((s) => s.includes("hoàn thành"));
@@ -241,7 +249,7 @@ export async function POST(req: NextRequest) {
       if (allCancelled) {
         autoMappedStatus = "cancelled";
       } else if (anyCompleted) {
-        autoMappedStatus = "approved";
+        autoMappedStatus = isSettlementReady(row.completedAt) ? "approved" : "processing";
       } else {
         autoMappedStatus = "pending";
       }

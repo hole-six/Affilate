@@ -18,11 +18,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   // Kiểm tra chuyển trạng thái hợp lệ
   const VALID_TRANSITIONS: Record<string, string[]> = {
-    pending:   ["completed", "cancelled", "approved"],
-    completed: ["approved", "cancelled"],   // Shopee đã trả → approved; hoặc phát hiện lỗi → cancelled
-    approved:  ["clawback"],                // Shopee đòi lại
-    cancelled: ["pending"],                 // Khôi phục nếu nhầm
-    clawback:  [],                          // Trạng thái cuối, không thay đổi
+    pending:    ["completed", "cancelled", "approved", "processing"],
+    processing: ["approved", "cancelled"],  // Đang đối soát — tự chuyển approved khi đủ SETTLEMENT_DAYS qua re-import CSV
+    completed:  ["approved", "cancelled"],   // Shopee đã trả → approved; hoặc phát hiện lỗi → cancelled
+    approved:   ["clawback"],                // Shopee đòi lại
+    cancelled:  ["pending"],                 // Khôi phục nếu nhầm
+    clawback:   [],                          // Trạng thái cuối, không thay đổi
   };
 
   if (orderStatus && order.orderStatus !== orderStatus) {

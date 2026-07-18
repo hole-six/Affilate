@@ -99,6 +99,12 @@ export function OrderActions({
           <span className="text-[11px] font-medium text-gray-400 italic">Re-import CSV để cập nhật</span>
         )}
 
+        {/* "processing" — Shopee đã báo hoàn thành nhưng chưa đủ 15 ngày đối soát,
+            tự chuyển "approved" ở lần re-import kế tiếp sau khi đủ ngày, không có thao tác tay. */}
+        {orderStatus === "processing" && (
+          <span className="text-[11px] font-medium text-amber-600 italic">Đang đối soát — chờ đủ 15 ngày</span>
+        )}
+
         {/* Clawback (approved → clawback) — chỉ khi chưa trả tiền khách */}
         {orderStatus === "approved" && !showClawbackConfirm && (
           <Button

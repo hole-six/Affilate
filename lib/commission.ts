@@ -8,6 +8,19 @@ export type CommissionSplit = {
   systemRate: Prisma.Decimal;
 };
 
+// Shopee bao "Hoàn thành" ngay khi đơn giao xong, nhưng hoa hồng thực tế còn
+// nằm trong thời gian đối soát của Shopee — chỉ chắc chắn nhận được sau
+// khoảng thời gian này kể từ ngày hoàn thành. Trước mốc này đơn ở trạng thái
+// "processing" (đang đối soát), chưa tính là "tiền đã về" và chưa cho rút.
+export const SETTLEMENT_DAYS = 15;
+
+export function isSettlementReady(completedAt: Date | null | undefined, referenceDate: Date = new Date()): boolean {
+  if (!completedAt) return false;
+  const readyAt = new Date(completedAt);
+  readyAt.setDate(readyAt.getDate() + SETTLEMENT_DAYS);
+  return referenceDate.getTime() >= readyAt.getTime();
+}
+
 const DEFAULT_TAX_RATE = new Prisma.Decimal(10.98);
 const DEFAULT_CUSTOMER_RATE = new Prisma.Decimal(80);
 const DEFAULT_SYSTEM_RATE = new Prisma.Decimal(20);
