@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
 import { buildOrderApprovedMessage, buildReferralBonusMessage } from "@/lib/telegramBot";
 import { notifyCustomerInApp } from "@/lib/notifications";
-import { isWithinReferralWindow } from "@/lib/commission";
+import { isWithinReferralWindow, isSettlementReady, SETTLEMENT_DAYS } from "@/lib/commission";
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const session = await getSession();
@@ -31,6 +31,19 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (!allowed.includes(orderStatus)) {
       return NextResponse.json(
         { error: `Không thể chuyển từ "${order.orderStatus}" sang "${orderStatus}"` },
+        { status: 400 }
+      );
+    }
+
+    // Chặn cứng ở tầng API — không cho phép duyệt tay bỏ qua luật đối soát
+    // SETTLEMENT_DAYS ngày, dù nút bấm trên giao diện có ẩn hay không.
+    if (orderStatus === "approved" && !isSettlementReady(order.completedAt)) {
+      return NextResponse.json(
+        {
+          error: order.completedAt
+            ? `Đơn chưa đủ ${SETTLEMENT_DAYS} ngày kể từ ngày hoàn thành, chưa thể duyệt "Tiền đã về"`
+            : `Đơn chưa có ngày hoàn thành, chưa thể duyệt "Tiền đã về"`,
+        },
         { status: 400 }
       );
     }
