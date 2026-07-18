@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format";
 import { CustomerLinkForm } from "@/components/customer/CustomerLinkForm";
 import { RefundHistoryClient } from "@/components/customer/RefundHistoryClient";
-import { Lightbulb } from "lucide-react";
 
 export default async function CustomerRefundsPage({ searchParams }: { searchParams: { q?: string; page?: string } }) {
   const session = await getSession();
@@ -66,40 +65,14 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
         </div>
       </div>
 
+      {/* GHI CHÚ KHI MUA SẮM — ảnh, đặt ngay dưới tiêu đề */}
+      <img src="/anhluuy.png" alt="Lưu ý khi mua sắm" className="w-full rounded-2xl" />
+
       {/* FORM: CHỌN NỀN TẢNG & TẠO LINK */}
       <CustomerLinkForm platforms={platforms.map((p) => ({ id: p.id, code: p.code, label: p.name }))} />
 
       {/* HISTORY CARD */}
       <RefundHistoryClient links={formattedLinks} totalPages={totalPages} currentPage={page} totalCount={totalCount} />
-
-      {/* NOTES CARD */}
-      <div className="rounded-2xl bg-[#fffcf5] p-xl ring-1 ring-[#f59e0b]/20">
-        <div className="mb-md flex items-center gap-sm">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#f59e0b]/10 text-[#f59e0b]">
-            <Lightbulb size={18} strokeWidth={2} />
-          </div>
-          <h3 className="text-[15px] font-bold text-gray-900">Lưu ý khi mua sắm</h3>
-        </div>
-        <ul className="space-y-sm text-[13px] text-gray-600 font-medium">
-          <li className="flex gap-sm">
-            <span className="text-[#f59e0b] mt-[2px]">•</span>
-            <span><strong className="text-gray-900">Xoá sản phẩm</strong> tương tự đã có trong giỏ hàng trước khi bấm link.</span>
-          </li>
-          <li className="flex gap-sm">
-            <span className="text-[#f59e0b] mt-[2px]">•</span>
-            <span>Không bấm link khác (live, quảng cáo) khi đang mua hàng.</span>
-          </li>
-          <li className="flex gap-sm">
-            <span className="text-[#f59e0b] mt-[2px]">•</span>
-            <span>Hoàn tất mua hàng trong <strong className="text-[#e86a33]">cùng một phiên trình duyệt</strong>.</span>
-          </li>
-          <li className="flex gap-sm">
-            <span className="text-[#f59e0b] mt-[2px]">•</span>
-            <span>Khuyến nghị nhận đơn rỗi mới xác nhận để tránh mất tiền hoàn.</span>
-          </li>
-        </ul>
-      </div>
-
     </div>
   );
 }

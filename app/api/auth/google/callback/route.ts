@@ -108,7 +108,7 @@ export async function GET(req: NextRequest) {
 
     const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
     if (adminEmail) {
-      void sendMail({
+      sendMail({
         to: adminEmail,
         subject: `[Đăng ký mới] ${fullName} (${customerCode})`,
         html: buildAdminNewRegistrationEmail({
@@ -118,7 +118,14 @@ export async function GET(req: NextRequest) {
           source: "google",
           referredByCode: referredById ? refCode : null,
         }),
-      });
+      })
+        .then((result) => {
+          if (!result.ok) console.error("[google-callback] Gửi email thông báo admin thất bại:", result.error);
+          else if (result.simulated) console.warn("[google-callback] SMTP chưa cấu hình — bỏ qua email thông báo admin");
+        })
+        .catch((err) => console.error("[google-callback] sendMail throw lỗi:", err));
+    } else {
+      console.warn("[google-callback] Thiếu ADMIN_NOTIFICATION_EMAIL — không gửi được email thông báo admin");
     }
   }
 

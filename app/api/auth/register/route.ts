@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
 
   const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
   if (adminEmail) {
-    void sendMail({
+    sendMail({
       to: adminEmail,
       subject: `[Đăng ký mới] ${fullName} (${customerCode})`,
       html: buildAdminNewRegistrationEmail({
@@ -80,7 +80,14 @@ export async function POST(req: NextRequest) {
         source: "email",
         referredByCode: referredById ? refCode : null,
       }),
-    });
+    })
+      .then((result) => {
+        if (!result.ok) console.error("[register] Gửi email thông báo admin thất bại:", result.error);
+        else if (result.simulated) console.warn("[register] SMTP chưa cấu hình — bỏ qua email thông báo admin");
+      })
+      .catch((err) => console.error("[register] sendMail throw lỗi:", err));
+  } else {
+    console.warn("[register] Thiếu ADMIN_NOTIFICATION_EMAIL — không gửi được email thông báo admin");
   }
 
   return NextResponse.json({ role: "customer", redirectTo: "/app" });

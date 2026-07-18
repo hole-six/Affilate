@@ -15,6 +15,7 @@ export async function PATCH(request: Request) {
     if (data.bankName !== undefined) updateData.bankName = data.bankName;
     if (data.bankAccountNumber !== undefined) updateData.bankAccountNumber = data.bankAccountNumber;
     if (data.bankAccountName !== undefined) updateData.bankAccountName = data.bankAccountName;
+    if (data.phone !== undefined) updateData.phone = data.phone;
 
     const customer = await prisma.customer.update({
       where: { id: session.customerId },
@@ -27,6 +28,7 @@ export async function PATCH(request: Request) {
         bankName: customer.bankName,
         bankAccountNumber: customer.bankAccountNumber,
         bankAccountName: customer.bankAccountName,
+        phone: customer.phone,
       },
     });
   } catch (error: any) {

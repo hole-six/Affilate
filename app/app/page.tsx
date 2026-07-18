@@ -16,6 +16,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { InviteSection } from "@/components/customer/InviteSection";
+import { PhoneNumberPrompt } from "@/components/customer/PhoneNumberPrompt";
 
 // Platform color map để hiển thị ảnh placeholder
 const PLATFORM_STYLE: Record<string, { color: string }> = {
@@ -82,6 +83,8 @@ export default async function CustomerHomePage() {
 
   return (
     <div className="flex flex-col gap-lg fade-in">
+
+      {!customer?.phone && <PhoneNumberPrompt />}
 
       {/* ═══ HEADER CHÀO MỪNG ═══ */}
       <div

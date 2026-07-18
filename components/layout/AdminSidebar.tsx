@@ -49,8 +49,8 @@ export function AdminSidebar({
       {/* Mobile Top Bar */}
       <div className="md:hidden flex items-center justify-between bg-canvas border-b border-ink/5 px-md py-sm sticky top-0 z-30 shadow-sm">
         <div className="flex items-center gap-xs">
-          <img src="/heodashboard.png" alt="Ví Heo Admin" className="h-9 w-9 object-contain" />
-          <div className="font-bold text-[14px] text-ink truncate max-w-[200px]">Ví Heo Admin</div>
+          <img src="/heodashboard.png" alt="Ivi Admin" className="h-9 w-9 object-contain" />
+          <div className="font-bold text-[14px] text-ink truncate max-w-[200px]">Ivi Admin</div>
         </div>
         <button
           onClick={() => setIsOpen(true)}
@@ -85,11 +85,11 @@ export function AdminSidebar({
             </button>
             <div className="flex items-center gap-sm pr-6">
               <div className="relative flex shrink-0 items-center justify-center">
-                <img src="/heodashboard.png" alt="Ví Heo Admin" className="h-11 w-11 object-contain drop-shadow-sm" />
+                <img src="/heodashboard.png" alt="Ivi Admin" className="h-11 w-11 object-contain drop-shadow-sm" />
                 <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-[#2bc48a] border-2 border-white translate-x-1 translate-y-1" />
               </div>
               <div className="min-w-0">
-                <div className="truncate text-[14px] font-bold text-ink leading-tight">Ví Heo Admin</div>
+                <div className="truncate text-[14px] font-bold text-ink leading-tight">Ivi Admin</div>
                 <div className="truncate text-[12px] font-medium text-mute leading-tight mt-[2px]">
                   {adminName}
                 </div>
@@ -146,7 +146,7 @@ export function AdminSidebar({
           <div className="mb-md flex items-center gap-sm rounded-2xl bg-primary-pale/50 p-md">
             <img src="/heovitien.png" alt="" className="h-10 w-10 shrink-0 object-contain" />
             <div className="min-w-0">
-              <div className="truncate text-[12px] font-bold text-ink">Ví Heo</div>
+              <div className="truncate text-[12px] font-bold text-ink">Ivi</div>
               <div className="truncate text-[11px] text-mute leading-tight">
                 Tiết kiệm hôm nay, vững vàng ngày mai
               </div>
