@@ -268,19 +268,23 @@ export default async function CustomerHomePage() {
                       </span>
                       <span
                         className={`text-[9px] sm:text-[10px] font-bold px-xs sm:px-sm py-[2px] rounded-full whitespace-nowrap ${
-                          order.payoutStatus === "paid"
+                          order.orderStatus === "cancelled" || order.orderStatus === "rejected" || order.orderStatus === "clawback"
+                            ? "bg-red-100 text-red-600"
+                            : order.payoutStatus === "paid"
                             ? "bg-emerald-100 text-emerald-600"
-                            : order.payoutStatus === "processing"
+                            : order.orderStatus === "processing"
                             ? "bg-blue-100 text-blue-600"
                             : order.orderStatus === "approved"
                             ? "bg-green-100 text-green-600"
                             : "bg-amber-100 text-amber-600"
                         }`}
                       >
-                        {order.payoutStatus === "paid"
+                        {order.orderStatus === "cancelled" || order.orderStatus === "rejected" || order.orderStatus === "clawback"
+                          ? "Đã huỷ"
+                          : order.payoutStatus === "paid"
                           ? "Đã rút"
-                          : order.payoutStatus === "processing"
-                          ? "Đang xử lý"
+                          : order.orderStatus === "processing"
+                          ? "Đang đối soát"
                           : order.orderStatus === "approved"
                           ? "Sẵn sàng rút"
                           : "Chờ duyệt"}

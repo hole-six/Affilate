@@ -74,7 +74,7 @@ export function LoginForm({ next }: { next?: string }) {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@demo.vn"
+            placeholder="iviback@gmail.com"
             autoComplete="email"
             className="h-14 w-full rounded-2xl border border-ink/10 bg-canvas-soft/60 pl-[52px] pr-lg text-[15px] font-medium text-ink placeholder:text-mute/70 transition-all focus:border-primary focus:bg-canvas focus:outline-none focus:ring-4 focus:ring-primary/15"
           />

@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Users } from "lucide-react";
+import { Users, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Table, Thead, Tr, Th, Td } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -41,6 +42,21 @@ export function AdminCustomersClient({ customers, totalPages, currentPage, count
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "all";
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  async function handleDelete(id: string) {
+    setDeletingId(id);
+    const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
+    setDeletingId(null);
+    setConfirmingId(null);
+    if (res.ok) {
+      router.refresh();
+    } else {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || "Không xoá được khách hàng");
+    }
+  }
 
   const handleTabChange = (tab: string) => {
     const params = new URLSearchParams(searchParams);
@@ -112,6 +128,7 @@ export function AdminCustomersClient({ customers, totalPages, currentPage, count
                   <Th align="right">Công nợ</Th>
                   <Th align="center">Link</Th>
                   <Th align="center">Trạng thái</Th>
+                  <Th align="center">Thao tác</Th>
                 </Tr>
               </Thead>
               <tbody>
@@ -152,6 +169,35 @@ export function AdminCustomersClient({ customers, totalPages, currentPage, count
                       <Badge tone={c.status === "active" ? "positive" : "negative"}>
                         {c.status === "active" ? "Hoạt động" : "Bị khoá"}
                       </Badge>
+                    </Td>
+                    <Td align="center">
+                      {confirmingId === c.id ? (
+                        <div className="flex items-center justify-center gap-xs">
+                          <span className="text-[11px] font-bold text-red-600">Xoá vĩnh viễn?</span>
+                          <button
+                            onClick={() => handleDelete(c.id)}
+                            disabled={deletingId === c.id}
+                            className="rounded-lg bg-red-600 px-2 py-1 text-[11px] font-bold text-white hover:bg-red-700 disabled:opacity-50"
+                          >
+                            {deletingId === c.id ? "..." : "Đồng ý"}
+                          </button>
+                          <button
+                            onClick={() => setConfirmingId(null)}
+                            disabled={deletingId === c.id}
+                            className="rounded-lg bg-gray-100 px-2 py-1 text-[11px] font-bold text-gray-600 hover:bg-gray-200"
+                          >
+                            Huỷ
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmingId(c.id)}
+                          title="Xoá cứng tài khoản — không thể khôi phục"
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 size={15} strokeWidth={2} />
+                        </button>
+                      )}
                     </Td>
                   </Tr>
                 ))}

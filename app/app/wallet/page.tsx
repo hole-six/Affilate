@@ -41,8 +41,11 @@ export default async function CustomerWalletPage({ searchParams }: { searchParam
   const available = orders
     .filter((o) => o.orderStatus === "approved" && o.payoutStatus === "unpaid")
     .reduce((s, o) => s + Number(o.customerRewardAmount), 0);
+  // "Chờ duyệt" gộp cả đơn chưa xác nhận (pending) lẫn đơn Shopee đã báo
+  // hoàn thành nhưng còn trong 15 ngày đối soát (processing) — payoutStatus
+  // không có giá trị "processing" nên trước đây tổng này luôn ra 0đ.
   const processing = orders
-    .filter((o) => o.payoutStatus === "processing")
+    .filter((o) => o.orderStatus === "pending" || o.orderStatus === "processing")
     .reduce((s, o) => s + Number(o.customerRewardAmount), 0);
   const paid = orders
     .filter((o) => o.payoutStatus === "paid")

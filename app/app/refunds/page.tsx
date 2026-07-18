@@ -65,8 +65,9 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
         </div>
       </div>
 
-      {/* GHI CHÚ KHI MUA SẮM — ảnh, đặt ngay dưới tiêu đề */}
-      <img src="/anhluuy.png" alt="Lưu ý khi mua sắm" className="w-full rounded-2xl" />
+      {/* GHI CHÚ KHI MUA SẮM — ảnh, đặt ngay dưới tiêu đề. Giới hạn chiều rộng
+          trên desktop để không chiếm hết màn hình, đẩy phần tạo link xuống quá xa. */}
+      <img src="/anhluuy.png" alt="Lưu ý khi mua sắm" className="w-full max-w-[360px] mx-auto rounded-2xl shadow-sm" />
 
       {/* FORM: CHỌN NỀN TẢNG & TẠO LINK */}
       <CustomerLinkForm platforms={platforms.map((p) => ({ id: p.id, code: p.code, label: p.name }))} />

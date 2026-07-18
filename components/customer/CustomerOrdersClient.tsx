@@ -20,7 +20,7 @@ type Props = {
   orders: Order[];
   totalPages: number;
   currentPage: number;
-  counts: { all: number; completed: number; pending: number; processing: number; cancelled: number };
+  counts: { all: number; completed: number; pending: number; reconciling: number; processing: number; cancelled: number };
 };
 
 export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }: Props) {
@@ -41,7 +41,7 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
   };
 
   const getStatusBadge = (order: Order) => {
-    if (order.orderStatus === "cancelled" || order.orderStatus === "rejected") {
+    if (order.orderStatus === "cancelled" || order.orderStatus === "rejected" || order.orderStatus === "clawback") {
       return <span className="inline-flex rounded-md bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600">Đã huỷ</span>;
     }
     if (order.orderStatus === "approved" && order.payoutStatus === "paid") {
@@ -50,12 +50,18 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
     if (order.orderStatus === "approved" && order.payoutStatus !== "paid") {
       return <span className="inline-flex rounded-md bg-[#fff0e6] px-2 py-1 text-[11px] font-bold text-[#e86a33]">Đang xử lý</span>;
     }
+    if (order.orderStatus === "processing") {
+      return <span className="inline-flex rounded-md bg-blue-50 px-2 py-1 text-[11px] font-bold text-blue-600">Đang đối soát</span>;
+    }
     return <span className="inline-flex rounded-md bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-600">Chờ xác nhận</span>;
   };
 
   const getStatusHint = (order: Order) => {
-    if (order.orderStatus === "cancelled" || order.orderStatus === "rejected") return null;
+    if (order.orderStatus === "cancelled" || order.orderStatus === "rejected" || order.orderStatus === "clawback") return null;
     if (order.orderStatus === "approved") return null;
+    if (order.orderStatus === "processing") {
+      return "Shopee đã xác nhận đơn hoàn thành, đang trong 15 ngày đối soát trước khi tiền hoàn về ví.";
+    }
     return "Shopee chưa xác nhận hoàn thành đơn — tiền hoàn chỉ về sau khi đơn được xác nhận, chưa chắc chắn nhận được.";
   };
 
@@ -83,6 +89,7 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
         <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
         <TabButton active={currentTab === "completed"} onClick={() => handleTabChange("completed")} label="Hoàn thành" count={counts.completed} />
         <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="Chờ xác nhận" count={counts.pending} />
+        <TabButton active={currentTab === "reconciling"} onClick={() => handleTabChange("reconciling")} label="Đang đối soát" count={counts.reconciling} />
         <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="Đang xử lý" count={counts.processing} />
         <TabButton active={currentTab === "cancelled"} onClick={() => handleTabChange("cancelled")} label="Đã huỷ" count={counts.cancelled} />
       </div>

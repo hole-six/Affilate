@@ -21,17 +21,19 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
 
   if (tab === "completed") { where.orderStatus = "approved"; where.payoutStatus = "paid"; }
   if (tab === "pending") where.orderStatus = "pending";
+  if (tab === "reconciling") where.orderStatus = "processing";
   if (tab === "processing") { where.orderStatus = "approved"; where.payoutStatus = { not: "paid" }; }
-  if (tab === "cancelled") where.orderStatus = { in: ["cancelled", "rejected"] };
+  if (tab === "cancelled") where.orderStatus = { in: ["cancelled", "rejected", "clawback"] };
 
   const baseWhere = { customerId: session.customerId };
 
-  const [totalCount, completedCount, pendingCount, processingCount, cancelledCount, orders, filteredCount] = await Promise.all([
+  const [totalCount, completedCount, pendingCount, reconcilingCount, processingCount, cancelledCount, orders, filteredCount] = await Promise.all([
     prisma.order.count({ where: baseWhere }),
     prisma.order.count({ where: { ...baseWhere, orderStatus: "approved", payoutStatus: "paid" } }),
     prisma.order.count({ where: { ...baseWhere, orderStatus: "pending" } }),
+    prisma.order.count({ where: { ...baseWhere, orderStatus: "processing" } }),
     prisma.order.count({ where: { ...baseWhere, orderStatus: "approved", payoutStatus: { not: "paid" } } }),
-    prisma.order.count({ where: { ...baseWhere, orderStatus: { in: ["cancelled", "rejected"] } } }),
+    prisma.order.count({ where: { ...baseWhere, orderStatus: { in: ["cancelled", "rejected", "clawback"] } } }),
     prisma.order.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -58,6 +60,7 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
     all: totalCount,
     completed: completedCount,
     pending: pendingCount,
+    reconciling: reconcilingCount,
     processing: processingCount,
     cancelled: cancelledCount,
   };
