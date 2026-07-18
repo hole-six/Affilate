@@ -122,6 +122,7 @@ export async function GET(req: NextRequest) {
         .then((result) => {
           if (!result.ok) console.error("[google-callback] Gửi email thông báo admin thất bại:", result.error);
           else if (result.simulated) console.warn("[google-callback] SMTP chưa cấu hình — bỏ qua email thông báo admin");
+          else console.log("[google-callback] Đã gửi email thông báo admin thành công tới", adminEmail);
         })
         .catch((err) => console.error("[google-callback] sendMail throw lỗi:", err));
     } else {

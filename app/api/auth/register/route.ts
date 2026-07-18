@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
       .then((result) => {
         if (!result.ok) console.error("[register] Gửi email thông báo admin thất bại:", result.error);
         else if (result.simulated) console.warn("[register] SMTP chưa cấu hình — bỏ qua email thông báo admin");
+        else console.log("[register] Đã gửi email thông báo admin thành công tới", adminEmail);
       })
       .catch((err) => console.error("[register] sendMail throw lỗi:", err));
   } else {
