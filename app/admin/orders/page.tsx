@@ -22,6 +22,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   }
 
   if (tab === "unassigned") where.customerId = null;
+  if (tab === "assigned") where.customerId = { not: null };
   if (tab === "pending") where.orderStatus = "pending";
   if (tab === "processing") where.orderStatus = "processing";
   if (tab === "money_in") where.orderStatus = "approved";
@@ -36,11 +37,12 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const orderBy = { [orderByField]: orderByDir };
 
   const [
-    allCount, unassignedCount, pendingCount, processingCount, moneyInCount, unpaidCount, paidCount, cancelledCount, completedCount, clawbackCount,
+    allCount, unassignedCount, assignedCount, pendingCount, processingCount, moneyInCount, unpaidCount, paidCount, cancelledCount, completedCount, clawbackCount,
     orders, customers, filteredCount, sumsAgg, moneyInSumAgg, unpaidSumAgg,
   ] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({ where: { customerId: null } }),
+    prisma.order.count({ where: { customerId: { not: null } } }),
     prisma.order.count({ where: { orderStatus: "pending" } }),
     prisma.order.count({ where: { orderStatus: "processing" } }),
     prisma.order.count({ where: { orderStatus: "approved" } }),
@@ -80,7 +82,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   }));
 
   const totalPages = Math.ceil(filteredCount / limit);
-  const counts = { all: allCount, unassigned: unassignedCount, pending: pendingCount, processing: processingCount, moneyIn: moneyInCount, unpaid: unpaidCount, paid: paidCount, cancelled: cancelledCount, completed: completedCount, clawback: clawbackCount };
+  const counts = { all: allCount, unassigned: unassignedCount, assigned: assignedCount, pending: pendingCount, processing: processingCount, moneyIn: moneyInCount, unpaid: unpaidCount, paid: paidCount, cancelled: cancelledCount, completed: completedCount, clawback: clawbackCount };
   const sums = {
     orderAmount: Number(sumsAgg._sum.orderAmount ?? 0),
     commissionAmount: Number(sumsAgg._sum.commissionAmount ?? 0),

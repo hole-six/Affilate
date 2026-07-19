@@ -9,6 +9,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutGrid,
   UserRoundX,
+  UserRoundCheck,
   Hourglass,
   ScanSearch,
   PiggyBank,
@@ -45,7 +46,7 @@ type Props = {
   customers: Option[];
   totalPages: number;
   currentPage: number;
-  counts: { all: number; unassigned: number; pending: number; processing: number; moneyIn: number; unpaid: number; paid: number; cancelled: number; completed: number; clawback: number };
+  counts: { all: number; unassigned: number; assigned: number; pending: number; processing: number; moneyIn: number; unpaid: number; paid: number; cancelled: number; completed: number; clawback: number };
   sums: { orderAmount: number; commissionAmount: number; customerRewardAmount: number; systemProfitAmount: number; moneyInTotal: number; unpaidTotal: number };
 };
 
@@ -110,6 +111,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
         <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} icon={LayoutGrid} />
         <TabButton active={currentTab === "unassigned"} onClick={() => handleTabChange("unassigned")} label="Chưa map khách" count={counts.unassigned} icon={UserRoundX} />
+        <TabButton active={currentTab === "assigned"} onClick={() => handleTabChange("assigned")} label="Đã map khách" count={counts.assigned} icon={UserRoundCheck} />
         <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="Chờ xác nhận" count={counts.pending} icon={Hourglass} />
         {counts.processing > 0 && (
           <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="Đang đối soát" count={counts.processing} icon={ScanSearch} highlight />
