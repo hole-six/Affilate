@@ -71,7 +71,7 @@ export function CommissionRuleForm({
           step="0.01"
         />
         <p className="mt-sm text-[12px] text-amber-800">
-          Shopee/TikTok trừ thuế trên hoa hồng gộp trước khi đối soát. Số tiền trả khách sẽ được tính trên phần hoa hồng đã trừ thuế này, không phải trên hoa hồng ghi nhận ban đầu.
+          Đây là thuế TNCN hệ thống tự khấu trừ hộ khách trên hoa hồng nhận từ Shopee/TikTok trước khi chia — không phải khoản Shopee/TikTok tự trừ. Số tiền trả khách được tính trên phần hoa hồng đã trừ thuế này, không phải trên hoa hồng ghi nhận ban đầu.
         </p>
       </div>
 

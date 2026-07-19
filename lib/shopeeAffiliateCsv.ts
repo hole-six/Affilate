@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { parse } from "csv-parse/sync";
-import { splitCommission } from "./commission";
 
 export const SHOPEE_AFFILIATE_CSV_HEADERS = [
   "ID đơn hàng",
@@ -79,8 +78,6 @@ export type ShopeeAffiliateImportRecord = {
   channel: string | null;
   trackingCode: string | null;
   customerCode: string | null;
-  customerCashbackAmount: Prisma.Decimal;
-  ownerProfitAmount: Prisma.Decimal;
 };
 
 function cleanValue(value: unknown): string {
@@ -179,7 +176,6 @@ export function parseShopeeAffiliateCsv(csvText: string): ShopeeAffiliateImportR
     const row = raw as ShopeeAffiliateCsvRow;
     const netCommission = parseDecimal(row["Hoa hồng ròng tiếp thị liên kết(₫)"]);
     const grossCommission = parseDecimal(row["Tổng hoa hồng đơn hàng(₫)"]);
-    const split = splitCommission(netCommission);
 
     return {
       rawRow: row,
@@ -205,8 +201,6 @@ export function parseShopeeAffiliateCsv(csvText: string): ShopeeAffiliateImportR
       channel: cleanValue(row["Kênh"]) || null,
       trackingCode: cleanValue(row["Sub_id2"]) || null,
       customerCode: cleanValue(row["Sub_id1"]) || null,
-      customerCashbackAmount: split.customerRewardAmount,
-      ownerProfitAmount: split.systemProfitAmount,
     };
   });
 }
