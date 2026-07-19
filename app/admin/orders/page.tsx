@@ -48,7 +48,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     prisma.order.findMany({ where, orderBy, skip, take: limit, include: { platform: true, customer: true } }),
     prisma.customer.findMany({ orderBy: { fullName: "asc" } }),
     prisma.order.count({ where }),
-    prisma.order.aggregate({ where, _sum: { orderAmount: true, customerRewardAmount: true, systemProfitAmount: true } }),
+    prisma.order.aggregate({ where, _sum: { orderAmount: true, commissionAmount: true, customerRewardAmount: true, systemProfitAmount: true } }),
     prisma.order.aggregate({ where: { orderStatus: "approved" }, _sum: { customerRewardAmount: true } }),
     prisma.order.aggregate({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }),
   ]);
@@ -63,6 +63,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     customerId: o.customerId,
     trackingCode: o.trackingCode,
     orderAmount: Number(o.orderAmount ?? 0),
+    commissionAmount: Number(o.commissionAmount),
     customerRewardAmount: Number(o.customerRewardAmount),
     systemProfitAmount: Number(o.systemProfitAmount),
     orderStatus: o.orderStatus,
@@ -78,6 +79,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const counts = { all: allCount, unassigned: unassignedCount, processing: processingCount, moneyIn: moneyInCount, unpaid: unpaidCount, paid: paidCount, completed: completedCount, clawback: clawbackCount };
   const sums = {
     orderAmount: Number(sumsAgg._sum.orderAmount ?? 0),
+    commissionAmount: Number(sumsAgg._sum.commissionAmount ?? 0),
     customerRewardAmount: Number(sumsAgg._sum.customerRewardAmount ?? 0),
     systemProfitAmount: Number(sumsAgg._sum.systemProfitAmount ?? 0),
     moneyInTotal: Number(moneyInSumAgg._sum.customerRewardAmount ?? 0),

@@ -17,6 +17,7 @@ type Order = {
   customerId: string | null;
   trackingCode: string | null;
   orderAmount: number;
+  commissionAmount: number;
   customerRewardAmount: number;
   systemProfitAmount: number;
   orderStatus: string;
@@ -32,7 +33,7 @@ type Props = {
   totalPages: number;
   currentPage: number;
   counts: { all: number; unassigned: number; processing: number; moneyIn: number; unpaid: number; paid: number; completed: number; clawback: number };
-  sums: { orderAmount: number; customerRewardAmount: number; systemProfitAmount: number; moneyInTotal: number; unpaidTotal: number };
+  sums: { orderAmount: number; commissionAmount: number; customerRewardAmount: number; systemProfitAmount: number; moneyInTotal: number; unpaidTotal: number };
 };
 
 const orderStatusLabel: Record<string, string> = {
@@ -152,11 +153,17 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
       <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden flex flex-col gap-0 w-full max-w-[100vw]">
 
         {/* Summary Header */}
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200 p-lg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200 p-lg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md">
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng giá trị đơn</span>
             <span className="text-[20px] font-bold text-gray-900 leading-none">
               {formatCurrency(sums.orderAmount)}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng HH trước thuế (đang lọc)</span>
+            <span className="text-[20px] font-bold text-gray-700 leading-none">
+              {formatCurrency(sums.commissionAmount)}
             </span>
           </div>
           <div className="flex flex-col">
@@ -187,6 +194,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Khách hàng</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Ngày ĐH / HT</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] text-right">Giá trị đơn</th>
+                <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] text-right">HH trước thuế</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-[#e86a33] text-[11px] text-right">Tiền hoàn / Giữ lại</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Trạng thái</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] w-[220px]">Thao tác</th>
@@ -195,7 +203,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-2xl text-center">
+                  <td colSpan={8} className="py-2xl text-center">
                     <div className="flex flex-col items-center gap-sm">
                       <img src="/heochodoi.png" alt="" className="h-16 w-16 object-contain opacity-70" />
                       <span className="text-[14px] font-bold text-gray-400">Không tìm thấy đơn hàng nào phù hợp</span>
@@ -243,6 +251,11 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                     {/* Amount */}
                     <td className="px-md py-sm text-right font-medium text-gray-600" data-label="Giá trị đơn">
                       {formatCurrency(o.orderAmount)}
+                    </td>
+
+                    {/* Hoa hồng trước thuế */}
+                    <td className="px-md py-sm text-right font-medium text-gray-500" data-label="HH trước thuế">
+                      {formatCurrency(o.commissionAmount)}
                     </td>
 
                     {/* Commissions */}
