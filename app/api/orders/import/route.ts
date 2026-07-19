@@ -96,17 +96,23 @@ export async function POST(req: NextRequest) {
   const rows = parseAnyCsv(content);
 
   if (mode === "preview") {
-    const trackingCodes = rows.map((r) => r.trackingCode).filter(Boolean) as string[];
+    // Đối chiếu cả 5 sub_id (không chỉ sub_id2) — khớp với logic commit thật
+    // bên dưới, để số liệu xem trước không báo "chưa map" oan.
+    const rowCandidates = (r: NormRow) => [r.subId2, r.subId1, r.subId3, r.subId4, r.subId5].filter(
+      (v): v is string => Boolean(v)
+    );
+    const allCandidates = rows.flatMap(rowCandidates);
     const matchedLinks = await prisma.trackingLink.findMany({
-      where: { trackingCode: { in: trackingCodes } },
+      where: { trackingCode: { in: allCandidates } },
       select: { trackingCode: true },
     });
     const matchedSet = new Set(matchedLinks.map((l) => l.trackingCode));
+    const rowIsMatched = (r: NormRow) => rowCandidates(r).some((c) => matchedSet.has(c));
 
     return NextResponse.json({
       totalRows: rows.length,
-      matchedRows: rows.filter((r) => r.trackingCode && matchedSet.has(r.trackingCode)).length,
-      unmappedRows: rows.filter((r) => !r.trackingCode || !matchedSet.has(r.trackingCode)).length,
+      matchedRows: rows.filter(rowIsMatched).length,
+      unmappedRows: rows.filter((r) => !rowIsMatched(r)).length,
       preview: rows.slice(0, 20),
     });
   }
@@ -204,9 +210,28 @@ export async function POST(req: NextRequest) {
       // Dòng đại diện cho các field mô tả chung (ngày tháng, shop, tracking...) — lấy dòng cuối.
       const row = groupRows[groupRows.length - 1];
 
-      const trackingLink = row.trackingCode
-        ? await prisma.trackingLink.findUnique({ where: { trackingCode: row.trackingCode } })
-        : null;
+      // ============================================================
+      // TÌM TRACKING LINK — kiểm tra CẢ 5 sub_id, không chỉ sub_id2
+      //
+      // Quy ước tạo link của mình luôn đặt trackingCode vào sub_id2
+      // (xem lib/tracking.ts), nhưng Shopee không đảm bảo giữ nguyên đúng
+      // vị trí sub_id qua mọi luồng traffic (short-link redirect, app vs
+      // web, một số kênh dồn hết dữ liệu vào sub_id1...) — nếu chỉ so khớp
+      // sub_id2, các đơn dùng đúng link của mình vẫn có thể bị báo "Chưa
+      // map" oan chỉ vì Shopee trả code lệch cột. Ưu tiên sub_id2 (đúng quy
+      // ước), rồi thử lần lượt các cột còn lại.
+      // ============================================================
+      const subIdCandidates = [row.subId2, row.subId1, row.subId3, row.subId4, row.subId5].filter(
+        (v): v is string => Boolean(v)
+      );
+      const trackingLink =
+        subIdCandidates.length > 0
+          ? await prisma.trackingLink.findFirst({ where: { trackingCode: { in: subIdCandidates } } })
+          : null;
+
+      // Ghi lại đúng mã đã khớp được (có thể không phải sub_id2) để hiển thị
+      // chính xác trên trang đơn hàng — fallback về sub_id2 nếu không khớp gì.
+      if (trackingLink) row.trackingCode = trackingLink.trackingCode;
 
       if (!trackingLink) unmappedRows++;
 
