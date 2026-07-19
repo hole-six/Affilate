@@ -32,7 +32,7 @@ type Props = {
   customers: Option[];
   totalPages: number;
   currentPage: number;
-  counts: { all: number; unassigned: number; processing: number; moneyIn: number; unpaid: number; paid: number; completed: number; clawback: number };
+  counts: { all: number; unassigned: number; pending: number; processing: number; moneyIn: number; unpaid: number; paid: number; cancelled: number; completed: number; clawback: number };
   sums: { orderAmount: number; commissionAmount: number; customerRewardAmount: number; systemProfitAmount: number; moneyInTotal: number; unpaidTotal: number };
 };
 
@@ -97,12 +97,14 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
         <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
         <TabButton active={currentTab === "unassigned"} onClick={() => handleTabChange("unassigned")} label="Chưa map khách" count={counts.unassigned} />
+        <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="⏳ Chờ xác nhận" count={counts.pending} />
         {counts.processing > 0 && (
           <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="🕐 Đang đối soát" count={counts.processing} highlight />
         )}
         <TabButton active={currentTab === "money_in"} onClick={() => handleTabChange("money_in")} label="💰 Tiền đã về" count={counts.moneyIn} />
         <TabButton active={currentTab === "unpaid"} onClick={() => handleTabChange("unpaid")} label="Chưa trả khách" count={counts.unpaid} />
         <TabButton active={currentTab === "paid"} onClick={() => handleTabChange("paid")} label="✅ Đã trả khách" count={counts.paid} />
+        <TabButton active={currentTab === "cancelled"} onClick={() => handleTabChange("cancelled")} label="❌ Đã huỷ" count={counts.cancelled} />
         {counts.completed > 0 && (
           <TabButton active={currentTab === "completed"} onClick={() => handleTabChange("completed")} label="🗄️ Dữ liệu cũ" count={counts.completed} highlight />
         )}
@@ -112,6 +114,24 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
       </div>
 
       {/* INFO BOX theo từng tab — giải thích rõ ý nghĩa để đỡ nhầm giữa "tiền Shopee trả mình" và "mình trả khách" */}
+      {currentTab === "pending" && (
+        <div className="flex items-start gap-sm bg-gray-50 border border-gray-200 rounded-2xl px-lg py-md">
+          <img src="/heoQA.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
+          <p className="text-[13px] text-gray-600 font-medium leading-relaxed">
+            Shopee <strong>chưa xác nhận</strong> sản phẩm nào trong đơn là "Hoàn thành" hay "Đã huỷ" — số tiền hiển thị chỉ là ước tính,
+            có thể thay đổi khi <strong>import lại CSV mới</strong> sau khi Shopee cập nhật trạng thái.
+          </p>
+        </div>
+      )}
+      {currentTab === "cancelled" && (
+        <div className="flex items-start gap-sm bg-red-50 border border-red-200 rounded-2xl px-lg py-md">
+          <img src="/heoQA.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
+          <p className="text-[13px] text-red-700 font-medium leading-relaxed">
+            Shopee báo <strong>tất cả sản phẩm trong đơn đều bị huỷ</strong> (khách huỷ đơn hoặc trả hàng trước khi được duyệt) — không tính hoa hồng.
+            Đơn đã duyệt rồi mới bị huỷ nằm ở tab <strong>⚠️ Clawback</strong> riêng, không nằm ở đây.
+          </p>
+        </div>
+      )}
       {currentTab === "completed" && (
         <div className="flex items-start gap-sm bg-blue-50 border border-blue-200 rounded-2xl px-lg py-md">
           <img src="/heothongbao.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />

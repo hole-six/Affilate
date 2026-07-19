@@ -22,10 +22,12 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   }
 
   if (tab === "unassigned") where.customerId = null;
+  if (tab === "pending") where.orderStatus = "pending";
   if (tab === "processing") where.orderStatus = "processing";
   if (tab === "money_in") where.orderStatus = "approved";
   if (tab === "unpaid") { where.orderStatus = "approved"; where.payoutStatus = { not: "paid" }; }
   if (tab === "paid") where.payoutStatus = "paid";
+  if (tab === "cancelled") where.orderStatus = { in: ["cancelled", "rejected"] };
   if (tab === "completed") where.orderStatus = "completed";
   if (tab === "clawback") where.orderStatus = "clawback";
 
@@ -34,15 +36,17 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const orderBy = { [orderByField]: orderByDir };
 
   const [
-    allCount, unassignedCount, processingCount, moneyInCount, unpaidCount, paidCount, completedCount, clawbackCount,
+    allCount, unassignedCount, pendingCount, processingCount, moneyInCount, unpaidCount, paidCount, cancelledCount, completedCount, clawbackCount,
     orders, customers, filteredCount, sumsAgg, moneyInSumAgg, unpaidSumAgg,
   ] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({ where: { customerId: null } }),
+    prisma.order.count({ where: { orderStatus: "pending" } }),
     prisma.order.count({ where: { orderStatus: "processing" } }),
     prisma.order.count({ where: { orderStatus: "approved" } }),
     prisma.order.count({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } } }),
     prisma.order.count({ where: { payoutStatus: "paid" } }),
+    prisma.order.count({ where: { orderStatus: { in: ["cancelled", "rejected"] } } }),
     prisma.order.count({ where: { orderStatus: "completed" } }),
     prisma.order.count({ where: { orderStatus: "clawback" } }),
     prisma.order.findMany({ where, orderBy, skip, take: limit, include: { platform: true, customer: true } }),
@@ -76,7 +80,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   }));
 
   const totalPages = Math.ceil(filteredCount / limit);
-  const counts = { all: allCount, unassigned: unassignedCount, processing: processingCount, moneyIn: moneyInCount, unpaid: unpaidCount, paid: paidCount, completed: completedCount, clawback: clawbackCount };
+  const counts = { all: allCount, unassigned: unassignedCount, pending: pendingCount, processing: processingCount, moneyIn: moneyInCount, unpaid: unpaidCount, paid: paidCount, cancelled: cancelledCount, completed: completedCount, clawback: clawbackCount };
   const sums = {
     orderAmount: Number(sumsAgg._sum.orderAmount ?? 0),
     commissionAmount: Number(sumsAgg._sum.commissionAmount ?? 0),
