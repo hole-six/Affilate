@@ -22,6 +22,7 @@ import {
   sendTelegramTextMessage,
 } from "@/lib/telegramBot";
 import { createTrackingLink } from "@/lib/trackingLinkService";
+import { generateCustomerCode } from "@/lib/customerCode";
 
 export async function GET(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get("secret");
@@ -126,10 +127,10 @@ export async function POST(req: NextRequest) {
   }
 
   if (!customer) {
-    const count = await prisma.customer.count();
+    const customerCode = await generateCustomerCode();
     customer = await prisma.customer.create({
       data: {
-        customerCode: `C${String(count + 1).padStart(4, "0")}`,
+        customerCode,
         fullName: incoming.fullName || `Telegram User ${incoming.senderId}`,
         telegramUserId: incoming.senderId,
         telegramUsername: incoming.username,

@@ -1,16 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { setSessionCookie } from "@/lib/auth";
 import { getRequestOrigin } from "@/lib/requestOrigin";
 import { sendMail, buildAdminNewRegistrationEmail } from "@/lib/mailer";
+import { generateCustomerCode } from "@/lib/customerCode";
 
 const GOOGLE_OAUTH_STATE_COOKIE = "google_oauth_state";
 
-async function generateCustomerCode(): Promise<string> {
-  const count = await prisma.customer.count();
-  return `C${String(count + 1).padStart(4, "0")}`;
+// Đăng ký đồng thời hiếm khi trùng mã (2 request cùng đọc mã lớn nhất trước
+// khi request nào insert xong) — thử lại tối đa 3 lần thay vì để lỗi 500.
+async function createCustomerWithUniqueCode(data: { fullName: string; referredById: string | null }) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const customerCode = await generateCustomerCode();
+    try {
+      return await prisma.customer.create({ data: { customerCode, ...data } });
+    } catch (err) {
+      const isCodeCollision =
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === "P2002" &&
+        (err.meta?.target as string[] | undefined)?.includes("customer_code");
+      if (!isCodeCollision || attempt === 2) throw err;
+    }
+  }
+  throw new Error("Không sinh được mã khách hàng sau nhiều lần thử");
 }
 
 export async function GET(req: NextRequest) {
@@ -91,10 +106,8 @@ export async function GET(req: NextRequest) {
       if (referrer) referredById = referrer.id;
     }
 
-    const customerCode = await generateCustomerCode();
-    const customer = await prisma.customer.create({
-      data: { customerCode, fullName, referredById },
-    });
+    const customer = await createCustomerWithUniqueCode({ fullName, referredById });
+    const customerCode = customer.customerCode;
 
     user = await prisma.user.create({
       data: {

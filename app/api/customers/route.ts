@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { generateCustomerCode } from "@/lib/customerCode";
 
 export async function GET() {
   const session = await getSession();
@@ -30,8 +31,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Thiếu họ tên" }, { status: 400 });
   }
 
-  const count = await prisma.customer.count();
-  const customerCode = `C${String(count + 1).padStart(4, "0")}`;
+  const customerCode = await generateCustomerCode();
 
   const customer = await prisma.customer.create({
     data: { customerCode, fullName, phone, zaloUserId, telegramUserId, telegramUsername, note },
