@@ -6,6 +6,19 @@ import { OrderActions } from "@/components/admin/OrderActions";
 import { Pagination } from "@/components/ui/Pagination";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  LayoutGrid,
+  UserRoundX,
+  Hourglass,
+  ScanSearch,
+  PiggyBank,
+  Clock3,
+  CircleCheckBig,
+  Ban,
+  Archive,
+  AlertTriangle,
+  type LucideIcon,
+} from "lucide-react";
 
 type Option = { id: string; label: string };
 
@@ -95,21 +108,21 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
 
       {/* TABS — 2 luồng tách biệt: (1) Shopee đã trả tiền cho MÌNH chưa, (2) mình đã trả khách chưa */}
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
-        <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
-        <TabButton active={currentTab === "unassigned"} onClick={() => handleTabChange("unassigned")} label="Chưa map khách" count={counts.unassigned} />
-        <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="⏳ Chờ xác nhận" count={counts.pending} />
+        <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} icon={LayoutGrid} />
+        <TabButton active={currentTab === "unassigned"} onClick={() => handleTabChange("unassigned")} label="Chưa map khách" count={counts.unassigned} icon={UserRoundX} />
+        <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="Chờ xác nhận" count={counts.pending} icon={Hourglass} />
         {counts.processing > 0 && (
-          <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="🕐 Đang đối soát" count={counts.processing} highlight />
+          <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="Đang đối soát" count={counts.processing} icon={ScanSearch} highlight />
         )}
-        <TabButton active={currentTab === "money_in"} onClick={() => handleTabChange("money_in")} label="💰 Tiền đã về" count={counts.moneyIn} />
-        <TabButton active={currentTab === "unpaid"} onClick={() => handleTabChange("unpaid")} label="Chưa trả khách" count={counts.unpaid} />
-        <TabButton active={currentTab === "paid"} onClick={() => handleTabChange("paid")} label="✅ Đã trả khách" count={counts.paid} />
-        <TabButton active={currentTab === "cancelled"} onClick={() => handleTabChange("cancelled")} label="❌ Đã huỷ" count={counts.cancelled} />
+        <TabButton active={currentTab === "money_in"} onClick={() => handleTabChange("money_in")} label="Tiền đã về" count={counts.moneyIn} icon={PiggyBank} />
+        <TabButton active={currentTab === "unpaid"} onClick={() => handleTabChange("unpaid")} label="Chưa trả khách" count={counts.unpaid} icon={Clock3} />
+        <TabButton active={currentTab === "paid"} onClick={() => handleTabChange("paid")} label="Đã trả khách" count={counts.paid} icon={CircleCheckBig} />
+        <TabButton active={currentTab === "cancelled"} onClick={() => handleTabChange("cancelled")} label="Đã huỷ" count={counts.cancelled} icon={Ban} />
         {counts.completed > 0 && (
-          <TabButton active={currentTab === "completed"} onClick={() => handleTabChange("completed")} label="🗄️ Dữ liệu cũ" count={counts.completed} highlight />
+          <TabButton active={currentTab === "completed"} onClick={() => handleTabChange("completed")} label="Dữ liệu cũ" count={counts.completed} icon={Archive} highlight />
         )}
         {counts.clawback > 0 && (
-          <TabButton active={currentTab === "clawback"} onClick={() => handleTabChange("clawback")} label="⚠️ Clawback" count={counts.clawback} highlight />
+          <TabButton active={currentTab === "clawback"} onClick={() => handleTabChange("clawback")} label="Clawback" count={counts.clawback} icon={AlertTriangle} highlight />
         )}
       </div>
 
@@ -323,7 +336,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
   );
 }
 
-function TabButton({ active, onClick, label, count, highlight }: { active: boolean; onClick: () => void; label: string; count: number; highlight?: boolean }) {
+function TabButton({ active, onClick, label, count, icon: Icon, highlight }: { active: boolean; onClick: () => void; label: string; count: number; icon?: LucideIcon; highlight?: boolean }) {
   return (
     <button
       onClick={onClick}
@@ -335,6 +348,7 @@ function TabButton({ active, onClick, label, count, highlight }: { active: boole
           : "border-2 border-transparent bg-white text-gray-500 shadow-sm ring-1 ring-black/5 hover:bg-gray-50 hover:text-gray-900"
       }`}
     >
+      {Icon && <Icon size={14} strokeWidth={2.25} className="shrink-0" />}
       {label}
       <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[11px] ${
         active ? "bg-gray-100 text-gray-900" : highlight ? "bg-amber-200 text-amber-800" : "bg-gray-100 text-gray-400"
