@@ -15,6 +15,8 @@ type Order = {
   orderStatus: string;
   payoutStatus: string;
   daysLeft: number | null;
+  completedAtText: string | null;
+  readyAtText: string | null;
 };
 
 type Props = {
@@ -62,6 +64,9 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
     if (order.orderStatus === "cancelled" || order.orderStatus === "rejected" || order.orderStatus === "clawback") return null;
     if (order.orderStatus === "approved") return null;
     if (order.orderStatus === "processing") {
+      if (order.completedAtText && order.readyAtText) {
+        return `Hoàn thành ngày ${order.completedAtText} — đủ điều kiện rút từ ngày ${order.readyAtText} (theo quy định 15 ngày đối soát, phòng trường hợp đổi/trả hàng).`;
+      }
       return "Shopee đã xác nhận đơn hoàn thành. Theo quy định, tiền hoàn chỉ chắc chắn về ví sau đúng 15 ngày kể từ ngày hoàn thành (thời gian Shopee đối soát, phòng trường hợp đổi/trả hàng).";
     }
     return "Shopee chưa xác nhận đơn đã hoàn thành giao hàng — tiền hoàn ước tính bên dưới chưa chắc chắn, có thể thay đổi hoặc không được ghi nhận nếu đơn bị huỷ.";

@@ -49,10 +49,14 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
 
   const formattedOrders = orders.map((o) => {
     let daysLeft: number | null = null;
+    let completedAtText: string | null = null;
+    let readyAtText: string | null = null;
     if (o.orderStatus === "processing" && o.completedAt) {
       const readyAt = new Date(o.completedAt);
       readyAt.setDate(readyAt.getDate() + SETTLEMENT_DAYS);
       daysLeft = Math.max(0, Math.ceil((readyAt.getTime() - now) / 86400000));
+      completedAtText = formatDate(o.completedAt);
+      readyAtText = formatDate(readyAt);
     }
     return {
       id: o.id,
@@ -64,6 +68,8 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
       orderStatus: o.orderStatus,
       payoutStatus: o.payoutStatus,
       daysLeft,
+      completedAtText,
+      readyAtText,
     };
   });
 
