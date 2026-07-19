@@ -44,16 +44,28 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
     prisma.order.count({ where })
   ]);
 
-  const formattedOrders = orders.map((o) => ({
-    id: o.id,
-    orderExternalId: o.orderExternalId,
-    platformName: o.platform.name,
-    createdAt: formatDate(o.createdAt),
-    orderAmount: formatCurrency(Number(o.orderAmount ?? 0)),
-    customerRewardAmount: formatCurrency(Number(o.customerRewardAmount)),
-    orderStatus: o.orderStatus,
-    payoutStatus: o.payoutStatus,
-  }));
+  const SETTLEMENT_DAYS = 15;
+  const now = Date.now();
+
+  const formattedOrders = orders.map((o) => {
+    let daysLeft: number | null = null;
+    if (o.orderStatus === "processing" && o.completedAt) {
+      const readyAt = new Date(o.completedAt);
+      readyAt.setDate(readyAt.getDate() + SETTLEMENT_DAYS);
+      daysLeft = Math.max(0, Math.ceil((readyAt.getTime() - now) / 86400000));
+    }
+    return {
+      id: o.id,
+      orderExternalId: o.orderExternalId,
+      platformName: o.platform.name,
+      createdAt: formatDate(o.createdAt),
+      orderAmount: formatCurrency(Number(o.orderAmount ?? 0)),
+      customerRewardAmount: formatCurrency(Number(o.customerRewardAmount)),
+      orderStatus: o.orderStatus,
+      payoutStatus: o.payoutStatus,
+      daysLeft,
+    };
+  });
 
   const totalPages = Math.ceil(filteredCount / limit);
   const counts = {

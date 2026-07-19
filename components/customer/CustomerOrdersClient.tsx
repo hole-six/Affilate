@@ -14,6 +14,7 @@ type Order = {
   customerRewardAmount: string;
   orderStatus: string;
   payoutStatus: string;
+  daysLeft: number | null;
 };
 
 type Props = {
@@ -42,27 +43,28 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
 
   const getStatusBadge = (order: Order) => {
     if (order.orderStatus === "cancelled" || order.orderStatus === "rejected" || order.orderStatus === "clawback") {
-      return <span className="inline-flex rounded-md bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600">Đã huỷ</span>;
+      return <span className="inline-flex rounded-md bg-red-50 px-2 py-1 text-[11px] font-bold text-red-600">❌ Đã huỷ</span>;
     }
     if (order.orderStatus === "approved" && order.payoutStatus === "paid") {
-      return <span className="inline-flex rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-600">Hoàn thành</span>;
+      return <span className="inline-flex rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-600">✅ Đã nhận tiền</span>;
     }
     if (order.orderStatus === "approved" && order.payoutStatus !== "paid") {
-      return <span className="inline-flex rounded-md bg-[#fff0e6] px-2 py-1 text-[11px] font-bold text-[#e86a33]">Đang xử lý</span>;
+      return <span className="inline-flex rounded-md bg-[#fff0e6] px-2 py-1 text-[11px] font-bold text-[#e86a33]">💰 Tiền đã về — chờ chuyển khoản</span>;
     }
     if (order.orderStatus === "processing") {
-      return <span className="inline-flex rounded-md bg-blue-50 px-2 py-1 text-[11px] font-bold text-blue-600">Đang đối soát</span>;
+      const daysText = order.daysLeft === 0 ? "hôm nay" : order.daysLeft === 1 ? "1 ngày nữa" : `${order.daysLeft} ngày nữa`;
+      return <span className="inline-flex rounded-md bg-blue-50 px-2 py-1 text-[11px] font-bold text-blue-600">🕐 Đang đối soát — còn {daysText}</span>;
     }
-    return <span className="inline-flex rounded-md bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-600">Chờ xác nhận</span>;
+    return <span className="inline-flex rounded-md bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-600">⏳ Chờ Shopee xác nhận</span>;
   };
 
   const getStatusHint = (order: Order) => {
     if (order.orderStatus === "cancelled" || order.orderStatus === "rejected" || order.orderStatus === "clawback") return null;
     if (order.orderStatus === "approved") return null;
     if (order.orderStatus === "processing") {
-      return "Shopee đã xác nhận đơn hoàn thành, đang trong 15 ngày đối soát trước khi tiền hoàn về ví.";
+      return "Shopee đã xác nhận đơn hoàn thành. Theo quy định, tiền hoàn chỉ chắc chắn về ví sau đúng 15 ngày kể từ ngày hoàn thành (thời gian Shopee đối soát, phòng trường hợp đổi/trả hàng).";
     }
-    return "Shopee chưa xác nhận hoàn thành đơn — tiền hoàn chỉ về sau khi đơn được xác nhận, chưa chắc chắn nhận được.";
+    return "Shopee chưa xác nhận đơn đã hoàn thành giao hàng — tiền hoàn ước tính bên dưới chưa chắc chắn, có thể thay đổi hoặc không được ghi nhận nếu đơn bị huỷ.";
   };
 
   return (
@@ -87,12 +89,41 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
       {/* TABS */}
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
         <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
-        <TabButton active={currentTab === "completed"} onClick={() => handleTabChange("completed")} label="Hoàn thành" count={counts.completed} />
-        <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="Chờ xác nhận" count={counts.pending} />
-        <TabButton active={currentTab === "reconciling"} onClick={() => handleTabChange("reconciling")} label="Đang đối soát" count={counts.reconciling} />
-        <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="Đang xử lý" count={counts.processing} />
-        <TabButton active={currentTab === "cancelled"} onClick={() => handleTabChange("cancelled")} label="Đã huỷ" count={counts.cancelled} />
+        <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="⏳ Chờ Shopee xác nhận" count={counts.pending} />
+        <TabButton active={currentTab === "reconciling"} onClick={() => handleTabChange("reconciling")} label="🕐 Đang đối soát" count={counts.reconciling} />
+        <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="💰 Chờ chuyển khoản" count={counts.processing} />
+        <TabButton active={currentTab === "completed"} onClick={() => handleTabChange("completed")} label="✅ Đã nhận tiền" count={counts.completed} />
+        <TabButton active={currentTab === "cancelled"} onClick={() => handleTabChange("cancelled")} label="❌ Đã huỷ" count={counts.cancelled} />
       </div>
+
+      {/* GIẢI THÍCH THEO TAB — giúp khách hiểu rõ từng trạng thái nghĩa là gì */}
+      {currentTab === "pending" && (
+        <InfoBox tone="amber">
+          Shopee <strong>chưa xác nhận</strong> bạn đã nhận hàng/hoàn tất đơn. Số tiền hoàn hiển thị chỉ là{" "}
+          <strong>ước tính</strong> — có thể thay đổi hoặc mất nếu đơn bị huỷ/hoàn trả trước khi Shopee xác nhận.
+        </InfoBox>
+      )}
+      {currentTab === "reconciling" && (
+        <InfoBox tone="blue">
+          Shopee đã xác nhận đơn <strong>hoàn thành</strong> — số tiền hoàn đã chắc chắn hơn nhiều, nhưng theo quy định
+          vẫn cần đợi đúng <strong>15 ngày kể từ ngày hoàn thành</strong> (thời gian Shopee đối soát, phòng trường hợp
+          đổi/trả hàng) trước khi được cộng vào ví và cho rút.
+        </InfoBox>
+      )}
+      {currentTab === "processing" && (
+        <InfoBox tone="orange">
+          Tiền hoàn đã <strong>chắc chắn về ví</strong> và sẵn sàng rút — hệ thống đang chờ được xử lý chuyển khoản.
+          Vào mục <strong>Ví tiền</strong> để gửi yêu cầu rút.
+        </InfoBox>
+      )}
+      {currentTab === "completed" && (
+        <InfoBox tone="emerald">Đơn đã hoàn tất — tiền hoàn đã được chuyển khoản thành công vào tài khoản của bạn.</InfoBox>
+      )}
+      {currentTab === "cancelled" && (
+        <InfoBox tone="red">
+          Đơn không được ghi nhận hoàn tiền — do Shopee huỷ/hoàn trả, hoặc hoa hồng bị Shopee đòi lại sau khi đã duyệt.
+        </InfoBox>
+      )}
 
       {/* CONTENT LIST */}
       <div className="mt-md rounded-3xl bg-white p-md shadow-sm ring-1 ring-black/5 min-h-[400px]">
@@ -153,6 +184,22 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
         )}
         <Pagination totalPages={totalPages} currentPage={currentPage} />
       </div>
+    </div>
+  );
+}
+
+const INFO_BOX_TONES = {
+  amber: "bg-amber-50 border-amber-200 text-amber-700",
+  blue: "bg-blue-50 border-blue-200 text-blue-700",
+  orange: "bg-[#fff0e6] border-[#e86a33]/20 text-[#e86a33]",
+  emerald: "bg-emerald-50 border-emerald-200 text-emerald-700",
+  red: "bg-red-50 border-red-200 text-red-700",
+};
+
+function InfoBox({ tone, children }: { tone: keyof typeof INFO_BOX_TONES; children: React.ReactNode }) {
+  return (
+    <div className={`rounded-2xl border px-lg py-md text-[13px] font-medium leading-relaxed ${INFO_BOX_TONES[tone]}`}>
+      {children}
     </div>
   );
 }
