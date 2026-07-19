@@ -187,7 +187,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         </div>
 
         <div className="responsive-table overflow-x-auto">
-          <table className="w-full text-left text-[13px] min-w-[900px]">
+          <table className="w-full text-left text-[13px] min-w-[1040px]">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Đơn hàng / Tracking</th>
@@ -196,8 +196,8 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] text-right">Giá trị đơn</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] text-right">HH trước thuế</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-[#e86a33] text-[11px] text-right">Tiền hoàn / Giữ lại</th>
-                <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px]">Trạng thái</th>
-                <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] w-[220px]">Thao tác</th>
+                <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] w-[150px]">Trạng thái</th>
+                <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] w-[160px]">Thao tác</th>
               </tr>
             </thead>
             <tbody>

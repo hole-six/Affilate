@@ -27,7 +27,7 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-xs rounded-pill px-md py-[3px] text-[12px] font-semibold leading-5 border ${toneClasses[tone]}`}
+      className={`inline-flex items-center gap-xs whitespace-nowrap rounded-pill px-md py-[3px] text-[12px] font-semibold leading-5 border ${toneClasses[tone]}`}
     >
       {dot && (
         <span className={`h-[5px] w-[5px] shrink-0 rounded-full ${dotClasses[tone]}`} />
