@@ -129,7 +129,11 @@ export function CommissionRuleForm({
           </div>
         </div>
         <p className="mt-sm text-[12px] text-gray-500">
-          Người giới thiệu sẽ nhận được {referral}% từ {maxOrders} đơn hàng đầu tiên của bạn bè (F1), miễn là các đơn hàng này phát sinh trong vòng {validMonths} tháng kể từ khi F1 đăng ký tài khoản.
+          Người giới thiệu (A) nhận {referral}% hoa hồng — <strong>trích từ phần hệ thống giữ lại</strong>, không đụng vào phần khách hàng (B) đã nhận — cho tối đa {maxOrders} đơn hàng đầu tiên (tính gộp trên mọi người A đã mời) được duyệt trong vòng {validMonths} tháng kể từ khi người bạn đó (F1) đăng ký.
+        </p>
+        <p className="mt-xs text-[12px] font-medium text-amber-700">
+          Ví dụ: hệ thống giữ {system}% → sau khi trích {referral}% cho người giới thiệu, hệ thống thực giữ {(system - referral).toFixed(2).replace(/\.00$/, "")}%. Khách hàng B vẫn nhận đủ {customer}% như bình thường.
+          {referral > system && " ⚠️ Tỷ lệ chia đang lớn hơn tỷ lệ hệ thống giữ — hệ thống sẽ bù lỗ phần chênh lệch cho mỗi đơn có giới thiệu."}
         </p>
       </div>
       

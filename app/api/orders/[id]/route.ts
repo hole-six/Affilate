@@ -134,9 +134,22 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         });
 
         if (referrerBonusCount < maxOrders) {
-          // Làm tròn về đồng nguyên ngay tại điểm tính, cùng lý do như ở
-          // orders/import/route.ts — VND không có đơn vị lẻ.
-          const bonusAmount = new Prisma.Decimal(updated.customerRewardAmount).mul(referralRate).toDecimalPlaces(0);
+          // ============================================================
+          // Hoa hồng giới thiệu TRÍCH TỪ PHẦN HỆ THỐNG GIỮ, không đụng vào
+          // 80% của khách (B) — cùng công thức và lý do như trong
+          // orders/import/route.ts.
+          // ============================================================
+          const afterTaxAmount = new Prisma.Decimal(updated.customerRewardAmount).add(
+            new Prisma.Decimal(updated.systemProfitAmount)
+          );
+          const bonusAmount = afterTaxAmount.mul(referralRate).toDecimalPlaces(0);
+          const systemProfitAfterReferral = new Prisma.Decimal(updated.systemProfitAmount).sub(bonusAmount);
+
+          await prisma.order.update({
+            where: { id: updated.id },
+            data: { systemProfitAmount: systemProfitAfterReferral },
+          });
+
           await prisma.order.upsert({
             where: { platformId_orderExternalId: { platformId: updated.platformId, orderExternalId: `REF-${updated.orderExternalId}` } },
             update: {

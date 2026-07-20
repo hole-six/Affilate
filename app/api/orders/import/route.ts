@@ -495,11 +495,26 @@ export async function POST(req: NextRequest) {
             });
 
             if (referrerBonusCount < maxOrders) {
-              // Làm tròn về đồng nguyên ngay tại điểm tính — VND không có
-              // đơn vị lẻ, và bản thân số dư ví cũng chỉ hiển thị nguyên đồng
-              // (xem formatCurrency) nên lưu số lẻ vào DB chỉ tạo sai số cộng
-              // dồn không cần thiết khi tổng hợp nhiều đơn.
-              const bonusAmount = split.customerRewardAmount.mul(referralRate).toDecimalPlaces(0);
+              // ============================================================
+              // Hoa hồng giới thiệu được TRÍCH TỪ PHẦN HỆ THỐNG GIỮ, không
+              // đụng vào 80% của khách (B) — đúng chủ trương: đơn của B thay
+              // vì hệ thống giữ đủ systemRate% (vd 20%) thì giữ lại
+              // (systemRate - referralRate)% (vd 15%), phần chênh lệch
+              // (vd 5%) chuyển cho người giới thiệu (A). B không mất gì.
+              //
+              // afterTaxAmount dựng lại từ 2 số ĐÃ lưu trên đơn gốc (thay vì
+              // suy ngược từ customerRate hiện tại) để không lệch nếu rule
+              // hoa hồng đã đổi giữa lúc đơn được tính và lúc đơn được duyệt.
+              // ============================================================
+              const afterTaxAmount = split.customerRewardAmount.add(split.systemProfitAmount);
+              const bonusAmount = afterTaxAmount.mul(referralRate).toDecimalPlaces(0);
+              const systemProfitAfterReferral = split.systemProfitAmount.sub(bonusAmount);
+
+              await prisma.order.update({
+                where: { id: updatedOrder.id },
+                data: { systemProfitAmount: systemProfitAfterReferral },
+              });
+
               await prisma.order.upsert({
                 where: { platformId_orderExternalId: { platformId, orderExternalId: `REF-${orderExternalId}` } },
                 update: {
