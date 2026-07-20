@@ -90,6 +90,53 @@ function extractSold(html: string): number | null {
   return null;
 }
 
+// ============================================================
+// FALLBACK CUỐI: đọc thẳng theo class CSS trên trang Shopee, dùng khi cả
+// og:tag lẫn JSON-LD đều không có (vd trang app-share /opaanlp/...).
+//
+// CẢNH BÁO: các class này (auau1S, P39yUt, pyzxvq, pw3J3G...) là tên do
+// công cụ build frontend của Shopee TỰ SINH RA, không phải tên cố định —
+// đổi bất kỳ lúc nào Shopee deploy lại giao diện, không báo trước. Vì vậy
+// đây CHỈ là lớp dự phòng cuối cùng, chạy SAU khi og:tag/JSON-LD đã thử mà
+// không ra kết quả — không được để lớp này ảnh hưởng tới đường lấy dữ liệu
+// chính đang chạy ổn định.
+// ============================================================
+const CLASS_FALLBACK = {
+  title: ["auau1S"],
+  image: ["P39yUt"],
+  price: ["pyzxvq", "pw3J3G"],
+};
+
+function extractTextByClass(html: string, classNames: string[]): string | null {
+  for (const className of classNames) {
+    const pattern = new RegExp(`class="[^"]*\\b${className}\\b[^"]*"[^>]*>([^<]+)<`, "i");
+    const match = html.match(pattern);
+    const text = match?.[1]?.trim();
+    if (text) return text.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+  }
+  return null;
+}
+
+function extractImageSrcByClass(html: string, classNames: string[]): string | null {
+  for (const className of classNames) {
+    let pattern = new RegExp(`<img[^>]*class="[^"]*\\b${className}\\b[^"]*"[^>]*src="([^"]+)"`, "i");
+    let match = html.match(pattern);
+    if (match?.[1]) return match[1];
+    // Thử trường hợp src nằm trước class trong thẻ img
+    pattern = new RegExp(`<img[^>]*src="([^"]+)"[^>]*class="[^"]*\\b${className}\\b[^"]*"`, "i");
+    match = html.match(pattern);
+    if (match?.[1]) return match[1];
+  }
+  return null;
+}
+
+function extractPriceByClass(html: string, classNames: string[]): number | null {
+  const text = extractTextByClass(html, classNames);
+  if (!text) return null;
+  const parsed = parseFloat(text.replace(/[^0-9.]/g, ""));
+  return !isNaN(parsed) && parsed > 0 ? parsed : null;
+}
+
 export type ProductInfo = {
   title: string | null;
   image: string | null;
@@ -128,10 +175,17 @@ export async function fetchProductInfo(url: string): Promise<ProductInfo | null>
       if (!res.ok) continue;
 
       const html = await res.text();
-      const title = extractMeta(html, "og:title");
-      const image = extractMeta(html, "og:image");
-      const price = extractJsonLdPrice(html);
+      let title = extractMeta(html, "og:title");
+      let image = extractMeta(html, "og:image");
+      let price = extractJsonLdPrice(html);
       const sold = extractSold(html);
+
+      // og:tag/JSON-LD là nguồn chính, ổn định — chỉ khi cả hai đều trống
+      // (trang không render thẻ mô tả, vd link app-share) mới thử fallback
+      // theo class CSS (kém bền hơn, xem cảnh báo ở CLASS_FALLBACK).
+      if (!title) title = extractTextByClass(html, CLASS_FALLBACK.title);
+      if (!image) image = extractImageSrcByClass(html, CLASS_FALLBACK.image);
+      if (price == null) price = extractPriceByClass(html, CLASS_FALLBACK.price);
 
       // Nếu không lấy được gì từ UA này, thử UA tiếp theo
       if (!title && !image && price == null) continue;
