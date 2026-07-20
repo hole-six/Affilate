@@ -82,8 +82,9 @@ const SECTIONS = [
   {
     title: "7. Chương trình giới thiệu bạn bè",
     body: [
-      "Khi bạn giới thiệu người khác đăng ký tài khoản qua link mời của mình (bao gồm cả trường hợp người được mời đăng ký bằng email/mật khẩu hoặc bằng tài khoản Google), bạn có thể nhận thêm hoa hồng giới thiệu tính theo phần trăm trên số tiền hoàn của một số đơn hàng đầu tiên mà người đó thực hiện, trong một khoảng thời gian hiệu lực nhất định.",
-      "Tỷ lệ hoa hồng, số lượng đơn hàng tối đa và thời hạn hiệu lực của chương trình giới thiệu do iviback quy định, được công bố tại mục \"Mời bạn\" trên hệ thống và có thể thay đổi theo từng thời kỳ.",
+      "Khi bạn giới thiệu người khác đăng ký tài khoản qua link mời của mình (bao gồm cả trường hợp người được mời đăng ký bằng email/mật khẩu hoặc bằng tài khoản Google), bạn có thể nhận thêm hoa hồng giới thiệu tính theo phần trăm trên số tiền hoàn của các đơn hàng người đó thực hiện, trong một khoảng thời gian hiệu lực nhất định kể từ ngày người đó đăng ký.",
+      "Hoa hồng giới thiệu chỉ áp dụng cho người trực tiếp giới thiệu (không tính nhiều tầng): nếu bạn giới thiệu B, và B giới thiệu tiếp C, thì hoa hồng từ đơn hàng của C thuộc về B — bạn không nhận được gì từ đơn hàng của C.",
+      "Số lượng đơn hàng tối đa được tính hoa hồng là TỔNG số đơn tính trên toàn bộ những người bạn đã giới thiệu cộng lại, không phải số đơn riêng cho từng người. Tỷ lệ hoa hồng, số lượng đơn hàng tối đa và thời hạn hiệu lực do iviback quy định, được công bố tại mục \"Mời bạn\" trên hệ thống và có thể thay đổi theo từng thời kỳ.",
       "Hành vi tạo tài khoản ảo, tự giới thiệu chính mình bằng thiết bị/thông tin khác, hoặc mua bán link giới thiệu nhằm trục lợi đều bị coi là gian lận và có thể bị thu hồi hoa hồng, khoá tài khoản liên quan.",
     ],
   },

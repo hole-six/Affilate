@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
 import path from "path";
 import { writeFile, mkdir } from "fs/promises";
@@ -471,7 +472,11 @@ export async function POST(req: NextRequest) {
         if (customerData?.referredById) {
           const maxOrders = rule?.maxReferralOrders ?? 5;
           const validMonths = rule?.referralValidityMonths ?? 6;
-          const referralRate = rule?.referralRate ? Number(rule.referralRate) : 0.05;
+          // Giữ nguyên Prisma.Decimal xuyên suốt (không ép về Number rồi nhân
+          // dấu phẩy động) — tránh sai số làm tròn nhị phân len vào tiền hoa
+          // hồng giới thiệu, đúng chuẩn mà splitCommission() đã áp dụng cho
+          // hoa hồng chính.
+          const referralRate = rule?.referralRate ?? new Prisma.Decimal(0.05);
 
           // Đối chiếu theo ngày ĐƠN HÀNG thực sự phát sinh (row.orderedAt/completedAt),
           // không phải thời điểm import CSV — vì đối soát có thể trễ nhiều tuần
@@ -490,7 +495,11 @@ export async function POST(req: NextRequest) {
             });
 
             if (referrerBonusCount < maxOrders) {
-              const bonusAmount = Number(split.customerRewardAmount) * referralRate;
+              // Làm tròn về đồng nguyên ngay tại điểm tính — VND không có
+              // đơn vị lẻ, và bản thân số dư ví cũng chỉ hiển thị nguyên đồng
+              // (xem formatCurrency) nên lưu số lẻ vào DB chỉ tạo sai số cộng
+              // dồn không cần thiết khi tổng hợp nhiều đơn.
+              const bonusAmount = split.customerRewardAmount.mul(referralRate).toDecimalPlaces(0);
               await prisma.order.upsert({
                 where: { platformId_orderExternalId: { platformId, orderExternalId: `REF-${orderExternalId}` } },
                 update: {
@@ -527,14 +536,14 @@ export async function POST(req: NextRequest) {
               void notifyCustomerInApp(customerData.referredById, {
                 type: "referral_bonus",
                 title: "🎁 Hoa hồng giới thiệu",
-                message: `Bạn vừa nhận ${bonusAmount.toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
+                message: `Bạn vừa nhận ${Number(bonusAmount).toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
                 link: "/app/referral",
               });
 
               void notifyCustomerTelegram(
                 customerData.referredById,
                 buildReferralBonusMessage({
-                  bonusAmount,
+                  bonusAmount: Number(bonusAmount),
                   friendOrderExternalId: orderExternalId,
                 })
               );

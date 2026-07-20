@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { notifyCustomerTelegram } from "@/lib/telegramNotify";
@@ -109,7 +110,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
       const maxOrders = activeRule?.maxReferralOrders ?? 5;
       const validMonths = activeRule?.referralValidityMonths ?? 6;
-      const referralRate = activeRule?.referralRate ? Number(activeRule.referralRate) : 0.05;
+      // Giữ Prisma.Decimal xuyên suốt, không ép về Number rồi nhân dấu phẩy
+      // động — cùng chuẩn với splitCommission() và với orders/import/route.ts,
+      // tránh sai số nhị phân len vào tiền hoa hồng giới thiệu.
+      const referralRate = activeRule?.referralRate ?? new Prisma.Decimal(0.05);
 
       // Đối chiếu theo ngày ĐƠN HÀNG thực sự phát sinh (orderedAt/completedAt),
       // không phải thời điểm admin duyệt/đối soát — vì Shopee/TikTok có thể
@@ -130,7 +134,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         });
 
         if (referrerBonusCount < maxOrders) {
-          const bonusAmount = Number(updated.customerRewardAmount) * referralRate;
+          // Làm tròn về đồng nguyên ngay tại điểm tính, cùng lý do như ở
+          // orders/import/route.ts — VND không có đơn vị lẻ.
+          const bonusAmount = new Prisma.Decimal(updated.customerRewardAmount).mul(referralRate).toDecimalPlaces(0);
           await prisma.order.upsert({
             where: { platformId_orderExternalId: { platformId: updated.platformId, orderExternalId: `REF-${updated.orderExternalId}` } },
             update: {
@@ -165,14 +171,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           void notifyCustomerInApp(customerData.referredById, {
             type: "referral_bonus",
             title: "🎁 Hoa hồng giới thiệu",
-            message: `Bạn vừa nhận ${bonusAmount.toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
+            message: `Bạn vừa nhận ${Number(bonusAmount).toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
             link: "/app/referral",
           });
 
           void notifyCustomerTelegram(
             customerData.referredById,
             buildReferralBonusMessage({
-              bonusAmount,
+              bonusAmount: Number(bonusAmount),
               friendOrderExternalId: updated.orderExternalId,
             })
           );
