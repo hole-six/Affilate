@@ -5,7 +5,7 @@ import { formatDate } from "@/lib/format";
 import { CustomerLinkForm } from "@/components/customer/CustomerLinkForm";
 import { RefundHistoryClient } from "@/components/customer/RefundHistoryClient";
 
-export default async function CustomerRefundsPage({ searchParams }: { searchParams: { q?: string; page?: string } }) {
+export default async function CustomerRefundsPage({ searchParams }: { searchParams: { q?: string; page?: string; tab?: string } }) {
   const session = await getSession();
   if (!session?.customerId) redirect("/admin");
 
@@ -13,13 +13,17 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
   const limit = 10;
   const skip = (page - 1) * limit;
   const q = searchParams.q || "";
+  const tab = searchParams.tab || "all";
 
   const where: any = { customerId: session.customerId };
   if (q) {
     where.shortCode = { contains: q };
   }
+  if (tab === "favorite") {
+    where.isFavorite = true;
+  }
 
-  const [platforms, links, totalCount] = await Promise.all([
+  const [platforms, links, totalCount, allCount, favoriteCount] = await Promise.all([
     prisma.platform.findMany({ where: { status: "active" }, orderBy: { name: "asc" } }),
     prisma.trackingLink.findMany({
       where,
@@ -29,6 +33,8 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
       take: limit,
     }),
     prisma.trackingLink.count({ where }),
+    prisma.trackingLink.count({ where: { customerId: session.customerId } }),
+    prisma.trackingLink.count({ where: { customerId: session.customerId, isFavorite: true } }),
   ]);
 
   const totalPages = Math.ceil(totalCount / limit);
@@ -40,6 +46,7 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
     shortUrl: l.shortUrl,
     productTitle: l.productTitle,
     productImage: l.productImage,
+    isFavorite: l.isFavorite,
     platform: { code: l.platform.code, name: l.platform.name },
   }));
 
@@ -72,7 +79,13 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
       <CustomerLinkForm platforms={platforms.map((p) => ({ id: p.id, code: p.code, label: p.name }))} />
 
       {/* HISTORY CARD */}
-      <RefundHistoryClient links={formattedLinks} totalPages={totalPages} currentPage={page} totalCount={totalCount} />
+      <RefundHistoryClient
+        links={formattedLinks}
+        totalPages={totalPages}
+        currentPage={page}
+        totalCount={totalCount}
+        counts={{ all: allCount, favorite: favoriteCount }}
+      />
     </div>
   );
 }

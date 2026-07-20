@@ -160,6 +160,7 @@ model TrackingLink {
   subId5             String?  @map("sub_id5")
   shortCode          String?  @unique @map("short_code")
   shortUrl           String?  @map("short_url")
+  isFavorite         Boolean  @default(false) @map("is_favorite")
   clicks             Int      @default(0)
   lastClickedAt      DateTime? @map("last_clicked_at")
   status             String   @default("active")
