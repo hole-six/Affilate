@@ -2,21 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { createTrackingLink } from "@/lib/trackingLinkService";
-
-const SYSTEM_CUSTOMER_CODE = "SYSTEM";
-
-async function getSystemCustomer() {
-  return prisma.customer.upsert({
-    where: { customerCode: SYSTEM_CUSTOMER_CODE },
-    update: {},
-    create: {
-      customerCode: SYSTEM_CUSTOMER_CODE,
-      fullName: "Link chia sẻ công khai",
-      status: "active",
-      note: "Khach he thong dung de gan link uu dai/deal cong khai, khong phai khach hang that.",
-    },
-  });
-}
+import { getSystemCustomer } from "@/lib/systemCustomer";
 
 export async function GET() {
   const vouchers = await prisma.voucher.findMany({
