@@ -18,6 +18,7 @@ import {
   Ban,
   Archive,
   AlertTriangle,
+  Gift,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,6 +31,7 @@ type Order = {
   customerName: string | null;
   customerId: string | null;
   trackingCode: string | null;
+  sourceType: string;
   orderAmount: number;
   commissionAmount: number;
   customerRewardAmount: number;
@@ -46,7 +48,7 @@ type Props = {
   customers: Option[];
   totalPages: number;
   currentPage: number;
-  counts: { all: number; unassigned: number; assigned: number; pending: number; processing: number; moneyIn: number; unpaid: number; paid: number; cancelled: number; completed: number; clawback: number };
+  counts: { all: number; unassigned: number; assigned: number; pending: number; processing: number; moneyIn: number; unpaid: number; paid: number; cancelled: number; completed: number; clawback: number; referral: number };
   sums: { orderAmount: number; commissionAmount: number; customerRewardAmount: number; systemProfitAmount: number; moneyInTotal: number; unpaidTotal: number };
 };
 
@@ -126,6 +128,9 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         {counts.clawback > 0 && (
           <TabButton active={currentTab === "clawback"} onClick={() => handleTabChange("clawback")} label="Clawback" count={counts.clawback} icon={AlertTriangle} highlight />
         )}
+        {counts.referral > 0 && (
+          <TabButton active={currentTab === "referral"} onClick={() => handleTabChange("referral")} label="🎁 Giới thiệu" count={counts.referral} icon={Gift} />
+        )}
       </div>
 
       {/* INFO BOX theo từng tab — giải thích rõ ý nghĩa để đỡ nhầm giữa "tiền Shopee trả mình" và "mình trả khách" */}
@@ -180,6 +185,15 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
           <img src="/heochodoi.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
           <p className="text-[13px] text-amber-700 font-medium leading-relaxed">
             Tiền Shopee đã về (approved) nhưng <strong>bạn chưa chuyển cho khách</strong>. Vào trang <strong>Thanh toán</strong> để tạo phiếu chi cho khách.
+          </p>
+        </div>
+      )}
+      {currentTab === "referral" && (
+        <div className="flex items-start gap-sm bg-purple-50 border border-purple-200 rounded-2xl px-lg py-md">
+          <span className="text-[20px] leading-none">🎁</span>
+          <p className="text-[13px] text-purple-700 font-medium leading-relaxed">
+            Đây là các dòng <strong>hoa hồng giới thiệu</strong> tự động sinh ra khi đơn của người được giới thiệu (F1) được duyệt — mã đơn luôn có dạng <strong>REF-...</strong>, không phải đơn Shopee thật.
+            Số tiền ở cột "Tiền hoàn" được trích thẳng từ phần hệ thống giữ (không đụng vào phần khách F1 nhận), và cộng vào ví người giới thiệu y hệt tiền hoàn bình thường — rút được đầy đủ.
           </p>
         </div>
       )}
@@ -247,7 +261,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                 </tr>
               ) : (
                 orders.map((o) => (
-                  <tr key={o.id} className={`border-b border-gray-50 transition-colors ${o.orderStatus === "clawback" ? "bg-red-50/40" : o.clawbackWarning ? "bg-amber-50/40" : "hover:bg-[#fff0e6]/20"}`}>
+                  <tr key={o.id} className={`border-b border-gray-50 transition-colors ${o.orderStatus === "clawback" ? "bg-red-50/40" : o.sourceType === "referral" ? "bg-purple-50/30" : o.clawbackWarning ? "bg-amber-50/40" : "hover:bg-[#fff0e6]/20"}`}>
                     {/* Order Info */}
                     <td className="px-md py-sm" data-label="Đơn hàng / Tracking">
                       <div className="font-mono font-bold text-gray-900 flex items-center gap-1">
@@ -258,8 +272,14 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                         )}
                         {o.orderExternalId}
                       </div>
-                      <div className="mt-1 flex items-center gap-2">
-                        <span className="rounded-md bg-gray-100 px-1.5 py-[2px] text-[10px] font-bold text-gray-500 uppercase">{o.platformName}</span>
+                      <div className="mt-1 flex items-center gap-2 flex-wrap">
+                        {o.sourceType === "referral" ? (
+                          <span className="inline-flex items-center gap-[3px] rounded-md bg-purple-100 px-1.5 py-[2px] text-[10px] font-bold text-purple-700">
+                            🎁 Hoa hồng giới thiệu
+                          </span>
+                        ) : (
+                          <span className="rounded-md bg-gray-100 px-1.5 py-[2px] text-[10px] font-bold text-gray-500 uppercase">{o.platformName}</span>
+                        )}
                         <span className="font-mono text-[11px] text-gray-400">{o.trackingCode || "No tracking"}</span>
                       </div>
                     </td>

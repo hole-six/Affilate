@@ -62,6 +62,7 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
       id: o.id,
       orderExternalId: o.orderExternalId,
       platformName: o.platform.name,
+      sourceType: o.sourceType,
       createdAt: formatDate(o.createdAt),
       orderAmount: formatCurrency(Number(o.orderAmount ?? 0)),
       customerRewardAmount: formatCurrency(Number(o.customerRewardAmount)),

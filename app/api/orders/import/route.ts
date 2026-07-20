@@ -141,6 +141,8 @@ export async function POST(req: NextRequest) {
   let unmappedRows = 0;
   let errorRows = 0;
   let duplicateRows = 0;
+  let referralBonusCount = 0;
+  let referralBonusTotal = new Prisma.Decimal(0);
 
   // ============================================================
   // GỘP DÒNG THEO ĐƠN HÀNG
@@ -509,6 +511,8 @@ export async function POST(req: NextRequest) {
               const afterTaxAmount = split.customerRewardAmount.add(split.systemProfitAmount);
               const bonusAmount = afterTaxAmount.mul(referralRate).toDecimalPlaces(0);
               const systemProfitAfterReferral = split.systemProfitAmount.sub(bonusAmount);
+              referralBonusCount++;
+              referralBonusTotal = referralBonusTotal.add(bonusAmount);
 
               await prisma.order.update({
                 where: { id: updatedOrder.id },
@@ -578,5 +582,13 @@ export async function POST(req: NextRequest) {
     data: { successRows, unmappedRows, errorRows, duplicateRows, status: "done" },
   });
 
-  return NextResponse.json({ batchId: batch.id, successRows, unmappedRows, errorRows, duplicateRows });
+  return NextResponse.json({
+    batchId: batch.id,
+    successRows,
+    unmappedRows,
+    errorRows,
+    duplicateRows,
+    referralBonusCount,
+    referralBonusTotal: Number(referralBonusTotal),
+  });
 }

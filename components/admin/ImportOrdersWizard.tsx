@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, FileCheck2 } from "lucide-react";
+import { Upload, FileCheck2, Gift } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { TextInput } from "@/components/ui/TextInput";
@@ -28,6 +28,8 @@ type CommitResult = {
   unmappedRows: number;
   errorRows: number;
   duplicateRows: number;
+  referralBonusCount: number;
+  referralBonusTotal: number;
 };
 
 export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
@@ -215,6 +217,20 @@ export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
               <div className="text-[12px] text-gray-500">Lỗi</div>
             </div>
           </div>
+
+          {commitResult.referralBonusCount > 0 && (
+            <div className="mt-lg flex items-center gap-md rounded-2xl bg-purple-50 border border-purple-200 px-lg py-md">
+              <Gift size={22} className="text-purple-600 shrink-0" />
+              <div>
+                <div className="text-[14px] font-bold text-purple-700">
+                  Đã tự động tạo {commitResult.referralBonusCount} hoa hồng giới thiệu
+                </div>
+                <div className="text-[13px] text-purple-600">
+                  Tổng {commitResult.referralBonusTotal.toLocaleString("vi-VN")}đ đã cộng vào ví người giới thiệu — trích từ phần hệ thống giữ, xem chi tiết ở tab "🎁 Giới thiệu" trong danh sách đơn hàng.
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>

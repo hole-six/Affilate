@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, ExternalLink, Package } from "lucide-react";
+import { CalendarDays, ExternalLink, Package, Gift } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -9,6 +9,7 @@ type Order = {
   id: string;
   orderExternalId: string;
   platformName: string;
+  sourceType: string;
   createdAt: string;
   orderAmount: string;
   customerRewardAmount: string;
@@ -140,15 +141,28 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
         ) : (
           <div className="flex flex-col gap-sm">
             {orders.map((o) => (
-              <div key={o.id} className="group flex flex-col sm:flex-row sm:items-center justify-between gap-md rounded-2xl border border-gray-100 p-md transition-all hover:border-[#e86a33]/30 hover:bg-[#fff0e6]/20">
+              <div
+                key={o.id}
+                className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-md rounded-2xl border p-md transition-all ${
+                  o.sourceType === "referral"
+                    ? "border-purple-100 bg-purple-50/30 hover:border-purple-200"
+                    : "border-gray-100 hover:border-[#e86a33]/30 hover:bg-[#fff0e6]/20"
+                }`}
+              >
                 <div className="flex items-start gap-md">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gray-50 text-gray-400 ring-1 ring-gray-100 group-hover:bg-white group-hover:text-[#e86a33]">
-                    <Package size={20} strokeWidth={2.5} />
+                  <div
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ring-1 ${
+                      o.sourceType === "referral"
+                        ? "bg-purple-100 text-purple-500 ring-purple-100"
+                        : "bg-gray-50 text-gray-400 ring-gray-100 group-hover:bg-white group-hover:text-[#e86a33]"
+                    }`}
+                  >
+                    {o.sourceType === "referral" ? <Gift size={20} strokeWidth={2.5} /> : <Package size={20} strokeWidth={2.5} />}
                   </div>
                   <div>
                     <div className="flex items-center gap-xs">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                        {o.platformName}
+                      <span className={`text-[11px] font-bold uppercase tracking-wider ${o.sourceType === "referral" ? "text-purple-600" : "text-gray-500"}`}>
+                        {o.sourceType === "referral" ? "🎁 Hoa hồng giới thiệu" : o.platformName}
                       </span>
                       <span className="text-gray-300">•</span>
                       <span className="text-[12px] font-medium text-gray-400 flex items-center gap-1">
@@ -159,6 +173,11 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
                     <div className="mt-[2px] text-[14px] font-bold text-gray-900 font-mono">
                       {o.orderExternalId}
                     </div>
+                    {o.sourceType === "referral" && (
+                      <div className="mt-1 max-w-[280px] text-[11px] leading-snug text-purple-500/90">
+                        Không phải đơn bạn mua — đây là tiền thưởng vì bạn đã giới thiệu người này cho iviback. Xem chi tiết tại mục "Mời bạn".
+                      </div>
+                    )}
                     <div className="mt-1 flex items-center gap-xs">
                       {getStatusBadge(o)}
                     </div>
@@ -172,12 +191,16 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
 
                 <div className="flex items-center gap-xl sm:text-right mt-sm sm:mt-0 pt-sm border-t border-gray-50 sm:border-0 sm:pt-0">
                   <div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Giá trị đơn</div>
+                    <div className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                      {o.sourceType === "referral" ? "Giá trị đơn (của bạn F1)" : "Giá trị đơn"}
+                    </div>
                     <div className="text-[14px] font-bold text-gray-900">{o.orderAmount}</div>
                   </div>
                   <div>
-                    <div className="text-[11px] font-bold uppercase tracking-wider text-[#e86a33]">Tiền hoàn</div>
-                    <div className="text-[15px] font-black text-[#e86a33]">{o.customerRewardAmount}</div>
+                    <div className={`text-[11px] font-bold uppercase tracking-wider ${o.sourceType === "referral" ? "text-purple-600" : "text-[#e86a33]"}`}>
+                      {o.sourceType === "referral" ? "Hoa hồng nhận" : "Tiền hoàn"}
+                    </div>
+                    <div className={`text-[15px] font-black ${o.sourceType === "referral" ? "text-purple-600" : "text-[#e86a33]"}`}>{o.customerRewardAmount}</div>
                   </div>
                   <button className="hidden sm:flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-50 text-gray-400 transition-colors hover:bg-[#e86a33] hover:text-white">
                     <ExternalLink size={16} strokeWidth={2.5} />
