@@ -14,6 +14,13 @@ function extractShopeeIds(url: string): { shopId: string; itemId: string } | nul
     if (suffixMatch) return { shopId: suffixMatch[1], itemId: suffixMatch[2] };
     const productMatch = path.match(/\/product\/(\d+)\/(\d+)/);
     if (productMatch) return { shopId: productMatch[1], itemId: productMatch[2] };
+    // Link chia sẻ ngắn từ app Shopee (s.shopee.vn/xxxx) redirect ra dạng
+    // /opaanlp/SHOPID/ITEMID trước khi Shopee tự đổi route thành
+    // /product/SHOPID/ITEMID — đã xác nhận bằng quan sát thực tế: cùng
+    // credential_token, cùng 2 số, chỉ khác đúng tên route. Nhận diện luôn ở
+    // đây để không phải đợi/đoán được redirect cuối mới lấy được ID.
+    const opaanlpMatch = path.match(/\/opaanlp\/(\d+)\/(\d+)/);
+    if (opaanlpMatch) return { shopId: opaanlpMatch[1], itemId: opaanlpMatch[2] };
     return null;
   } catch {
     return null;
