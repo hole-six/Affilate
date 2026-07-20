@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { resolveShortLink, normalizeUrl } from "@/lib/linkConversion";
+import { resolveShortLink, normalizeUrl, buildAffiliateUrl } from "@/lib/linkConversion";
 import { generateShortCode, buildShortUrl } from "@/lib/shortLink";
 import { fetchProductInfo } from "@/lib/productInfo";
 
@@ -39,16 +39,18 @@ export async function POST(req: NextRequest) {
   const normalized = normalizeUrl(resolved);
   const cleanLink = stripCompetitorParams(normalized);
 
-  const affiliateId = process.env.SHOPEE_AFFILIATE_ID;
-  let affiliateUrl = cleanLink;
-  if (affiliateId && cleanLink.includes("shopee.vn")) {
-    const params = new URLSearchParams({ origin_link: cleanLink, affiliate_id: affiliateId });
-    affiliateUrl = `https://s.shopee.vn/an_redir?${params.toString()}`;
-  }
-
-  // Pre-generate shortCode để hiện ngay cho admin ở bước 2
+  // Pre-generate shortCode để hiện ngay cho admin ở bước 2, đồng thời dùng
+  // luôn làm sub_id khi build link affiliate — trước đây route này tự ráp
+  // link Shopee tay (chỉ có origin_link + affiliate_id) nên KHÔNG có sub_id,
+  // khiến Shopee không đối soát được click/đơn nào sinh ra từ deal.
   const shortCode = await generateShortCode();
   const shortUrl = buildShortUrl(shortCode);
+
+  const affiliateId = process.env.SHOPEE_AFFILIATE_ID;
+  const affiliateUrl =
+    affiliateId && cleanLink.includes("shopee.vn")
+      ? await buildAffiliateUrl(cleanLink, shortCode, undefined, { platformCode: "SHOPEE" })
+      : cleanLink;
 
   const productInfo = await fetchProductInfo(cleanLink);
 
