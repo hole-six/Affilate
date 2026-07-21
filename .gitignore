@@ -14,3 +14,4 @@ __pycache__/
 prisma/prod.db
 prisma/prod.db-journal
 .env.backup-*
+prisma/*.bak-*
