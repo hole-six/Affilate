@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { randomUUID } from "crypto";
+import { saveOptimizedImage } from "@/lib/imageUpload";
 
 // POST: cập nhật deal kèm upload ảnh mới (admin only)
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
@@ -22,12 +20,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   let uploadedImageUrl: string | undefined = undefined;
   if (imageFile && imageFile.size > 0) {
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "deals");
-    await mkdir(uploadDir, { recursive: true });
-    const ext = imageFile.name.split(".").pop() ?? "jpg";
-    const filename = `${randomUUID()}.${ext}`;
-    await writeFile(path.join(uploadDir, filename), Buffer.from(await imageFile.arrayBuffer()));
-    uploadedImageUrl = `/uploads/deals/${filename}`;
+    uploadedImageUrl = await saveOptimizedImage(imageFile, "deals");
   }
 
   const deal = await prisma.dealPost.update({
