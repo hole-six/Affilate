@@ -49,13 +49,17 @@ export async function POST(req: NextRequest) {
   // Check referral cookie
   const refCode = req.cookies.get("ref_code")?.value;
   let referredById = null;
+  let referrerName: string | null = null;
+  let referrerEmail: string | null = null;
   if (refCode) {
     const referrer = await prisma.customer.findUnique({
       where: { customerCode: refCode },
-      select: { id: true },
+      select: { id: true, fullName: true, user: { select: { email: true } } },
     });
     if (referrer) {
       referredById = referrer.id;
+      referrerName = referrer.fullName;
+      referrerEmail = referrer.user?.email ?? null;
     }
   }
 
@@ -95,6 +99,8 @@ export async function POST(req: NextRequest) {
         phone,
         source: "email",
         referredByCode: referredById ? refCode : null,
+        referrerName,
+        referrerEmail,
       }),
     })
       .then((result) => {
