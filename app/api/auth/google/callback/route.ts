@@ -98,12 +98,18 @@ export async function GET(req: NextRequest) {
   } else {
     const refCode = req.cookies.get("ref_code")?.value;
     let referredById: string | null = null;
+    let referrerName: string | null = null;
+    let referrerEmail: string | null = null;
     if (refCode) {
       const referrer = await prisma.customer.findUnique({
         where: { customerCode: refCode },
-        select: { id: true },
+        select: { id: true, fullName: true, user: { select: { email: true } } },
       });
-      if (referrer) referredById = referrer.id;
+      if (referrer) {
+        referredById = referrer.id;
+        referrerName = referrer.fullName;
+        referrerEmail = referrer.user?.email ?? null;
+      }
     }
 
     const customer = await createCustomerWithUniqueCode({ fullName, referredById });
@@ -130,6 +136,8 @@ export async function GET(req: NextRequest) {
           customerCode,
           source: "google",
           referredByCode: referredById ? refCode : null,
+          referrerName,
+          referrerEmail,
         }),
       })
         .then((result) => {

@@ -151,6 +151,8 @@ export function buildAdminNewRegistrationEmail(params: {
   phone?: string | null;
   source: "email" | "google";
   referredByCode?: string | null;
+  referrerName?: string | null;
+  referrerEmail?: string | null;
 }): string {
   const sourceLabel = params.source === "google" ? "Đăng ký qua Google" : "Đăng ký qua Email";
   return emailShell(`
@@ -179,7 +181,12 @@ export function buildAdminNewRegistrationEmail(params: {
       </tr>
       ${
         params.referredByCode
-          ? `<tr><td style="padding:4px 0;">Được giới thiệu bởi</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.referredByCode)}</td></tr>`
+          ? `<tr><td style="padding:4px 0;">Được giới thiệu bởi</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.referrerName ?? "")}${params.referrerName ? " — " : ""}${escapeHtml(params.referredByCode)}</td></tr>
+             ${
+               params.referrerEmail
+                 ? `<tr><td style="padding:4px 0;">Email người giới thiệu</td><td style="padding:4px 0;text-align:right;font-weight:700;">${escapeHtml(params.referrerEmail)}</td></tr>`
+                 : ""
+             }`
           : ""
       }
     </table>
