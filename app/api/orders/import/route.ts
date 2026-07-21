@@ -486,13 +486,15 @@ export async function POST(req: NextRequest) {
           const referenceDate = row.orderedAt ?? row.completedAt ?? new Date();
 
           if (isWithinReferralWindow(customerData.createdAt, validMonths, referenceDate)) {
-            // Giới hạn 5 đơn là TỔNG cho người giới thiệu (A), tính gộp trên
-            // tất cả bạn bè A đã mời — không phải 5 đơn riêng cho từng người bạn.
+            // Giới hạn 5 đơn là MỖI người bạn (F1) riêng — người giới thiệu
+            // (A) mời càng nhiều bạn thì càng được nhiều đơn hoa hồng, không
+            // bị dồn chung vào 1 hạn mức 5 đơn cho tất cả bạn bè cộng lại.
             const referrerBonusCount = await prisma.order.count({
               where: {
                 customerId: customerData.referredById,
                 sourceType: "referral",
                 orderStatus: "approved",
+                referralSourceCustomerId: resolvedCustomerId,
               },
             });
 
@@ -529,6 +531,7 @@ export async function POST(req: NextRequest) {
                   systemProfitAmount: 0,
                   orderStatus: "approved",
                   importBatchId: batch.id,
+                  referralSourceCustomerId: resolvedCustomerId,
                 },
                 create: {
                   platformId,
@@ -549,6 +552,7 @@ export async function POST(req: NextRequest) {
                   orderStatus: "approved",
                   sourceType: "referral",
                   importBatchId: batch.id,
+                  referralSourceCustomerId: resolvedCustomerId,
                 },
               });
 

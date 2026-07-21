@@ -317,6 +317,11 @@ model Order {
   subId5                String?  @map("sub_id5")
   payoutStatus           String   @default("unpaid") @map("payout_status")
   sourceType             String   @default("import") @map("source_type")
+  // Chỉ set cho đơn sourceType="referral" — id của người bạn (F1) có đơn
+  // hàng thật vừa được duyệt, sinh ra khoản hoa hồng giới thiệu này. Dùng
+  // để đếm đúng "tối đa 5 đơn MỖI người bạn", không phải 5 đơn tổng gộp
+  // trên mọi người mà A đã mời.
+  referralSourceCustomerId String? @map("referral_source_customer_id")
   rawData                String?    @map("raw_data")
   approvedAt              DateTime? @map("approved_at")
   createdAt               DateTime  @default(now()) @map("created_at")
@@ -329,6 +334,7 @@ model Order {
   @@index([trackingCode])
   @@index([orderStatus])
   @@index([payoutStatus])
+  @@index([referralSourceCustomerId])
   @@map("orders")
 }
 
