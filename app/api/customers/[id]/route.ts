@@ -3,6 +3,52 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
 /**
+ * Cập nhật cờ Đối tác và/hoặc người giới thiệu của 1 khách hàng.
+ * Đối tác (isPartner) là khách được admin gán cho khách khác (qua
+ * referredById) để nhận hoa hồng giới thiệu 5% vĩnh viễn, không giới hạn
+ * số đơn hay 6 tháng như người giới thiệu tự do bình thường.
+ */
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
+  }
+
+  const customer = await prisma.customer.findUnique({ where: { id: params.id } });
+  if (!customer) {
+    return NextResponse.json({ error: "Không tìm thấy khách hàng" }, { status: 404 });
+  }
+
+  const body = await req.json();
+  const data: { isPartner?: boolean; referredById?: string | null } = {};
+
+  if (typeof body.isPartner === "boolean") {
+    data.isPartner = body.isPartner;
+  }
+
+  if ("referredById" in body) {
+    const referredById = body.referredById as string | null;
+    if (referredById === params.id) {
+      return NextResponse.json({ error: "Khách hàng không thể tự giới thiệu chính mình" }, { status: 400 });
+    }
+    if (referredById) {
+      const referrer = await prisma.customer.findUnique({ where: { id: referredById }, select: { id: true } });
+      if (!referrer) {
+        return NextResponse.json({ error: "Không tìm thấy người giới thiệu" }, { status: 400 });
+      }
+    }
+    data.referredById = referredById;
+  }
+
+  if (Object.keys(data).length === 0) {
+    return NextResponse.json({ error: "Không có gì để cập nhật" }, { status: 400 });
+  }
+
+  const updated = await prisma.customer.update({ where: { id: params.id }, data });
+  return NextResponse.json({ customer: updated });
+}
+
+/**
  * Xoá cứng (hard delete) một khách hàng — không thể khôi phục.
  *
  * Order/PaymentBatchItem là dữ liệu đối soát/tài chính thật nên KHÔNG xoá
