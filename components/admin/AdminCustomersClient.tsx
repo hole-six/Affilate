@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Users, Trash2 } from "lucide-react";
+import { Users, Trash2, Handshake } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Table, Thead, Tr, Th, Td } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -20,6 +20,7 @@ type Customer = {
   telegramUsername: string | null;
   telegramUserId: string | null;
   status: string;
+  isPartner: boolean;
   linkCount: number;
   totalReward: number;
   debt: number;
@@ -34,6 +35,7 @@ interface AdminCustomersClientProps {
     active: number;
     locked: number;
     debt: number;
+    partner: number;
   };
 }
 
@@ -73,6 +75,7 @@ export function AdminCustomersClient({ customers, totalPages, currentPage, count
     { id: "all", label: "Tất cả", count: counts.all },
     { id: "active", label: "Đang hoạt động", count: counts.active },
     { id: "debt", label: "Có công nợ", count: counts.debt },
+    { id: "partner", label: "🤝 Đối tác", count: counts.partner },
     { id: "locked", label: "Bị khoá", count: counts.locked },
   ];
 
@@ -135,12 +138,22 @@ export function AdminCustomersClient({ customers, totalPages, currentPage, count
                 {customers.map((c) => (
                   <Tr key={c.id}>
                     <Td>
-                      <Link
-                        href={`/admin/customers/${c.id}`}
-                        className="font-bold text-gray-900 hover:text-[#e86a33] transition-colors"
-                      >
-                        {c.fullName}
-                      </Link>
+                      <div className="flex items-center gap-xs">
+                        <Link
+                          href={`/admin/customers/${c.id}`}
+                          className="font-bold text-gray-900 hover:text-[#e86a33] transition-colors"
+                        >
+                          {c.fullName}
+                        </Link>
+                        {c.isPartner && (
+                          <span
+                            className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600"
+                            title="Đối tác — hoa hồng giới thiệu vĩnh viễn, không giới hạn"
+                          >
+                            <Handshake size={12} strokeWidth={2.25} />
+                          </span>
+                        )}
+                      </div>
                     </Td>
                     <Td>
                       <span className="font-mono text-gray-500">{c.customerCode}</span>

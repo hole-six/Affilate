@@ -20,15 +20,17 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
   }
   if (tab === "active") where.status = "active";
   if (tab === "locked") where.status = { not: "active" };
+  if (tab === "partner") where.isPartner = true;
 
   const orderByField = searchParams.sort || "createdAt";
   const orderByDir = searchParams.order || "desc";
   const orderBy = { [orderByField]: orderByDir };
 
-  const [totalCount, activeCount, lockedCount] = await Promise.all([
+  const [totalCount, activeCount, lockedCount, partnerCount] = await Promise.all([
     prisma.customer.count(),
     prisma.customer.count({ where: { status: "active" } }),
     prisma.customer.count({ where: { status: { not: "active" } } }),
+    prisma.customer.count({ where: { isPartner: true } }),
   ]);
 
   const [customers, filteredCount] = await Promise.all([
@@ -59,6 +61,7 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
       telegramUsername: c.telegramUsername,
       telegramUserId: c.telegramUserId,
       status: c.status,
+      isPartner: c.isPartner,
       linkCount: c._count.trackingLinks,
       totalReward,
       debt,
@@ -133,7 +136,7 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
         customers={rows}
         totalPages={totalPages}
         currentPage={page}
-        counts={{ all: totalCount, active: activeCount, locked: lockedCount, debt: 0 }}
+        counts={{ all: totalCount, active: activeCount, locked: lockedCount, debt: 0, partner: partnerCount }}
       />
     </div>
   );

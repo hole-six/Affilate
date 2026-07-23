@@ -135,6 +135,9 @@ export function CommissionRuleForm({
           Ví dụ: hệ thống giữ {system}% → sau khi trích {referral}% cho người giới thiệu, hệ thống thực giữ {(system - referral).toFixed(2).replace(/\.00$/, "")}%. Khách hàng B vẫn nhận đủ {customer}% như bình thường.
           {referral > system && " ⚠️ Tỷ lệ chia đang lớn hơn tỷ lệ hệ thống giữ — hệ thống sẽ bù lỗ phần chênh lệch cho mỗi đơn có giới thiệu."}
         </p>
+        <p className="mt-xs text-[12px] text-gray-500">
+          🤝 <strong>Đối tác</strong> (bật ở trang chi tiết từng khách hàng) <strong>không áp dụng</strong> giới hạn {maxOrders} đơn hay {validMonths} tháng ở trên — luôn nhận {referral}% vĩnh viễn trên mọi đơn của khách được gán, dù cấu hình này thay đổi.
+        </p>
       </div>
       
       {error && <div className="text-[14px] text-red-500">{error}</div>}
