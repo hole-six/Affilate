@@ -468,7 +468,11 @@ export async function POST(req: NextRequest) {
         // Tạo Referral Bonus
         const customerData = await prisma.customer.findUnique({
           where: { id: resolvedCustomerId },
-          select: { referredById: true, createdAt: true },
+          select: {
+            referredById: true,
+            createdAt: true,
+            referredBy: { select: { isPartner: true } },
+          },
         });
 
         if (customerData?.referredById) {
@@ -479,26 +483,32 @@ export async function POST(req: NextRequest) {
           // hồng giới thiệu, đúng chuẩn mà splitCommission() đã áp dụng cho
           // hoa hồng chính.
           const referralRate = rule?.referralRate ?? new Prisma.Decimal(0.05);
+          const isPartner = customerData.referredBy?.isPartner ?? false;
 
           // Đối chiếu theo ngày ĐƠN HÀNG thực sự phát sinh (row.orderedAt/completedAt),
           // không phải thời điểm import CSV — vì đối soát có thể trễ nhiều tuần
-          // so với lúc đơn phát sinh.
+          // so với lúc đơn phát sinh. ĐỐI TÁC (isPartner) không bị giới hạn
+          // 6 tháng — hoa hồng vĩnh viễn cho mọi đơn của khách được gán.
           const referenceDate = row.orderedAt ?? row.completedAt ?? new Date();
 
-          if (isWithinReferralWindow(customerData.createdAt, validMonths, referenceDate)) {
+          if (isPartner || isWithinReferralWindow(customerData.createdAt, validMonths, referenceDate)) {
             // Giới hạn 5 đơn là MỖI người bạn (F1) riêng — người giới thiệu
             // (A) mời càng nhiều bạn thì càng được nhiều đơn hoa hồng, không
             // bị dồn chung vào 1 hạn mức 5 đơn cho tất cả bạn bè cộng lại.
-            const referrerBonusCount = await prisma.order.count({
-              where: {
-                customerId: customerData.referredById,
-                sourceType: "referral",
-                orderStatus: "approved",
-                referralSourceCustomerId: resolvedCustomerId,
-              },
-            });
+            // ĐỐI TÁC (isPartner) không bị giới hạn số đơn — ăn 5% vĩnh viễn
+            // trên mọi đơn của khách được admin gán, không giới hạn số lượng.
+            const referrerBonusCount = isPartner
+              ? 0
+              : await prisma.order.count({
+                  where: {
+                    customerId: customerData.referredById,
+                    sourceType: "referral",
+                    orderStatus: "approved",
+                    referralSourceCustomerId: resolvedCustomerId,
+                  },
+                });
 
-            if (referrerBonusCount < maxOrders) {
+            if (isPartner || referrerBonusCount < maxOrders) {
               // ============================================================
               // Hoa hồng giới thiệu được TRÍCH TỪ PHẦN HỆ THỐNG GIỮ, không
               // đụng vào 80% của khách (B) — đúng chủ trương: đơn của B thay

@@ -99,7 +99,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     // Xử lý Referral Bonus
     const customerData = await prisma.customer.findUnique({
       where: { id: targetCustomerId },
-      select: { referredById: true, createdAt: true },
+      select: {
+        referredById: true,
+        createdAt: true,
+        referredBy: { select: { isPartner: true } },
+      },
     });
 
     if (customerData?.referredById) {
@@ -114,27 +118,31 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       // động — cùng chuẩn với splitCommission() và với orders/import/route.ts,
       // tránh sai số nhị phân len vào tiền hoa hồng giới thiệu.
       const referralRate = activeRule?.referralRate ?? new Prisma.Decimal(0.05);
+      const isPartner = customerData.referredBy?.isPartner ?? false;
 
       // Đối chiếu theo ngày ĐƠN HÀNG thực sự phát sinh (orderedAt/completedAt),
       // không phải thời điểm admin duyệt/đối soát — vì Shopee/TikTok có thể
       // trả hoa hồng trễ 15-30 ngày, nếu dùng "now" một đơn phát sinh hợp lệ
-      // trong hạn 6 tháng có thể bị từ chối oan chỉ vì duyệt trễ.
+      // trong hạn 6 tháng có thể bị từ chối oan chỉ vì duyệt trễ. ĐỐI TÁC
+      // (isPartner) không bị giới hạn 6 tháng — hoa hồng vĩnh viễn.
       const referenceDate = updated.orderedAt ?? updated.completedAt ?? new Date();
-      const isTimeValid = isWithinReferralWindow(customerData.createdAt, validMonths, referenceDate);
+      const isTimeValid = isPartner || isWithinReferralWindow(customerData.createdAt, validMonths, referenceDate);
 
       if (isTimeValid) {
         // Giới hạn 5 đơn là MỖI người bạn (F1) riêng — xem chú thích chi tiết
-        // trong orders/import/route.ts.
-        const referrerBonusCount = await prisma.order.count({
-          where: {
-            customerId: customerData.referredById,
-            sourceType: "referral",
-            orderStatus: "approved",
-            referralSourceCustomerId: targetCustomerId,
-          },
-        });
+        // trong orders/import/route.ts. ĐỐI TÁC không giới hạn số đơn.
+        const referrerBonusCount = isPartner
+          ? 0
+          : await prisma.order.count({
+              where: {
+                customerId: customerData.referredById,
+                sourceType: "referral",
+                orderStatus: "approved",
+                referralSourceCustomerId: targetCustomerId,
+              },
+            });
 
-        if (referrerBonusCount < maxOrders) {
+        if (isPartner || referrerBonusCount < maxOrders) {
           // ============================================================
           // Hoa hồng giới thiệu TRÍCH TỪ PHẦN HỆ THỐNG GIỮ, không đụng vào
           // 80% của khách (B) — cùng công thức và lý do như trong

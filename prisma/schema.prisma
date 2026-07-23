@@ -52,6 +52,10 @@ model Customer {
   momoNumber       String?  @map("momo_number")
   momoName         String?  @map("momo_name")
   referredById     String?  @map("referred_by_id")
+  // Đối tác — admin gán khách nào referredById về đây thì đơn của khách đó
+  // luôn tính hoa hồng giới thiệu cho đối tác này, KHÔNG áp giới hạn 5 đơn
+  // hay hạn 6 tháng như người giới thiệu tự do bình thường (vĩnh viễn).
+  isPartner        Boolean  @default(false) @map("is_partner")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
 

@@ -7,16 +7,25 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Table, Thead, Tr, Th, Td } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { PartnerSettings } from "@/components/admin/PartnerSettings";
 
 export default async function CustomerDetailPage({ params }: { params: { id: string } }) {
-  const customer = await prisma.customer.findUnique({
-    where: { id: params.id },
-    include: {
-      trackingLinks: { orderBy: { createdAt: "desc" }, take: 20, include: { platform: true } },
-      orders: { orderBy: { createdAt: "desc" }, take: 20, include: { platform: true } },
-      paymentBatches: { orderBy: { createdAt: "desc" }, take: 20 },
-    },
-  });
+  const [customer, allCustomers] = await Promise.all([
+    prisma.customer.findUnique({
+      where: { id: params.id },
+      include: {
+        trackingLinks: { orderBy: { createdAt: "desc" }, take: 20, include: { platform: true } },
+        orders: { orderBy: { createdAt: "desc" }, take: 20, include: { platform: true } },
+        paymentBatches: { orderBy: { createdAt: "desc" }, take: 20 },
+        referredBy: { select: { id: true, fullName: true, customerCode: true } },
+        referredUsers: { select: { id: true, fullName: true, customerCode: true }, orderBy: { fullName: "asc" } },
+      },
+    }),
+    prisma.customer.findMany({
+      select: { id: true, fullName: true, customerCode: true },
+      orderBy: { fullName: "asc" },
+    }),
+  ]);
 
   if (!customer) notFound();
 
@@ -30,11 +39,27 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
           <ArrowLeft size={14} strokeWidth={1.75} />
           Quản lý khách hàng
         </Link>
-        <h1 className="display-sm">{customer.fullName}</h1>
+        <div className="flex items-center gap-sm">
+          <h1 className="display-sm">{customer.fullName}</h1>
+          {customer.isPartner && <Badge tone="positive">🤝 Đối tác</Badge>}
+        </div>
         <p className="mt-xs text-body">
           {customer.customerCode} · {customer.phone || "—"} · Zalo: {customer.zaloUserId || "—"}
         </p>
       </div>
+
+      <Card variant="soft">
+        <h2 className="display-xs mb-lg">Đối tác &amp; Giới thiệu</h2>
+        <PartnerSettings
+          customerId={customer.id}
+          isPartner={customer.isPartner}
+          referredBy={customer.referredBy}
+          referredUsers={customer.referredUsers}
+          customers={allCustomers
+            .filter((c) => c.id !== customer.id)
+            .map((c) => ({ id: c.id, label: `${c.fullName} (${c.customerCode})` }))}
+        />
+      </Card>
 
       <Card variant="soft">
         <h2 className="display-xs mb-lg">Link affiliate gần đây</h2>
