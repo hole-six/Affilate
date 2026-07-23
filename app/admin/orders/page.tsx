@@ -17,6 +17,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     where.OR = [
       { orderExternalId: { contains: q } },
       { trackingCode: { contains: q } },
+      { itemName: { contains: q } },
       { customer: { fullName: { contains: q } } },
     ];
   }
@@ -66,6 +67,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const mappedOrders = orders.map((o) => ({
     id: o.id,
     orderExternalId: o.orderExternalId,
+    itemName: o.itemName,
     platformName: o.platform.name,
     customerName: o.customer?.fullName ?? null,
     customerId: o.customerId,
