@@ -45,31 +45,31 @@ export function PartnerSettings({
   return (
     <div className="flex flex-col gap-lg">
       {/* Toggle Đối tác */}
-      <div className="flex items-start justify-between gap-lg rounded-2xl border border-gray-100 p-lg">
-        <div className="flex items-start gap-md">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-            <Handshake size={18} strokeWidth={2} />
-          </div>
-          <div>
+      <div className="rounded-2xl border border-gray-100 p-lg">
+        <div className="flex items-center justify-between gap-md">
+          <div className="flex items-center gap-md">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+              <Handshake size={18} strokeWidth={2} />
+            </div>
             <div className="text-[14px] font-bold text-gray-900">Đối tác</div>
-            <p className="mt-[2px] max-w-[480px] text-[12px] text-gray-500 leading-relaxed">
-              Khi bật, mọi khách hàng có <strong>"Người giới thiệu"</strong> trỏ về người này sẽ luôn tính hoa hồng
-              giới thiệu 5% <strong>vĩnh viễn</strong> trên mọi đơn — không giới hạn 5 đơn/người hay hạn 6 tháng như
-              giới thiệu tự do thông thường.
-            </p>
           </div>
+          <button
+            onClick={() => patch({ isPartner: !isPartner })}
+            disabled={loading}
+            className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${isPartner ? "bg-emerald-500" : "bg-gray-200"}`}
+          >
+            <span
+              className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                isPartner ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
         </div>
-        <button
-          onClick={() => patch({ isPartner: !isPartner })}
-          disabled={loading}
-          className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${isPartner ? "bg-emerald-500" : "bg-gray-200"}`}
-        >
-          <span
-            className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-              isPartner ? "translate-x-6" : "translate-x-1"
-            }`}
-          />
-        </button>
+        <p className="mt-sm text-[12px] text-gray-500 leading-relaxed">
+          Khi bật, mọi khách hàng có <strong>"Người giới thiệu"</strong> trỏ về người này sẽ luôn tính hoa hồng giới
+          thiệu 5% <strong>vĩnh viễn</strong> trên mọi đơn — không giới hạn 5 đơn/người hay hạn 6 tháng như giới thiệu
+          tự do thông thường.
+        </p>
       </div>
 
       {/* Người giới thiệu của khách này */}

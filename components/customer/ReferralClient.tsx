@@ -24,6 +24,7 @@ interface Props {
   referralRate: number;
   maxReferralOrders: number;
   referralValidityMonths: number;
+  isPartner: boolean;
   bonusHistory: BonusHistoryEntry[];
 }
 
@@ -33,7 +34,7 @@ const STATUS_LABEL: Record<string, { text: string; className: string }> = {
   clawback: { text: "Đã thu hồi", className: "bg-red-50 text-red-500" },
 };
 
-export function ReferralClient({ customerCode, totalFriends, totalCommission, referralRate, maxReferralOrders, referralValidityMonths, bonusHistory }: Props) {
+export function ReferralClient({ customerCode, totalFriends, totalCommission, referralRate, maxReferralOrders, referralValidityMonths, isPartner, bonusHistory }: Props) {
   const modal = useModal();
   const [referralLink, setReferralLink] = useState("");
 
@@ -189,21 +190,36 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
                   </div>
                 </div>
 
-                <div className="flex gap-md">
-                  <CheckCircle2 className="text-[#e86a33] shrink-0 mt-0.5" size={20} />
-                  <div>
-                    <h3 className="text-[14px] font-bold text-gray-900">Áp dụng cho {maxReferralOrders} đơn đầu tiên</h3>
-                    <p className="text-[13px] text-gray-500 mt-1">{maxReferralOrders} đơn hàng đầu tiên này tính chung cho tất cả bạn bè bạn mời, không phải riêng cho mỗi người.</p>
+                {isPartner ? (
+                  <div className="flex gap-md">
+                    <CheckCircle2 className="text-emerald-500 shrink-0 mt-0.5" size={20} />
+                    <div>
+                      <h3 className="text-[14px] font-bold text-gray-900">🤝 Đối tác — không giới hạn, vĩnh viễn</h3>
+                      <p className="text-[13px] text-gray-500 mt-1">
+                        Bạn là đối tác của hệ thống — nhận hoa hồng trên <strong>tất cả</strong> đơn hàng của mỗi người bạn mời,
+                        không giới hạn số đơn và không có hạn thời gian.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="flex gap-md">
+                      <CheckCircle2 className="text-[#e86a33] shrink-0 mt-0.5" size={20} />
+                      <div>
+                        <h3 className="text-[14px] font-bold text-gray-900">Áp dụng cho {maxReferralOrders} đơn đầu tiên mỗi người bạn</h3>
+                        <p className="text-[13px] text-gray-500 mt-1">{maxReferralOrders} đơn hàng đầu tiên tính riêng cho từng người bạn bạn mời — mời càng nhiều bạn, càng được nhiều hoa hồng.</p>
+                      </div>
+                    </div>
 
-                <div className="flex gap-md">
-                  <CheckCircle2 className="text-[#e86a33] shrink-0 mt-0.5" size={20} />
-                  <div>
-                    <h3 className="text-[14px] font-bold text-gray-900">Thời hạn {referralValidityMonths} tháng</h3>
-                    <p className="text-[13px] text-gray-500 mt-1">Các đơn hàng phải phát sinh trong vòng {referralValidityMonths} tháng kể từ lúc bạn bè đăng ký tài khoản.</p>
-                  </div>
-                </div>
+                    <div className="flex gap-md">
+                      <CheckCircle2 className="text-[#e86a33] shrink-0 mt-0.5" size={20} />
+                      <div>
+                        <h3 className="text-[14px] font-bold text-gray-900">Thời hạn {referralValidityMonths} tháng</h3>
+                        <p className="text-[13px] text-gray-500 mt-1">Các đơn hàng phải phát sinh trong vòng {referralValidityMonths} tháng kể từ lúc bạn bè đăng ký tài khoản.</p>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div className="flex gap-md">
                   <CheckCircle2 className="text-[#e86a33] shrink-0 mt-0.5" size={20} />

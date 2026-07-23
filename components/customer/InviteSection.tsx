@@ -11,6 +11,7 @@ type Props = {
   referralRate: number;
   maxReferralOrders: number;
   referralValidityMonths: number;
+  isPartner: boolean;
 };
 
 export function InviteSection({
@@ -19,6 +20,7 @@ export function InviteSection({
   referralRate,
   maxReferralOrders,
   referralValidityMonths,
+  isPartner,
 }: Props) {
   const [inviteUrl, setInviteUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -47,9 +49,19 @@ export function InviteSection({
       </div>
 
       <p className="text-[13px] text-gray-400 mb-md leading-relaxed">
-        Mời bạn bè tham gia và nhận{" "}
-        <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span> từ{" "}
-        {maxReferralOrders} đơn hàng đầu tiên (tính chung cho tất cả bạn bè bạn mời)!
+        {isPartner ? (
+          <>
+            Bạn là <span className="font-bold text-emerald-600">🤝 Đối tác</span> — nhận{" "}
+            <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span> trên{" "}
+            <strong>tất cả</strong> đơn hàng của mỗi người bạn mời, không giới hạn số đơn hay thời gian!
+          </>
+        ) : (
+          <>
+            Mời bạn bè tham gia và nhận{" "}
+            <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span> từ{" "}
+            {maxReferralOrders} đơn hàng đầu tiên của mỗi người bạn mời!
+          </>
+        )}
       </p>
 
       {/* Stars + badge */}
@@ -58,7 +70,7 @@ export function InviteSection({
           <Star key={i} size={12} className="text-amber-400 fill-amber-400" />
         ))}
         <span className="text-[11px] text-gray-400 ml-1">
-          {referralPercent}% hoa hồng / {maxReferralOrders} đơn đầu
+          {isPartner ? `${referralPercent}% hoa hồng / không giới hạn` : `${referralPercent}% hoa hồng / ${maxReferralOrders} đơn đầu mỗi người`}
         </span>
       </div>
 
@@ -195,7 +207,9 @@ export function InviteSection({
               <p className="text-[11px] text-gray-400 text-center leading-relaxed">
                 ⭐ Bạn nhận{" "}
                 <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span>{" "}
-                từ {maxReferralOrders} đơn đầu tiên, tính chung cho tất cả bạn bè bạn mời (trong {referralValidityMonths} tháng mỗi người)
+                {isPartner
+                  ? "trên tất cả đơn hàng của mỗi người bạn mời, không giới hạn số đơn hay thời gian"
+                  : `từ ${maxReferralOrders} đơn đầu tiên của mỗi người bạn mời (trong ${referralValidityMonths} tháng kể từ khi họ đăng ký)`}
               </p>
             </div>
           </div>

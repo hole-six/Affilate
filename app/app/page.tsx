@@ -306,6 +306,7 @@ export default async function CustomerHomePage() {
             referralRate={referralRate}
             maxReferralOrders={maxReferralOrders}
             referralValidityMonths={referralValidityMonths}
+            isPartner={customer?.isPartner ?? false}
           />
 
           {/* Truy cập nhanh */}

@@ -94,6 +94,7 @@ export default async function ReferralPage() {
       referralRate={referralRate}
       maxReferralOrders={maxReferralOrders}
       referralValidityMonths={referralValidityMonths}
+      isPartner={customer.isPartner}
       bonusHistory={bonusHistory}
     />
   );
