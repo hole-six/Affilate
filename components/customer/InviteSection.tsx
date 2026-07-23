@@ -49,7 +49,7 @@ export function InviteSection({
       <p className="text-[13px] text-gray-400 mb-md leading-relaxed">
         Mời bạn bè tham gia và nhận{" "}
         <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span> từ{" "}
-        {maxReferralOrders} đơn hàng đầu tiên (tính chung cho tất cả bạn bè bạn mời)!
+        {maxReferralOrders} đơn hàng đầu tiên của người bạn đó!
       </p>
 
       {/* Stars + badge */}
@@ -195,7 +195,7 @@ export function InviteSection({
               <p className="text-[11px] text-gray-400 text-center leading-relaxed">
                 ⭐ Bạn nhận{" "}
                 <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span>{" "}
-                từ {maxReferralOrders} đơn đầu tiên, tính chung cho tất cả bạn bè bạn mời (trong {referralValidityMonths} tháng mỗi người)
+                từ {maxReferralOrders} đơn đầu tiên của mỗi người bạn (trong {referralValidityMonths} tháng kể từ khi họ đăng ký)
               </p>
             </div>
           </div>
