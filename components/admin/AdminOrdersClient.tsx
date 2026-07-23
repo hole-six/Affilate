@@ -27,6 +27,7 @@ type Option = { id: string; label: string };
 type Order = {
   id: string;
   orderExternalId: string;
+  itemName: string | null;
   platformName: string;
   customerName: string | null;
   customerId: string | null;
@@ -105,7 +106,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
       {/* TOOLBAR */}
       <div className="flex flex-col gap-sm sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <ServerSearchInput placeholder="Tìm mã đơn, tên khách hoặc tracking code..." />
+          <ServerSearchInput placeholder="Tìm mã đơn, tên sản phẩm, tên khách hoặc tracking code..." />
         </div>
       </div>
 
@@ -272,6 +273,11 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                         )}
                         {o.orderExternalId}
                       </div>
+                      {o.itemName && (
+                        <div className="mt-[2px] max-w-[260px] truncate text-[12px] font-medium text-gray-600" title={o.itemName}>
+                          {o.itemName}
+                        </div>
+                      )}
                       <div className="mt-1 flex items-center gap-2 flex-wrap">
                         {o.sourceType === "referral" ? (
                           <span className="inline-flex items-center gap-[3px] rounded-md bg-purple-100 px-1.5 py-[2px] text-[10px] font-bold text-purple-700">
