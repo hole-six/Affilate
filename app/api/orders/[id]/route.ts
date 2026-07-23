@@ -156,7 +156,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
           await prisma.order.update({
             where: { id: updated.id },
-            data: { systemProfitAmount: systemProfitAfterReferral },
+            data: { systemProfitAmount: systemProfitAfterReferral, referralBonusDeducted: bonusAmount },
           });
 
           await prisma.order.upsert({

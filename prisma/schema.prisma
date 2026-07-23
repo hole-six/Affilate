@@ -326,6 +326,11 @@ model Order {
   // để đếm đúng "tối đa 5 đơn MỖI người bạn", không phải 5 đơn tổng gộp
   // trên mọi người mà A đã mời.
   referralSourceCustomerId String? @map("referral_source_customer_id")
+  // Số tiền đã bị trích từ systemProfitAmount của CHÍNH đơn này để trả hoa
+  // hồng giới thiệu (0 nếu đơn không có giới thiệu). Lưu trực tiếp trên đơn
+  // gốc để admin biết ngay số "Giữ lại" đã bị giảm do giới thiệu, không phải
+  // tính sai — không cần join/tra ngược qua đơn REF- mới biết được.
+  referralBonusDeducted  Decimal  @default(0) @map("referral_bonus_deducted")
   rawData                String?    @map("raw_data")
   approvedAt              DateTime? @map("approved_at")
   createdAt               DateTime  @default(now()) @map("created_at")

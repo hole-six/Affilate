@@ -37,6 +37,7 @@ type Order = {
   commissionAmount: number;
   customerRewardAmount: number;
   systemProfitAmount: number;
+  referralBonusDeducted: number;
   orderStatus: string;
   payoutStatus: string;
   orderedAt: string | null;
@@ -50,7 +51,7 @@ type Props = {
   totalPages: number;
   currentPage: number;
   counts: { all: number; unassigned: number; assigned: number; pending: number; processing: number; moneyIn: number; unpaid: number; paid: number; cancelled: number; completed: number; clawback: number; referral: number };
-  sums: { orderAmount: number; commissionAmount: number; customerRewardAmount: number; systemProfitAmount: number; moneyInTotal: number; unpaidTotal: number };
+  sums: { orderAmount: number; commissionAmount: number; customerRewardAmount: number; systemProfitAmount: number; referralBonusDeductedTotal: number; moneyInTotal: number; unpaidTotal: number };
 };
 
 const orderStatusLabel: Record<string, string> = {
@@ -203,7 +204,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
       <div className="rounded-3xl bg-white p-0 shadow-sm ring-1 ring-black/5 overflow-hidden flex flex-col gap-0 w-full max-w-[100vw]">
 
         {/* Summary Header */}
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200 p-lg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100/50 border-b border-gray-200 p-lg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-md">
           <div className="flex flex-col">
             <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng giá trị đơn</span>
             <span className="text-[20px] font-bold text-gray-900 leading-none">
@@ -232,6 +233,12 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
             <span className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-1">Tổng hệ thống giữ (đang lọc)</span>
             <span className="text-[20px] font-bold text-gray-700 leading-none">
               {formatCurrency(sums.systemProfitAmount)}
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[12px] font-bold text-purple-600 uppercase tracking-wider mb-1">🎁 Đã trích cho GT (đang lọc)</span>
+            <span className="text-[20px] font-bold text-purple-600 leading-none">
+              {formatCurrency(sums.referralBonusDeductedTotal)}
             </span>
           </div>
         </div>
@@ -327,6 +334,14 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                       <div className="text-[11px] font-medium text-gray-400 mt-[2px]">
                         Giữ: {formatCurrency(o.systemProfitAmount)}
                       </div>
+                      {o.referralBonusDeducted > 0 && (
+                        <div
+                          className="mt-[3px] inline-flex items-center gap-[3px] rounded-md bg-purple-50 px-1.5 py-[2px] text-[10px] font-bold text-purple-700"
+                          title="Số tiền đã trích từ phần hệ thống giữ để trả hoa hồng cho người giới thiệu"
+                        >
+                          🎁 -{formatCurrency(o.referralBonusDeducted)} cho GT
+                        </div>
+                      )}
                     </td>
 
                     {/* Statuses */}

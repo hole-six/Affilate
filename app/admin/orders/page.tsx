@@ -57,7 +57,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     prisma.order.findMany({ where, orderBy, skip, take: limit, include: { platform: true, customer: true } }),
     prisma.customer.findMany({ orderBy: { fullName: "asc" } }),
     prisma.order.count({ where }),
-    prisma.order.aggregate({ where, _sum: { orderAmount: true, commissionAmount: true, customerRewardAmount: true, systemProfitAmount: true } }),
+    prisma.order.aggregate({ where, _sum: { orderAmount: true, commissionAmount: true, customerRewardAmount: true, systemProfitAmount: true, referralBonusDeducted: true } }),
     prisma.order.aggregate({ where: { orderStatus: "approved" }, _sum: { customerRewardAmount: true } }),
     prisma.order.aggregate({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }),
   ]);
@@ -77,6 +77,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     commissionAmount: Number(o.commissionAmount),
     customerRewardAmount: Number(o.customerRewardAmount),
     systemProfitAmount: Number(o.systemProfitAmount),
+    referralBonusDeducted: Number(o.referralBonusDeducted),
     orderStatus: o.orderStatus,
     payoutStatus: o.payoutStatus,
     orderedAt: o.orderedAt?.toISOString() ?? null,
@@ -93,6 +94,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     commissionAmount: Number(sumsAgg._sum.commissionAmount ?? 0),
     customerRewardAmount: Number(sumsAgg._sum.customerRewardAmount ?? 0),
     systemProfitAmount: Number(sumsAgg._sum.systemProfitAmount ?? 0),
+    referralBonusDeductedTotal: Number(sumsAgg._sum.referralBonusDeducted ?? 0),
     moneyInTotal: Number(moneyInSumAgg._sum.customerRewardAmount ?? 0),
     // "Công nợ chưa trả" thật sự — approved nhưng CHƯA trả khách, khác với
     // moneyInTotal (đã bao gồm cả phần đã trả khách rồi — dùng nhầm chỗ này

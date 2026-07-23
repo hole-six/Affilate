@@ -528,7 +528,7 @@ export async function POST(req: NextRequest) {
 
               await prisma.order.update({
                 where: { id: updatedOrder.id },
-                data: { systemProfitAmount: systemProfitAfterReferral },
+                data: { systemProfitAmount: systemProfitAfterReferral, referralBonusDeducted: bonusAmount },
               });
 
               await prisma.order.upsert({
