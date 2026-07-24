@@ -17,6 +17,15 @@ type BonusHistoryEntry = {
   shopName: string | null;
 };
 
+type Friend = {
+  id: string;
+  fullName: string;
+  customerCode: string;
+  joinedAt: string;
+  bonusOrderCount: number;
+  totalEarned: number;
+};
+
 interface Props {
   customerCode: string;
   totalFriends: number;
@@ -26,6 +35,7 @@ interface Props {
   referralValidityMonths: number;
   isPartner: boolean;
   bonusHistory: BonusHistoryEntry[];
+  friends: Friend[];
 }
 
 const STATUS_LABEL: Record<string, { text: string; className: string }> = {
@@ -34,7 +44,7 @@ const STATUS_LABEL: Record<string, { text: string; className: string }> = {
   clawback: { text: "Đã thu hồi", className: "bg-red-50 text-red-500" },
 };
 
-export function ReferralClient({ customerCode, totalFriends, totalCommission, referralRate, maxReferralOrders, referralValidityMonths, isPartner, bonusHistory }: Props) {
+export function ReferralClient({ customerCode, totalFriends, totalCommission, referralRate, maxReferralOrders, referralValidityMonths, isPartner, bonusHistory, friends }: Props) {
   const modal = useModal();
   const [referralLink, setReferralLink] = useState("");
 
@@ -114,6 +124,44 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
             </div>
           </div>
           
+          {/* Danh sách TOÀN BỘ bạn bè đã mời — kể cả người chưa mua gì, khác
+              với lịch sử hoa hồng bên dưới chỉ có giao dịch đã phát sinh. */}
+          {friends.length > 0 && (
+            <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/5">
+              <div className="mb-lg flex items-center justify-between">
+                <h2 className="text-[16px] font-bold text-gray-900">Danh sách bạn bè đã mời</h2>
+                <span className="rounded-full bg-gray-100 px-2 py-[2px] text-[11px] font-bold text-gray-500">{friends.length}</span>
+              </div>
+              <div className="flex flex-col gap-sm max-h-[420px] overflow-y-auto">
+                {friends.map((f) => (
+                  <div
+                    key={f.id}
+                    className="flex items-center gap-md rounded-2xl bg-gray-50 p-md ring-1 ring-black/5"
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-100 text-blue-600 text-[14px] font-black">
+                      {f.fullName.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[14px] font-bold text-gray-900">
+                        {f.fullName} <span className="font-mono text-[11px] font-medium text-gray-400">({f.customerCode})</span>
+                      </div>
+                      <div className="truncate text-[12px] text-gray-400">
+                        Tham gia {formatDate(f.joinedAt)}
+                        {!isPartner && ` · ${f.bonusOrderCount}/${maxReferralOrders} đơn đã dùng`}
+                        {isPartner && f.bonusOrderCount > 0 && ` · ${f.bonusOrderCount} đơn đã tạo hoa hồng`}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className={`text-[14px] font-black ${f.totalEarned > 0 ? "text-green-600" : "text-gray-300"}`}>
+                        {f.totalEarned > 0 ? `+${formatCurrency(f.totalEarned)}` : "Chưa có"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Lịch sử hoa hồng giới thiệu — truy vết từng khoản về đúng bạn bè + đơn hàng gốc */}
           {bonusHistory.length === 0 ? (
             <div className="rounded-3xl bg-gray-50 p-xl ring-1 ring-black/5 border border-gray-100 flex flex-col items-center justify-center h-[200px] text-center">
