@@ -15,6 +15,7 @@ type BonusHistoryEntry = {
   friendCode: string | null;
   originalOrderExternalId: string;
   shopName: string | null;
+  itemName: string | null;
 };
 
 type Friend = {
@@ -188,7 +189,7 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
                   <thead>
                     <tr className="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
                       <th className="pb-sm pr-md">Bạn bè</th>
-                      <th className="pb-sm pr-md">Đơn hàng</th>
+                      <th className="pb-sm pr-md">Tên đơn</th>
                       <th className="pb-sm pr-md">Ngày</th>
                       <th className="pb-sm pr-md text-right">Hoa hồng</th>
                       <th className="pb-sm pl-md">Trạng thái</th>
@@ -205,9 +206,15 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
                               <div className="font-mono text-[11px] text-gray-400">{entry.friendCode}</div>
                             )}
                           </td>
-                          <td className="py-sm pr-md align-top">
-                            <div className="font-mono text-[12px] text-gray-700">{entry.originalOrderExternalId}</div>
-                            {entry.shopName && <div className="text-[11px] text-gray-400">{entry.shopName}</div>}
+                          <td className="py-sm pr-md align-top max-w-[220px]">
+                            <div className="truncate font-bold text-gray-900" title={entry.itemName ?? undefined}>
+                              {entry.itemName ?? `Đơn ${entry.originalOrderExternalId}`}
+                            </div>
+                            <div className="truncate text-[11px] text-gray-400">
+                              {entry.shopName}
+                              {entry.shopName ? " · " : ""}
+                              <span className="font-mono">{entry.originalOrderExternalId}</span>
+                            </div>
                           </td>
                           <td className="py-sm pr-md align-top text-gray-500">{formatDate(entry.createdAt)}</td>
                           <td className="py-sm pr-md align-top text-right font-black text-green-600 whitespace-nowrap">

@@ -67,6 +67,8 @@ export default async function ReferralPage() {
           platformId: true,
           orderExternalId: true,
           shopName: true,
+          itemName: true,
+          trackingLink: { select: { productTitle: true } },
           customer: { select: { fullName: true, customerCode: true } },
         },
       })
@@ -88,6 +90,7 @@ export default async function ReferralPage() {
       friendCode: original?.customer?.customerCode ?? null,
       originalOrderExternalId: originalExtId,
       shopName: original?.shopName ?? null,
+      itemName: original?.trackingLink?.productTitle ?? original?.itemName ?? null,
     };
   });
 
