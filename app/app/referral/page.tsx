@@ -13,7 +13,11 @@ export default async function ReferralPage() {
       include: {
         _count: {
           select: { referredUsers: true }
-        }
+        },
+        referredUsers: {
+          orderBy: { createdAt: "desc" },
+          select: { id: true, fullName: true, customerCode: true, createdAt: true },
+        },
       }
     }),
     prisma.order.findMany({
@@ -29,6 +33,7 @@ export default async function ReferralPage() {
         customerRewardAmount: true,
         orderStatus: true,
         createdAt: true,
+        referralSourceCustomerId: true,
       }
     }),
     prisma.commissionRule.findFirst({
@@ -86,6 +91,22 @@ export default async function ReferralPage() {
     };
   });
 
+  // Danh sách TOÀN BỘ bạn bè đã mời — kể cả người CHƯA từng tạo ra khoản hoa
+  // hồng nào (chỉ mới đăng ký, chưa mua gì) — khác với bonusHistory chỉ có
+  // các giao dịch đã phát sinh. Đối tác đặc biệt cần xem được danh sách này
+  // để theo dõi toàn bộ khách mình quản lý, không chỉ phần đã có tiền về.
+  const friends = customer.referredUsers.map((f) => {
+    const theirBonusOrders = approvedReferralOrders.filter((o) => o.referralSourceCustomerId === f.id);
+    return {
+      id: f.id,
+      fullName: f.fullName,
+      customerCode: f.customerCode,
+      joinedAt: f.createdAt.toISOString(),
+      bonusOrderCount: theirBonusOrders.length,
+      totalEarned: theirBonusOrders.reduce((s, o) => s + Number(o.customerRewardAmount), 0),
+    };
+  });
+
   return (
     <ReferralClient
       customerCode={customer.customerCode}
@@ -96,6 +117,7 @@ export default async function ReferralPage() {
       referralValidityMonths={referralValidityMonths}
       isPartner={customer.isPartner}
       bonusHistory={bonusHistory}
+      friends={friends}
     />
   );
 }

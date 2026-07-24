@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
-import { Copy, Check, Share2, QrCode, X } from "lucide-react";
+import { Copy, Check, Share2, QrCode, X, ChevronRight } from "lucide-react";
 import { Star } from "lucide-react";
 
 type Props = {
@@ -43,9 +44,18 @@ export function InviteSection({
   return (
     <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/[0.06] flex-1 min-w-0 overflow-hidden">
       {/* Header */}
-      <div className="mb-md flex items-center gap-sm">
-        <img src="/heoquatang.png" alt="" className="h-9 w-9 object-contain" />
-        <h2 className="text-[15px] font-bold text-gray-900">Giới thiệu bạn bè</h2>
+      <div className="mb-md flex items-center justify-between gap-sm">
+        <div className="flex items-center gap-sm min-w-0">
+          <img src="/heoquatang.png" alt="" className="h-9 w-9 object-contain shrink-0" />
+          <h2 className="text-[15px] font-bold text-gray-900">Giới thiệu bạn bè</h2>
+        </div>
+        <Link
+          href="/app/referral"
+          className="flex shrink-0 items-center gap-[2px] text-[12px] font-bold text-[#e86a33] hover:underline"
+        >
+          Xem chi tiết
+          <ChevronRight size={14} strokeWidth={2.5} />
+        </Link>
       </div>
 
       <p className="text-[13px] text-gray-400 mb-md leading-relaxed">
