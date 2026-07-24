@@ -26,7 +26,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
       if (!personalLink) {
         const platform = await prisma.platform.findFirst({ where: { code: deal.platformCode } });
-        if (platform) {
+        if (!platform) {
+          console.error(
+            `[DEAL_PERSONALIZE_FALLBACK] customerId=${session.customerId} dealId=${deal.id} reason=platform_not_found platformCode=${deal.platformCode}`
+          );
+        } else {
           const result = await createTrackingLink({
             originalUrl: deal.cleanLink,
             platformId: platform.id,
@@ -45,8 +49,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         prisma.dealPost.update({ where: { id: deal.id }, data: { clicks: { increment: 1 } } }).catch(() => {});
         return NextResponse.redirect(personalLink.affiliateUrl);
       }
-    } catch {
-      // Tạo link cá nhân thất bại — rơi xuống dùng link chung, không chặn khách mua hàng.
+    } catch (err) {
+      // Tạo link cá nhân thất bại — rơi xuống dùng link chung, không chặn
+      // khách mua hàng, nhưng PHẢI log lại để biết mà xử lý.
+      console.error(
+        `[DEAL_PERSONALIZE_FALLBACK] customerId=${session.customerId} dealId=${deal.id} reason=exception`,
+        err
+      );
     }
   }
 
