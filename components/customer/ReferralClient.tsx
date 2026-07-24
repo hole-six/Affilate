@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { Users, TrendingUp, CheckCircle2, Gift } from "lucide-react";
+import { Users, TrendingUp, CheckCircle2 } from "lucide-react";
 import { useModal } from "@/components/ui/ModalProvider";
 import { Button } from "@/components/ui/Button";
 
@@ -183,36 +183,46 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
           ) : (
             <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/5">
               <h2 className="text-[16px] font-bold text-gray-900 mb-lg">Lịch sử hoa hồng giới thiệu</h2>
-              <div className="flex flex-col gap-sm max-h-[420px] overflow-y-auto">
-                {bonusHistory.map((entry) => {
-                  const status = STATUS_LABEL[entry.status] ?? { text: entry.status, className: "bg-gray-100 text-gray-500" };
-                  return (
-                    <div
-                      key={entry.id}
-                      className="flex items-center gap-md rounded-2xl bg-gray-50 p-md ring-1 ring-black/5"
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-[#e86a33]">
-                        <Gift size={18} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="truncate text-[14px] font-bold text-gray-900">
-                          {entry.friendName ?? "Bạn bè"}
-                          {entry.friendCode ? ` (${entry.friendCode})` : ""}
-                        </div>
-                        <div className="truncate text-[12px] text-gray-400">
-                          Từ đơn <code>{entry.originalOrderExternalId}</code>
-                          {entry.shopName ? ` — ${entry.shopName}` : ""} · {formatDate(entry.createdAt)}
-                        </div>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <div className="text-[14px] font-black text-green-600">+{formatCurrency(entry.amount)}</div>
-                        <span className={`inline-block rounded-full px-2 py-[2px] text-[10px] font-bold ${status.className}`}>
-                          {status.text}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="max-h-[420px] overflow-auto -mx-xl px-xl">
+                <table className="w-full min-w-[560px] text-left text-[13px]">
+                  <thead>
+                    <tr className="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+                      <th className="pb-sm pr-md">Bạn bè</th>
+                      <th className="pb-sm pr-md">Đơn hàng</th>
+                      <th className="pb-sm pr-md">Ngày</th>
+                      <th className="pb-sm pr-md text-right">Hoa hồng</th>
+                      <th className="pb-sm pl-md">Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bonusHistory.map((entry) => {
+                      const status = STATUS_LABEL[entry.status] ?? { text: entry.status, className: "bg-gray-100 text-gray-500" };
+                      return (
+                        <tr key={entry.id} className="border-b border-gray-50 last:border-0">
+                          <td className="py-sm pr-md align-top">
+                            <div className="font-bold text-gray-900">{entry.friendName ?? "Bạn bè"}</div>
+                            {entry.friendCode && (
+                              <div className="font-mono text-[11px] text-gray-400">{entry.friendCode}</div>
+                            )}
+                          </td>
+                          <td className="py-sm pr-md align-top">
+                            <div className="font-mono text-[12px] text-gray-700">{entry.originalOrderExternalId}</div>
+                            {entry.shopName && <div className="text-[11px] text-gray-400">{entry.shopName}</div>}
+                          </td>
+                          <td className="py-sm pr-md align-top text-gray-500">{formatDate(entry.createdAt)}</td>
+                          <td className="py-sm pr-md align-top text-right font-black text-green-600 whitespace-nowrap">
+                            +{formatCurrency(entry.amount)}
+                          </td>
+                          <td className="py-sm pl-md align-top">
+                            <span className={`inline-block whitespace-nowrap rounded-full px-2 py-[2px] text-[10px] font-bold ${status.className}`}>
+                              {status.text}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}
