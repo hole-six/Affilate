@@ -36,6 +36,11 @@ export async function GET(_: NextRequest, { params }: { params: { shortCode: str
     // tính đúng cho họ y hệt như tự tay tạo link ở mục "Tạo link hoàn
     // tiền". Tái dùng link cá nhân đã có (nếu khách từng bấm deal này
     // rồi) để tránh sinh trùng lặp mỗi lần bấm lại.
+    //
+    // MỌI nhánh rơi về SYSTEM dù khách ĐÃ đăng nhập đều PHẢI log rõ lý
+    // do (console.error, xem được qua `pm2 logs`) — trước đây các lỗi
+    // này bị nuốt im lặng (catch rỗng / if-platform không log), khiến
+    // không ai biết khi nào cơ chế cá nhân hoá thất bại thật sự.
     // ============================================================
     const session = await getSession();
     if (session?.customerId) {
@@ -47,7 +52,11 @@ export async function GET(_: NextRequest, { params }: { params: { shortCode: str
 
         if (!personalLink) {
           const platform = await prisma.platform.findFirst({ where: { code: deal.platformCode } });
-          if (platform) {
+          if (!platform) {
+            console.error(
+              `[DEAL_PERSONALIZE_FALLBACK] customerId=${session.customerId} dealId=${deal.id} reason=platform_not_found platformCode=${deal.platformCode}`
+            );
+          } else {
             const result = await createTrackingLink({
               originalUrl: deal.cleanLink,
               platformId: platform.id,
@@ -66,9 +75,14 @@ export async function GET(_: NextRequest, { params }: { params: { shortCode: str
           prisma.dealPost.update({ where: { id: deal.id }, data: { clicks: { increment: 1 } } }).catch(() => {});
           return NextResponse.redirect(personalLink.affiliateUrl, { status: 302 });
         }
-      } catch {
-        // Tạo link cá nhân thất bại (vd thiếu SHOPEE_AFFILIATE_ID) — rơi
-        // xuống dùng link chung bên dưới, không chặn khách mua hàng.
+      } catch (err) {
+        // Tạo link cá nhân thất bại (vd thiếu SHOPEE_AFFILIATE_ID, lỗi DB
+        // tạm thời) — rơi xuống dùng link chung bên dưới, không chặn khách
+        // mua hàng, nhưng PHẢI log lại để biết mà xử lý, không được im lặng.
+        console.error(
+          `[DEAL_PERSONALIZE_FALLBACK] customerId=${session.customerId} dealId=${deal.id} reason=exception`,
+          err
+        );
       }
     }
 
