@@ -28,7 +28,7 @@ export async function sendMail(params: {
   html: string;
 }): Promise<{ ok: boolean; simulated: boolean; error?: string }> {
   const transporter = getTransporter();
-  const fromName = process.env.SMTP_FROM_NAME || "Affiliate Hoan Tien";
+  const fromName = process.env.SMTP_FROM_NAME || "iviback Hoan Tien";
   const fromAddress = process.env.SMTP_USER;
 
   if (!transporter || !fromAddress) {
@@ -68,7 +68,7 @@ function emailShell(bodyHtml: string): string {
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
           <tr>
             <td style="background:linear-gradient(135deg,#fff3ee 0%,#fde8d8 50%,#ffecd2 100%);padding:32px 32px 24px;text-align:center;">
-              <div style="font-size:15px;font-weight:800;color:${BRAND_COLOR};letter-spacing:0.5px;text-transform:uppercase;">Affiliate Hoàn Tiền</div>
+              <div style="font-size:15px;font-weight:800;color:${BRAND_COLOR};letter-spacing:0.5px;text-transform:uppercase;">iviback Hoàn Tiền</div>
             </td>
           </tr>
           <tr>

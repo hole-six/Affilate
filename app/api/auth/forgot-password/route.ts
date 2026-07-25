@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   void sendMail({
     to: user.email,
-    subject: "Đặt lại mật khẩu - Affiliate Hoàn Tiền",
+    subject: "Đặt lại mật khẩu - iviback Hoàn Tiền",
     html: buildPasswordResetEmail({
       fullName: user.fullName,
       resetUrl,
