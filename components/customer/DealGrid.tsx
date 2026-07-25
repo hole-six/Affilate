@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { MousePointerClick, Flame, Tag, SlidersHorizontal } from "lucide-react";
+import { MousePointerClick, Flame, Tag, SlidersHorizontal, Store, ArrowRight } from "lucide-react";
 import { Pagination } from "@/components/ui/Pagination";
 import { DEAL_CATEGORIES } from "@/lib/dealCategories";
+import { DEAL_LINK_TYPES } from "@/lib/dealLinkTypes";
 
 type Deal = {
   id: string;
@@ -14,6 +16,7 @@ type Deal = {
   salePrice: number | null;
   discountPercent: number | null;
   category: string | null;
+  linkType: string;
   expiresAt: string | null;
   imageUrl: string | null;
   shortUrl: string | null;
@@ -31,13 +34,14 @@ function formatExpiry(iso: string) {
 
 function DealCard({ deal }: { deal: Deal }) {
   const [clicked, setClicked] = useState(false);
+  const isShop = deal.linkType === "shop";
 
   function handleClick() {
     setClicked(true);
     // Dùng short URL trên domain của mình nếu có, fallback về API redirect
     const target = deal.shortUrl || `/api/deals/${deal.id}/click`;
     window.open(target, "_blank");
-    setTimeout(() => setClicked(false), 1500);
+    setTimeout(() => setClicked(false), 2200);
   }
 
   const discount = deal.discountPercent
@@ -81,16 +85,22 @@ function DealCard({ deal }: { deal: Deal }) {
 
         {/* Hot badge */}
         <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <span className="flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
-            <MousePointerClick size={10} /> Mua ngay
-          </span>
+          {isShop ? (
+            <span className="flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+              <Store size={10} /> Xem Shop
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 rounded-full bg-black/70 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+              <MousePointerClick size={10} /> Mua ngay
+            </span>
+          )}
         </div>
 
         {/* Click overlay */}
         {clicked && (
-          <div className="absolute inset-0 bg-[#e86a33]/20 flex items-center justify-center animate-in fade-in zoom-in-95 duration-150">
-            <div className="rounded-full bg-white/90 px-md py-sm text-[13px] font-bold text-[#e86a33] shadow-lg">
-              Đang mở Shopee... 🛒
+          <div className="absolute inset-0 bg-[#e86a33]/20 flex items-center justify-center animate-in fade-in zoom-in-95 duration-150 p-sm text-center">
+            <div className="rounded-2xl bg-white/95 px-md py-sm text-[12px] font-bold text-[#e86a33] shadow-lg leading-snug">
+              {isShop ? "Đang mở Shop... 🏬 Chọn SP rồi tạo link riêng ở mục Hoàn tiền nhé!" : "Đang mở Shopee... 🛒"}
             </div>
           </div>
         )}
@@ -98,6 +108,11 @@ function DealCard({ deal }: { deal: Deal }) {
 
       {/* Info */}
       <div className="flex flex-1 flex-col gap-xs p-md">
+        {isShop && (
+          <span className="inline-flex w-fit items-center gap-1 rounded-md bg-purple-50 px-1.5 py-0.5 text-[10px] font-bold text-purple-600">
+            <Store size={10} /> Cả Shop — cần tạo link riêng
+          </span>
+        )}
         <p className="text-[13px] font-semibold text-gray-800 leading-snug line-clamp-2 min-h-[40px]">
           {deal.title}
         </p>
@@ -140,6 +155,49 @@ const SORT_OPTIONS = [
   { value: "discount", label: "% hoàn cao nhất" },
   { value: "clicks", label: "Nhiều lượt dùng nhất" },
 ];
+
+function LinkTypeTabs({ counts }: { counts: { product: number; shop: number } }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const active = searchParams.get("linkType") || "all";
+
+  function select(value: string) {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", "1");
+    if (value === "all") params.delete("linkType");
+    else params.set("linkType", value);
+    router.replace(`${pathname}?${params.toString()}`);
+  }
+
+  const tabs = [
+    { value: "all", label: "Tất cả", icon: <Flame size={13} />, count: counts.product + counts.shop },
+    { value: "product", label: DEAL_LINK_TYPES[0].shortLabel, icon: <MousePointerClick size={13} />, count: counts.product },
+    { value: "shop", label: DEAL_LINK_TYPES[1].shortLabel, icon: <Store size={13} />, count: counts.shop },
+  ];
+
+  return (
+    <div className="mb-md flex flex-wrap items-center gap-sm">
+      {tabs.map((t) => (
+        <button
+          key={t.value}
+          onClick={() => select(t.value)}
+          className={`flex h-10 items-center gap-xs whitespace-nowrap rounded-full px-lg text-[13px] font-bold transition-all ${
+            active === t.value
+              ? "bg-[#e86a33] text-white shadow-md shadow-[#e86a33]/25"
+              : "bg-white text-gray-500 ring-1 ring-black/[0.08] hover:bg-gray-50 hover:text-gray-900"
+          }`}
+        >
+          <span className={active === t.value ? "text-white/80" : "text-gray-400"}>{t.icon}</span>
+          {t.label}
+          <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[11px] ${
+            active === t.value ? "bg-white/20 text-white" : "bg-gray-100 text-gray-400"
+          }`}>{t.count}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function FilterBar() {
   const router = useRouter();
@@ -189,9 +247,45 @@ function FilterBar() {
   );
 }
 
-export function DealGrid({ deals, totalPages, currentPage, hasQuery }: { deals: Deal[], totalPages?: number, currentPage?: number, hasQuery?: boolean }) {
+export function DealGrid({
+  deals,
+  totalPages,
+  currentPage,
+  hasQuery,
+  linkTypeCounts,
+  refundsHref,
+}: {
+  deals: Deal[];
+  totalPages?: number;
+  currentPage?: number;
+  hasQuery?: boolean;
+  linkTypeCounts?: { product: number; shop: number };
+  refundsHref?: string;
+}) {
+  const searchParams = useSearchParams();
+  const activeLinkType = searchParams.get("linkType") || "all";
+
   return (
     <div>
+      {linkTypeCounts && <LinkTypeTabs counts={linkTypeCounts} />}
+
+      {activeLinkType === "shop" && (
+        <div className="mb-lg flex items-start gap-sm rounded-2xl bg-purple-50 border border-purple-200 px-lg py-md">
+          <Store size={18} className="text-purple-500 shrink-0 mt-[1px]" />
+          <p className="text-[13px] text-purple-700 font-medium leading-relaxed">
+            Đây là deal <strong>Cả Shop / Bộ sưu tập</strong> — chọn đúng sản phẩm bạn muốn mua, sau đó{" "}
+            {refundsHref ? (
+              <Link href={refundsHref} className="font-bold underline underline-offset-2">
+                vào mục Hoàn tiền để tạo link riêng
+              </Link>
+            ) : (
+              <strong>tạo link riêng ở mục Hoàn tiền</strong>
+            )}{" "}
+            trước khi thanh toán, để đảm bảo được ghi nhận hoàn tiền chính xác.
+          </p>
+        </div>
+      )}
+
       <FilterBar />
 
       {deals.length === 0 ? (
@@ -219,9 +313,13 @@ export function DealGrid({ deals, totalPages, currentPage, hasQuery }: { deals: 
           )}
 
           {/* Footer note */}
-          <div className="mt-xl flex items-center justify-center gap-sm text-[12px] text-gray-400">
-            <Flame size={13} className="text-[#e86a33]" />
-            <span>Bấm vào sản phẩm để mua trực tiếp trên Shopee và nhận hoàn tiền</span>
+          <div className="mt-xl flex items-center justify-center gap-sm text-[12px] text-gray-400 text-center">
+            <Flame size={13} className="text-[#e86a33] shrink-0" />
+            <span>
+              {activeLinkType === "shop"
+                ? "Chọn sản phẩm rồi tạo link riêng ở mục Hoàn tiền trước khi mua để nhận hoàn tiền"
+                : "Bấm vào sản phẩm để mua trực tiếp trên Shopee và nhận hoàn tiền"}
+            </span>
           </div>
         </>
       )}

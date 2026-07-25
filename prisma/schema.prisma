@@ -554,6 +554,10 @@ model DealPost {
   platformCode    String   @default("SHOPEE") @map("platform_code")
   category        String?  // Thời trang | Mỹ phẩm | Thực phẩm | Mẹ & Bé | Gia dụng | Điện tử | Khác
   expiresAt       DateTime? @map("expires_at")
+  // product = link trỏ thẳng 1 sản phẩm, bấm là mua luôn, hoàn tiền tự ghi
+  // nhận. shop = link trỏ cả shop/bộ sưu tập, khách phải tự chọn sản phẩm
+  // rồi tạo link riêng ở mục Hoàn tiền trước khi mua mới được ghi nhận.
+  linkType        String   @default("product") @map("link_type")
 
   // Links
   rawInputLink    String   @map("raw_input_link")   // Link bẩn admin dán vào

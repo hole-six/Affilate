@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { DEAL_CATEGORIES } from "@/lib/dealCategories";
+import { DEAL_LINK_TYPES, type DealLinkType } from "@/lib/dealLinkTypes";
 
 type ResolveResult = {
   rawInputLink: string;
@@ -41,6 +42,7 @@ export function CreateDealForm() {
   const [salePrice, setSalePrice] = useState("");
   const [discountPercent, setDiscountPercent] = useState("");
   const [category, setCategory] = useState("");
+  const [linkType, setLinkType] = useState<DealLinkType>("product");
   const [expiresAt, setExpiresAt] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -98,6 +100,7 @@ export function CreateDealForm() {
     fd.append("shortUrl", resolved.shortUrl);
     fd.append("shopeeImageUrl", resolved.shopeeImageUrl || "");
     fd.append("platformCode", "SHOPEE");
+    fd.append("linkType", linkType);
     if (category) fd.append("category", category);
     if (expiresAt) fd.append("expiresAt", new Date(expiresAt).toISOString());
     if (imageFile) fd.append("image", imageFile);
@@ -126,6 +129,7 @@ export function CreateDealForm() {
     setSalePrice("");
     setDiscountPercent("");
     setCategory("");
+    setLinkType("product");
     setExpiresAt("");
     setImageFile(null);
     setImagePreview(null);
@@ -410,6 +414,30 @@ export function CreateDealForm() {
                       onChange={(e) => setDiscountPercent(e.target.value)}
                       className="bg-gray-50"
                     />
+                  </div>
+                </div>
+
+                {/* Loại deal */}
+                <div className="flex flex-col gap-xs">
+                  <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">Loại deal</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+                    {DEAL_LINK_TYPES.map((t) => (
+                      <button
+                        key={t.value}
+                        type="button"
+                        onClick={() => setLinkType(t.value)}
+                        className={`rounded-2xl border-2 p-md text-left transition-all ${
+                          linkType === t.value
+                            ? "border-[#e86a33] bg-orange-50"
+                            : "border-gray-100 bg-gray-50 hover:border-gray-200"
+                        }`}
+                      >
+                        <div className={`text-[13px] font-bold ${linkType === t.value ? "text-[#e86a33]" : "text-gray-700"}`}>
+                          {t.value === "product" ? "🎯" : "🏬"} {t.label}
+                        </div>
+                        <div className="text-[11px] text-gray-500 mt-1 leading-relaxed">{t.description}</div>
+                      </button>
+                    ))}
                   </div>
                 </div>
 

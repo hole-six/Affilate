@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/Pagination";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 import { DEAL_CATEGORIES } from "@/lib/dealCategories";
+import { DEAL_LINK_TYPES, type DealLinkType } from "@/lib/dealLinkTypes";
 
 type Deal = {
   id: string;
@@ -19,6 +20,7 @@ type Deal = {
   salePrice: number | null;
   discountPercent: number | null;
   category: string | null;
+  linkType: string;
   expiresAt: string | null;
   uploadedImageUrl: string | null;
   shopeeImageUrl: string | null;
@@ -45,6 +47,7 @@ function EditDealModal({ deal, onSave, onClose }: {
   const [salePrice, setSalePrice] = useState(deal.salePrice?.toString() || "");
   const [discountPercent, setDiscountPercent] = useState(deal.discountPercent?.toString() || "");
   const [category, setCategory] = useState(deal.category || "");
+  const [linkType, setLinkType] = useState<DealLinkType>((deal.linkType as DealLinkType) || "product");
   const [expiresAt, setExpiresAt] = useState(toDateInputValue(deal.expiresAt));
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -77,6 +80,7 @@ function EditDealModal({ deal, onSave, onClose }: {
         fd.append("salePrice", salePrice);
         fd.append("discountPercent", discountPercent);
         fd.append("category", category);
+        fd.append("linkType", linkType);
         if (expiresAt) fd.append("expiresAt", new Date(expiresAt).toISOString());
         fd.append("image", imageFile);
         // Gửi qua PATCH endpoint cần hỗ trợ FormData — ta dùng API khác
@@ -95,6 +99,7 @@ function EditDealModal({ deal, onSave, onClose }: {
             salePrice: salePrice ? parseFloat(salePrice) : null,
             discountPercent: discountPercent ? parseInt(discountPercent) : null,
             category: category || null,
+            linkType,
             expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
           }),
         });
@@ -108,6 +113,7 @@ function EditDealModal({ deal, onSave, onClose }: {
           salePrice: salePrice ? parseFloat(salePrice) : null,
           discountPercent: discountPercent ? parseInt(discountPercent) : null,
           category: category || null,
+          linkType,
           expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
         });
       }
@@ -214,6 +220,30 @@ function EditDealModal({ deal, onSave, onClose }: {
             <div className="flex flex-col gap-xs">
               <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">% Giảm</label>
               <TextInput type="number" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)} className="bg-gray-50" placeholder="50" />
+            </div>
+          </div>
+
+          {/* Loại deal */}
+          <div className="flex flex-col gap-xs">
+            <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">Loại deal</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-sm">
+              {DEAL_LINK_TYPES.map((t) => (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setLinkType(t.value)}
+                  className={`rounded-2xl border-2 p-md text-left transition-all ${
+                    linkType === t.value
+                      ? "border-[#e86a33] bg-orange-50"
+                      : "border-gray-100 bg-gray-50 hover:border-gray-200"
+                  }`}
+                >
+                  <div className={`text-[13px] font-bold ${linkType === t.value ? "text-[#e86a33]" : "text-gray-700"}`}>
+                    {t.value === "product" ? "🎯" : "🏬"} {t.label}
+                  </div>
+                  <div className="text-[11px] text-gray-500 mt-1 leading-relaxed">{t.description}</div>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -361,6 +391,11 @@ export function AdminDealList({ initialDeals, totalPages, currentPage }: { initi
                       <div className="min-w-0">
                         <div className="font-bold text-gray-900 truncate max-w-[280px]">{deal.title}</div>
                         <div className="flex items-center gap-xs mt-1 flex-wrap">
+                          <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold ${
+                            deal.linkType === "shop" ? "bg-purple-50 text-purple-600" : "bg-emerald-50 text-emerald-600"
+                          }`}>
+                            {deal.linkType === "shop" ? "🏬 Cả Shop" : "🎯 Sản phẩm"}
+                          </span>
                           {deal.discountPercent && (
                             <span className="inline-flex items-center rounded-md bg-red-50 px-1.5 py-0.5 text-[11px] font-bold text-red-600">
                               -{deal.discountPercent}%

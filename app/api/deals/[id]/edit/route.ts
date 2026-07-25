@@ -17,6 +17,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const salePrice = formData.get("salePrice") as string | null;
   const discountPercent = formData.get("discountPercent") as string | null;
   const category = formData.get("category") as string | null;
+  const linkType = formData.get("linkType") as string | null;
   const expiresAt = formData.get("expiresAt") as string | null;
   const imageFile = formData.get("image") as File | null;
 
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       salePrice: salePrice ? parseFloat(salePrice) : null,
       discountPercent: discountPercent ? parseInt(discountPercent) : null,
       category: category || null,
+      ...(linkType ? { linkType } : {}),
       expiresAt: expiresAt ? new Date(expiresAt) : null,
       ...(uploadedImageUrl ? { uploadedImageUrl } : {}),
     },

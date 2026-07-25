@@ -49,6 +49,7 @@ export default async function AdminDealsPage({ searchParams }: { searchParams: {
     salePrice: d.salePrice ? Number(d.salePrice) : null,
     discountPercent: d.discountPercent,
     category: d.category,
+    linkType: d.linkType,
     expiresAt: d.expiresAt ? d.expiresAt.toISOString() : null,
     uploadedImageUrl: d.uploadedImageUrl,
     shopeeImageUrl: d.shopeeImageUrl,

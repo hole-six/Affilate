@@ -5,7 +5,7 @@ import { Flame } from "lucide-react";
 import { DealGrid } from "@/components/customer/DealGrid";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 
-export default async function CustomerDealsPage({ searchParams }: { searchParams: { q?: string; page?: string; platform?: string; category?: string; sort?: string } }) {
+export default async function CustomerDealsPage({ searchParams }: { searchParams: { q?: string; page?: string; platform?: string; category?: string; sort?: string; linkType?: string } }) {
   const session = await getSession();
   if (!session) redirect("/login");
 
@@ -15,14 +15,17 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
   const q = searchParams.q || "";
   const platform = searchParams.platform || "";
   const category = searchParams.category || "";
+  const linkType = searchParams.linkType || "";
   const sort = searchParams.sort || "newest";
 
-  const where: any = {
+  const activeNotExpired = {
     status: "active",
     AND: [{ OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }],
   };
+  const where: any = { ...activeNotExpired, AND: [...activeNotExpired.AND] };
   if (platform) where.platformCode = platform;
   if (category) where.category = category;
+  if (linkType) where.linkType = linkType;
   if (q) {
     where.AND.push({ OR: [{ title: { contains: q } }, { description: { contains: q } }] });
   }
@@ -32,9 +35,11 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
     : sort === "clicks" ? { clicks: "desc" as const }
     : { createdAt: "desc" as const };
 
-  const [totalCount, activeDealsCount, deals] = await Promise.all([
+  const [totalCount, activeDealsCount, productTypeCount, shopTypeCount, deals] = await Promise.all([
     prisma.dealPost.count({ where }),
     prisma.dealPost.count({ where: { status: "active" } }),
+    prisma.dealPost.count({ where: { ...activeNotExpired, linkType: "product" } }),
+    prisma.dealPost.count({ where: { ...activeNotExpired, linkType: "shop" } }),
     prisma.dealPost.findMany({
       where,
       orderBy,
@@ -51,6 +56,7 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
     salePrice: d.salePrice ? Number(d.salePrice) : null,
     discountPercent: d.discountPercent,
     category: d.category,
+    linkType: d.linkType,
     expiresAt: d.expiresAt ? d.expiresAt.toISOString() : null,
     imageUrl: d.uploadedImageUrl || d.shopeeImageUrl || null,
     shortUrl: d.shortUrl,
@@ -114,6 +120,8 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
         totalPages={totalPages}
         currentPage={page}
         hasQuery={Boolean(q || platform || category)}
+        linkTypeCounts={{ product: productTypeCount, shop: shopTypeCount }}
+        refundsHref="/app/refunds"
       />
     </div>
   );

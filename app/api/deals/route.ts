@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
   const platformCode = (formData.get("platformCode") as string) || "SHOPEE";
   const tags = formData.get("tags") as string | null;
   const category = formData.get("category") as string | null;
+  const linkType = (formData.get("linkType") as string) || "product";
   const expiresAt = formData.get("expiresAt") as string | null;
   const imageFile = formData.get("image") as File | null;
 
@@ -76,6 +77,7 @@ export async function POST(req: NextRequest) {
       platformCode,
       tags: tags || null,
       category: category || null,
+      linkType,
       expiresAt: expiresAt ? new Date(expiresAt) : null,
       status: "active",
       createdByUserId: session.userId,
