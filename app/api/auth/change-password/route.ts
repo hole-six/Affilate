@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   void sendMail({
     to: user.email,
-    subject: "Mật khẩu của bạn đã được thay đổi",
+    subject: "Mật khẩu của bạn đã được thay đổi - iviback Hoàn Tiền",
     html: buildPasswordChangedEmail({ fullName: user.fullName }),
   });
 

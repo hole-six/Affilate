@@ -67,8 +67,10 @@ function emailShell(bodyHtml: string): string {
       <td align="center">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background:#ffffff;border-radius:24px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
           <tr>
-            <td style="background:linear-gradient(135deg,#fff3ee 0%,#fde8d8 50%,#ffecd2 100%);padding:32px 32px 24px;text-align:center;">
-              <div style="font-size:15px;font-weight:800;color:${BRAND_COLOR};letter-spacing:0.5px;text-transform:uppercase;">iviback Hoàn Tiền</div>
+            <td style="background:linear-gradient(135deg,#fff3ee 0%,#fde8d8 50%,#ffecd2 100%);padding:40px 32px 32px;text-align:center;border-bottom:1px solid rgba(232,106,51,0.12);">
+              <div style="font-size:40px;line-height:1;margin:0 0 10px;">🐷</div>
+              <div style="font-size:28px;font-weight:900;color:${BRAND_COLOR};letter-spacing:0.2px;">iviback Hoàn Tiền</div>
+              <div style="font-size:12px;font-weight:700;color:#a0816a;text-transform:uppercase;letter-spacing:1.2px;margin-top:6px;">Mua sắm thông minh · Nhận tiền tự động</div>
             </td>
           </tr>
           <tr>
@@ -77,8 +79,9 @@ function emailShell(bodyHtml: string): string {
             </td>
           </tr>
           <tr>
-            <td style="padding:20px 32px;background:#faf8f6;text-align:center;">
-              <div style="font-size:12px;color:#a0816a;">Đây là email tự động, vui lòng không trả lời trực tiếp email này.</div>
+            <td style="padding:24px 32px;background:#faf8f6;text-align:center;border-top:1px solid rgba(0,0,0,0.04);">
+              <div style="font-size:13px;font-weight:800;color:${BRAND_COLOR};margin-bottom:6px;">iviback.vn</div>
+              <div style="font-size:12px;color:#a0816a;line-height:1.6;">Đây là email tự động, vui lòng không trả lời trực tiếp email này.</div>
             </td>
           </tr>
         </table>
