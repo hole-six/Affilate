@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { createTrackingLink } from "@/lib/trackingLinkService";
+import { getOrCreatePersonalDealLink } from "@/lib/dealPersonalization";
 
 export async function GET(_: NextRequest, { params }: { params: { shortCode: string } }) {
   // 1. Thử tìm trong TrackingLink trước
@@ -30,59 +30,24 @@ export async function GET(_: NextRequest, { params }: { params: { shortCode: str
       return new NextResponse("Deal không còn hoạt động", { status: 404 });
     }
 
-    // ============================================================
-    // Nếu khách ĐÃ ĐĂNG NHẬP bấm vào deal — bắt buộc map đúng link cá
-    // nhân của CHÍNH KHÁCH ĐÓ (không map vào SYSTEM nữa), để hoa hồng
-    // tính đúng cho họ y hệt như tự tay tạo link ở mục "Tạo link hoàn
-    // tiền". Tái dùng link cá nhân đã có (nếu khách từng bấm deal này
-    // rồi) để tránh sinh trùng lặp mỗi lần bấm lại.
-    //
-    // MỌI nhánh rơi về SYSTEM dù khách ĐÃ đăng nhập đều PHẢI log rõ lý
-    // do (console.error, xem được qua `pm2 logs`) — trước đây các lỗi
-    // này bị nuốt im lặng (catch rỗng / if-platform không log), khiến
-    // không ai biết khi nào cơ chế cá nhân hoá thất bại thật sự.
-    // ============================================================
+    // Nếu khách ĐÃ ĐĂNG NHẬP bấm vào deal — bắt buộc map đúng link cá nhân
+    // của CHÍNH KHÁCH ĐÓ (không map vào SYSTEM nữa), để hoa hồng tính đúng
+    // cho họ y hệt như tự tay tạo link ở mục "Tạo link hoàn tiền".
     const session = await getSession();
     if (session?.customerId) {
-      try {
-        let personalLink = await prisma.trackingLink.findFirst({
-          where: { customerId: session.customerId, normalizedUrl: deal.cleanLink },
-          orderBy: { createdAt: "desc" },
+      const personalLink = await getOrCreatePersonalDealLink({
+        customerId: session.customerId,
+        deal: { id: deal.id, cleanLink: deal.cleanLink, platformCode: deal.platformCode },
+        channelSource: "web",
+      });
+
+      if (personalLink) {
+        await prisma.trackingLink.update({
+          where: { id: personalLink.id },
+          data: { clicks: { increment: 1 }, lastClickedAt: new Date() },
         });
-
-        if (!personalLink) {
-          const platform = await prisma.platform.findFirst({ where: { code: deal.platformCode } });
-          if (!platform) {
-            console.error(
-              `[DEAL_PERSONALIZE_FALLBACK] customerId=${session.customerId} dealId=${deal.id} reason=platform_not_found platformCode=${deal.platformCode}`
-            );
-          } else {
-            const result = await createTrackingLink({
-              originalUrl: deal.cleanLink,
-              platformId: platform.id,
-              customerId: session.customerId,
-              channelSource: "web",
-            });
-            personalLink = result.link;
-          }
-        }
-
-        if (personalLink) {
-          await prisma.trackingLink.update({
-            where: { id: personalLink.id },
-            data: { clicks: { increment: 1 }, lastClickedAt: new Date() },
-          });
-          prisma.dealPost.update({ where: { id: deal.id }, data: { clicks: { increment: 1 } } }).catch(() => {});
-          return NextResponse.redirect(personalLink.affiliateUrl, { status: 302 });
-        }
-      } catch (err) {
-        // Tạo link cá nhân thất bại (vd thiếu SHOPEE_AFFILIATE_ID, lỗi DB
-        // tạm thời) — rơi xuống dùng link chung bên dưới, không chặn khách
-        // mua hàng, nhưng PHẢI log lại để biết mà xử lý, không được im lặng.
-        console.error(
-          `[DEAL_PERSONALIZE_FALLBACK] customerId=${session.customerId} dealId=${deal.id} reason=exception`,
-          err
-        );
+        prisma.dealPost.update({ where: { id: deal.id }, data: { clicks: { increment: 1 } } }).catch(() => {});
+        return NextResponse.redirect(personalLink.affiliateUrl, { status: 302 });
       }
     }
 

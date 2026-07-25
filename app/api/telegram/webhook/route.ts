@@ -22,6 +22,7 @@ import {
   sendTelegramTextMessage,
 } from "@/lib/telegramBot";
 import { createTrackingLink } from "@/lib/trackingLinkService";
+import { getOrCreatePersonalDealLink } from "@/lib/dealPersonalization";
 import { generateCustomerCode } from "@/lib/customerCode";
 
 export async function GET(req: NextRequest) {
@@ -233,13 +234,33 @@ export async function POST(req: NextRequest) {
       take: 5,
     });
 
-    replyText = buildDealsListMessage(
-      deals.map((d) => ({
+    // Mỗi deal gửi qua Telegram PHẢI map vào link cá nhân của đúng khách
+    // này (không phải link chung của deal gán vào SYSTEM) — trước đây
+    // luôn gửi d.shortUrl tĩnh, khiến 100% deal bấm qua Telegram bị tính
+    // nhầm hoa hồng vào khách hệ thống thay vì người thật đã bấm.
+    //
+    // Chạy TUẦN TỰ (không Promise.all) — sinh trackingCode dựa trên số thứ
+    // tự trong ngày của khách, chạy song song nhiều deal cùng lúc cho CÙNG
+    // 1 khách khiến nhiều request đọc cùng "số thứ tự kế tiếp" trước khi
+    // request nào commit xong, gây lỗi trùng trackingCode (unique
+    // constraint) — đã bắt được lỗi này ngay trong lần test đầu tiên nhờ
+    // log DEAL_PERSONALIZE_FALLBACK mới thêm.
+    const dealsWithPersonalLinks: { title: string; discountPercent: number | null; url: string | null }[] = [];
+    for (const d of deals) {
+      const personalLink = await getOrCreatePersonalDealLink({
+        customerId: customer.id,
+        deal: { id: d.id, cleanLink: d.cleanLink, platformCode: d.platformCode },
+        channelSource: "telegram",
+      });
+
+      dealsWithPersonalLinks.push({
         title: d.title,
         discountPercent: d.discountPercent,
-        url: d.shortUrl ?? d.affiliateUrl,
-      }))
-    );
+        url: personalLink?.shortUrl ?? d.shortUrl ?? d.affiliateUrl,
+      });
+    }
+
+    replyText = buildDealsListMessage(dealsWithPersonalLinks);
     processingStatus = "processed_deals";
   } else if (!originalUrl) {
     replyText = buildTelegramHelpMessage();
