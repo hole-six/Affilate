@@ -552,6 +552,8 @@ model DealPost {
   discountPercent Int?     @map("discount_percent")
   tags            String?  // JSON array of tags
   platformCode    String   @default("SHOPEE") @map("platform_code")
+  category        String?  // Thời trang | Mỹ phẩm | Thực phẩm | Mẹ & Bé | Gia dụng | Điện tử | Khác
+  expiresAt       DateTime? @map("expires_at")
 
   // Links
   rawInputLink    String   @map("raw_input_link")   // Link bẩn admin dán vào

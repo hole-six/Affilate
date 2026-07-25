@@ -37,6 +37,8 @@ export async function POST(req: NextRequest) {
   const shopeeImageUrl = formData.get("shopeeImageUrl") as string | null;
   const platformCode = (formData.get("platformCode") as string) || "SHOPEE";
   const tags = formData.get("tags") as string | null;
+  const category = formData.get("category") as string | null;
+  const expiresAt = formData.get("expiresAt") as string | null;
   const imageFile = formData.get("image") as File | null;
 
   // Dùng shortCode pre-generated từ bước resolve (client đã giữ sẵn)
@@ -73,6 +75,8 @@ export async function POST(req: NextRequest) {
       shopeeImageUrl: shopeeImageUrl || null,
       platformCode,
       tags: tags || null,
+      category: category || null,
+      expiresAt: expiresAt ? new Date(expiresAt) : null,
       status: "active",
       createdByUserId: session.userId,
     },

@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
+import { DEAL_CATEGORIES } from "@/lib/dealCategories";
 
 type ResolveResult = {
   rawInputLink: string;
@@ -39,6 +40,8 @@ export function CreateDealForm() {
   const [originalPrice, setOriginalPrice] = useState("");
   const [salePrice, setSalePrice] = useState("");
   const [discountPercent, setDiscountPercent] = useState("");
+  const [category, setCategory] = useState("");
+  const [expiresAt, setExpiresAt] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -95,6 +98,8 @@ export function CreateDealForm() {
     fd.append("shortUrl", resolved.shortUrl);
     fd.append("shopeeImageUrl", resolved.shopeeImageUrl || "");
     fd.append("platformCode", "SHOPEE");
+    if (category) fd.append("category", category);
+    if (expiresAt) fd.append("expiresAt", new Date(expiresAt).toISOString());
     if (imageFile) fd.append("image", imageFile);
 
     const res = await fetch("/api/deals", { method: "POST", body: fd });
@@ -120,6 +125,8 @@ export function CreateDealForm() {
     setOriginalPrice("");
     setSalePrice("");
     setDiscountPercent("");
+    setCategory("");
+    setExpiresAt("");
     setImageFile(null);
     setImagePreview(null);
     setCreatedShortUrl(null);
@@ -402,6 +409,32 @@ export function CreateDealForm() {
                       value={discountPercent}
                       onChange={(e) => setDiscountPercent(e.target.value)}
                       className="bg-gray-50"
+                    />
+                  </div>
+                </div>
+
+                {/* Category + Expiry */}
+                <div className="grid grid-cols-2 gap-md">
+                  <div className="flex flex-col gap-xs">
+                    <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">Danh mục (tuỳ chọn)</label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="h-11 w-full rounded-2xl bg-gray-50 px-md text-[14px] font-medium text-gray-900 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#e86a33]/50 transition-all"
+                    >
+                      <option value="">— Không chọn —</option>
+                      {DEAL_CATEGORIES.map((c) => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-xs">
+                    <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">Ngày hết hạn (tuỳ chọn)</label>
+                    <input
+                      type="date"
+                      value={expiresAt}
+                      onChange={(e) => setExpiresAt(e.target.value)}
+                      className="h-11 w-full rounded-2xl bg-gray-50 px-md text-[14px] font-medium text-gray-900 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#e86a33]/50 transition-all"
                     />
                   </div>
                 </div>

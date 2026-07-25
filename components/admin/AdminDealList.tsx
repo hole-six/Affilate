@@ -9,6 +9,7 @@ import { useModal } from "@/components/ui/ModalProvider";
 import { useRouter } from "next/navigation";
 import { Pagination } from "@/components/ui/Pagination";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
+import { DEAL_CATEGORIES } from "@/lib/dealCategories";
 
 type Deal = {
   id: string;
@@ -17,6 +18,8 @@ type Deal = {
   originalPrice: number | null;
   salePrice: number | null;
   discountPercent: number | null;
+  category: string | null;
+  expiresAt: string | null;
   uploadedImageUrl: string | null;
   shopeeImageUrl: string | null;
   affiliateUrl: string;
@@ -25,6 +28,11 @@ type Deal = {
   clicks: number;
   createdAt: string;
 };
+
+function toDateInputValue(iso: string | null): string {
+  if (!iso) return "";
+  return iso.slice(0, 10);
+}
 
 function EditDealModal({ deal, onSave, onClose }: {
   deal: Deal;
@@ -36,6 +44,8 @@ function EditDealModal({ deal, onSave, onClose }: {
   const [originalPrice, setOriginalPrice] = useState(deal.originalPrice?.toString() || "");
   const [salePrice, setSalePrice] = useState(deal.salePrice?.toString() || "");
   const [discountPercent, setDiscountPercent] = useState(deal.discountPercent?.toString() || "");
+  const [category, setCategory] = useState(deal.category || "");
+  const [expiresAt, setExpiresAt] = useState(toDateInputValue(deal.expiresAt));
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -66,6 +76,8 @@ function EditDealModal({ deal, onSave, onClose }: {
         fd.append("originalPrice", originalPrice);
         fd.append("salePrice", salePrice);
         fd.append("discountPercent", discountPercent);
+        fd.append("category", category);
+        if (expiresAt) fd.append("expiresAt", new Date(expiresAt).toISOString());
         fd.append("image", imageFile);
         // Gửi qua PATCH endpoint cần hỗ trợ FormData — ta dùng API khác
         const res = await fetch(`/api/deals/${deal.id}/edit`, { method: "POST", body: fd });
@@ -82,6 +94,8 @@ function EditDealModal({ deal, onSave, onClose }: {
             originalPrice: originalPrice ? parseFloat(originalPrice) : null,
             salePrice: salePrice ? parseFloat(salePrice) : null,
             discountPercent: discountPercent ? parseInt(discountPercent) : null,
+            category: category || null,
+            expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
           }),
         });
         if (!res.ok) throw new Error("Lỗi cập nhật");
@@ -93,6 +107,8 @@ function EditDealModal({ deal, onSave, onClose }: {
           originalPrice: originalPrice ? parseFloat(originalPrice) : null,
           salePrice: salePrice ? parseFloat(salePrice) : null,
           discountPercent: discountPercent ? parseInt(discountPercent) : null,
+          category: category || null,
+          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
         });
       }
       onClose();
@@ -198,6 +214,32 @@ function EditDealModal({ deal, onSave, onClose }: {
             <div className="flex flex-col gap-xs">
               <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">% Giảm</label>
               <TextInput type="number" value={discountPercent} onChange={(e) => setDiscountPercent(e.target.value)} className="bg-gray-50" placeholder="50" />
+            </div>
+          </div>
+
+          {/* Category + Expiry */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-md">
+            <div className="flex flex-col gap-xs">
+              <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">Danh mục</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="h-11 w-full rounded-2xl bg-gray-50 px-md text-[14px] font-medium text-gray-900 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#e86a33]/50 transition-all"
+              >
+                <option value="">— Không chọn —</option>
+                {DEAL_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-xs">
+              <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">Ngày hết hạn</label>
+              <input
+                type="date"
+                value={expiresAt}
+                onChange={(e) => setExpiresAt(e.target.value)}
+                className="h-11 w-full rounded-2xl bg-gray-50 px-md text-[14px] font-medium text-gray-900 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#e86a33]/50 transition-all"
+              />
             </div>
           </div>
 
@@ -322,6 +364,16 @@ export function AdminDealList({ initialDeals, totalPages, currentPage }: { initi
                           {deal.discountPercent && (
                             <span className="inline-flex items-center rounded-md bg-red-50 px-1.5 py-0.5 text-[11px] font-bold text-red-600">
                               -{deal.discountPercent}%
+                            </span>
+                          )}
+                          {deal.category && (
+                            <span className="inline-flex items-center rounded-md bg-sky-50 px-1.5 py-0.5 text-[11px] font-bold text-sky-600">
+                              {deal.category}
+                            </span>
+                          )}
+                          {deal.expiresAt && (
+                            <span className="inline-flex items-center rounded-md bg-amber-50 px-1.5 py-0.5 text-[11px] font-bold text-amber-600">
+                              HH: {new Date(deal.expiresAt).toLocaleDateString("vi-VN")}
                             </span>
                           )}
                           {deal.shortUrl && (

@@ -5,7 +5,7 @@ import { Flame } from "lucide-react";
 import { DealGrid } from "@/components/customer/DealGrid";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 
-export default async function CustomerDealsPage({ searchParams }: { searchParams: { q?: string; page?: string } }) {
+export default async function CustomerDealsPage({ searchParams }: { searchParams: { q?: string; page?: string; platform?: string; category?: string; sort?: string } }) {
   const session = await getSession();
   if (!session) redirect("/login");
 
@@ -13,21 +13,31 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
   const limit = 10;
   const skip = (page - 1) * limit;
   const q = searchParams.q || "";
+  const platform = searchParams.platform || "";
+  const category = searchParams.category || "";
+  const sort = searchParams.sort || "newest";
 
-  const where: any = { status: "active" };
+  const where: any = {
+    status: "active",
+    AND: [{ OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] }],
+  };
+  if (platform) where.platformCode = platform;
+  if (category) where.category = category;
   if (q) {
-    where.OR = [
-      { title: { contains: q } },
-      { description: { contains: q } },
-    ];
+    where.AND.push({ OR: [{ title: { contains: q } }, { description: { contains: q } }] });
   }
+
+  const orderBy =
+    sort === "discount" ? { discountPercent: "desc" as const }
+    : sort === "clicks" ? { clicks: "desc" as const }
+    : { createdAt: "desc" as const };
 
   const [totalCount, activeDealsCount, deals] = await Promise.all([
     prisma.dealPost.count({ where }),
     prisma.dealPost.count({ where: { status: "active" } }),
     prisma.dealPost.findMany({
       where,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip,
       take: limit,
     })
@@ -40,6 +50,8 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
     originalPrice: d.originalPrice ? Number(d.originalPrice) : null,
     salePrice: d.salePrice ? Number(d.salePrice) : null,
     discountPercent: d.discountPercent,
+    category: d.category,
+    expiresAt: d.expiresAt ? d.expiresAt.toISOString() : null,
     imageUrl: d.uploadedImageUrl || d.shopeeImageUrl || null,
     shortUrl: d.shortUrl,
     clicks: d.clicks,
@@ -97,15 +109,12 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
         <ServerSearchInput placeholder="Tìm kiếm deal giảm giá..." />
       </div>
 
-      {formattedDeals.length === 0 ? (
-        <div className="flex flex-col items-center py-3xl text-center">
-          <div className="text-6xl mb-lg">🛒</div>
-          <p className="text-[16px] font-bold text-gray-400">Không tìm thấy deal nào</p>
-          <p className="text-[13px] text-gray-300 mt-xs">Thử tìm kiếm với từ khoá khác xem sao!</p>
-        </div>
-      ) : (
-        <DealGrid deals={formattedDeals} totalPages={totalPages} currentPage={page} />
-      )}
+      <DealGrid
+        deals={formattedDeals}
+        totalPages={totalPages}
+        currentPage={page}
+        hasQuery={Boolean(q || platform || category)}
+      />
     </div>
   );
 }
