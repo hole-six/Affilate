@@ -5,6 +5,7 @@ import { Sidebar, NavSection } from "@/components/layout/Sidebar";
 import { FloatingQuickAccess } from "@/components/customer/FloatingQuickAccess";
 import { MobileBottomNav } from "@/components/customer/MobileBottomNav";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallPrompt";
+import { PendingLinkClaimer } from "@/components/customer/PendingLinkClaimer";
 import { Home, RotateCcw, Gift, Wallet, ShoppingBag, Send, BookOpen, Settings, UserPlus, HelpCircle } from "lucide-react";
 
 const sections: NavSection[] = [
@@ -93,6 +94,7 @@ export default async function CustomerAppLayout({ children }: { children: React.
 
       <FloatingQuickAccess unreadCount={unreadCount} />
       <MobileBottomNav />
+      <PendingLinkClaimer />
     </div>
   );
 }

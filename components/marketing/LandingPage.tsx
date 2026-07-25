@@ -19,6 +19,7 @@ import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PublicFloatingSupport } from "@/components/marketing/PublicFloatingSupport";
 import { SocialProofSection } from "@/components/marketing/SocialProofSection";
+import { DemoConvertLink } from "@/components/marketing/DemoConvertLink";
 
 const PIG_FEATURES = [
   {
@@ -167,6 +168,11 @@ export function LandingPage({ totalPaidOut, totalCustomers }: { totalPaidOut: nu
                 <a href="#how-it-works" className="bg-white hover:bg-primary-pale text-primary px-2xl py-lg rounded-2xl font-bold text-[16px] flex items-center justify-center gap-sm transition-all border border-primary/20 shadow-sm">
                   Cách hoạt động
                 </a>
+              </div>
+
+              {/* Dùng thử ngay — dán link xem trước, không cần đăng nhập */}
+              <div className="pt-md">
+                <DemoConvertLink />
               </div>
             </div>
 

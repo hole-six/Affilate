@@ -34,15 +34,31 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { originalUrl, platformId, channelSource = "web", productPrice } = body as {
+  const { originalUrl, platformId: bodyPlatformId, platformCode, channelSource = "web", productPrice } = body as {
     originalUrl?: string;
     platformId?: string;
+    platformCode?: string;
     channelSource?: "web" | "zalo" | "telegram";
     productPrice?: number;
   };
 
-  if (!originalUrl || !platformId) {
+  if (!originalUrl || (!bodyPlatformId && !platformCode)) {
     return NextResponse.json({ error: "Thieu link goc hoac nen tang" }, { status: 400 });
+  }
+
+  // Cho phép truyền platformCode ("SHOPEE"/"TIKTOK") thay vì platformId nội
+  // bộ — dùng khi tạo link demo tự động sau đăng ký, lúc đó client chỉ biết
+  // mã sàn đã phát hiện từ bước xem trước, không có platformId.
+  let platformId = bodyPlatformId;
+  if (!platformId && platformCode) {
+    const platform = await prisma.platform.findUnique({ where: { code: platformCode } });
+    if (!platform) {
+      return NextResponse.json({ error: "Nen tang khong hop le" }, { status: 400 });
+    }
+    platformId = platform.id;
+  }
+  if (!platformId) {
+    return NextResponse.json({ error: "Thieu nen tang" }, { status: 400 });
   }
 
   const customerId = session.role === "customer" ? session.customerId : body.customerId;
