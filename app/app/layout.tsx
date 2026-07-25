@@ -5,7 +5,7 @@ import { Sidebar, NavSection } from "@/components/layout/Sidebar";
 import { FloatingQuickAccess } from "@/components/customer/FloatingQuickAccess";
 import { MobileBottomNav } from "@/components/customer/MobileBottomNav";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallPrompt";
-import { Home, RotateCcw, Gift, Wallet, ShoppingBag, Send, BookOpen, Settings, UserPlus } from "lucide-react";
+import { Home, RotateCcw, Gift, Wallet, ShoppingBag, Send, BookOpen, Settings, UserPlus, HelpCircle } from "lucide-react";
 
 const sections: NavSection[] = [
   {
@@ -30,6 +30,7 @@ const sections: NavSection[] = [
     title: "Hỗ trợ",
     items: [
       { href: "/app/guide", label: "Hướng dẫn", icon: <BookOpen size={20} strokeWidth={2.25} /> },
+      { href: "/app/faq", label: "FAQ", icon: <HelpCircle size={20} strokeWidth={2.25} /> },
     ],
   },
 ];

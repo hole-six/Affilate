@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
+import { FAQ_ITEMS } from "@/lib/faqData";
 
 export const metadata: Metadata = {
   title: "Câu Hỏi Thường Gặp (FAQ) — iviback",
@@ -16,32 +17,6 @@ export const metadata: Metadata = {
     siteName: "iviback",
   },
 };
-
-const FAQ_ITEMS = [
-  {
-    question: "Hệ thống hoạt động như thế nào?",
-    answer:
-      "Khi bạn mua hàng qua link hoàn tiền của hệ thống, sàn thương mại điện tử sẽ trả một khoản hoa hồng affiliate. Chúng tôi chia lại phần lớn khoản này cho bạn dưới dạng tiền hoàn vào ví.",
-  },
-  {
-    question: "Rút tiền tối thiểu bao nhiêu?",
-    answer:
-      "Mức rút tối thiểu là 10.000đ. Bạn có thể nhận về tài khoản ngân hàng sau khi đơn hàng được duyệt.",
-  },
-  {
-    question: "Có mất phí sử dụng không?",
-    answer: "Hoàn toàn miễn phí — không thu phí đăng ký, tạo link hay rút tiền.",
-  },
-  {
-    question: "Hệ thống hỗ trợ những sàn nào?",
-    answer: "Hiện tại hỗ trợ Shopee và TikTok Shop. Các sàn khác sẽ được bổ sung trong thời gian tới.",
-  },
-  {
-    question: "Tôi có thể dùng Telegram thay vì vào web không?",
-    answer:
-      "Có. Liên kết tài khoản Telegram trong mục Cá nhân, sau đó gửi link sản phẩm thẳng vào bot — bot tự đổi link và báo khi đơn được duyệt.",
-  },
-];
 
 const faqJsonLd = {
   "@context": "https://schema.org",

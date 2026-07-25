@@ -1,0 +1,131 @@
+export type FaqItem = { question: string; answer: string; group: string };
+
+export const FAQ_GROUPS = [
+  "Về cách hoạt động",
+  "Về tiền hoàn",
+  "Về lý do link không ghi nhận",
+  "Về mời bạn bè",
+  "Các tình huống khác",
+] as const;
+
+export const FAQ_ITEMS: FaqItem[] = [
+  // Về cách hoạt động
+  {
+    group: "Về cách hoạt động",
+    question: "iviback hoạt động như thế nào?",
+    answer:
+      "Khi bạn mua hàng qua link iviback, Shopee và TikTok Shop trả hoa hồng affiliate cho chúng tôi. iviback chia lại phần lớn khoản này vào ví của bạn dưới dạng tiền mặt — hoàn toàn tự động, không cần làm thêm gì.",
+  },
+  {
+    group: "Về cách hoạt động",
+    question: "iviback có lấy phí không?",
+    answer: "Hoàn toàn miễn phí. Không phí đăng ký, không phí tạo link, không phí rút tiền.",
+  },
+  {
+    group: "Về cách hoạt động",
+    question: "Tôi có thể dùng iviback kết hợp với voucher Shopee, mã freeship, Shopee Xu không?",
+    answer:
+      "Được. Hoàn tiền iviback tính độc lập — bạn vẫn áp đầy đủ voucher, mã giảm giá, Shopee Xu như bình thường trước khi mua. Hai khoản không ảnh hưởng nhau.",
+  },
+  {
+    group: "Về cách hoạt động",
+    question: "Tôi mua trên app Shopee điện thoại được không?",
+    answer:
+      "Được. Sau khi tạo link trên iviback, bấm vào link đó — hệ thống tự mở app Shopee với mã tracking đã gắn sẵn. Bạn mua bình thường trên app, hoàn tiền tự ghi nhận.",
+  },
+
+  // Về tiền hoàn
+  {
+    group: "Về tiền hoàn",
+    question: "Bao lâu tiền về ví iviback sau khi đơn giao thành công?",
+    answer:
+      "7–15 ngày sau khi đơn được xác nhận hoàn tất. Thời gian này phụ thuộc vào kỳ đối soát của Shopee và TikTok Shop với hệ thống affiliate.",
+  },
+  {
+    group: "Về tiền hoàn",
+    question: "Tỷ lệ hoàn tiền tính trên cái gì?",
+    answer:
+      "Tính trên giá trị đơn hàng thực tế sau khi đã áp voucher và giảm giá. Tỷ lệ khác nhau theo từng danh mục sản phẩm.",
+  },
+  {
+    group: "Về tiền hoàn",
+    question: "Rút tiền tối thiểu bao nhiêu? Về đâu?",
+    answer: "Rút tối thiểu 10.000đ, về thẳng tài khoản ngân hàng. Không có phí rút.",
+  },
+  {
+    group: "Về tiền hoàn",
+    question: "Tôi trả hàng hoặc hoàn đơn thì tiền cashback xử lý thế nào?",
+    answer:
+      "Đơn trả hàng hoặc hoàn tiền sẽ không được ghi nhận hoa hồng. Nếu tiền đã vào ví trước khi bạn trả hàng, hệ thống sẽ trừ lại khoản tương ứng.",
+  },
+  {
+    group: "Về tiền hoàn",
+    question: "Rút tiền mất bao lâu? Về đúng tài khoản nào?",
+    answer:
+      "Sau khi bạn yêu cầu rút, tiền về tài khoản ngân hàng trong vòng 24h. Tiền chuyển về đúng số tài khoản ngân hàng bạn đã liên kết trong phần Cài đặt. Kiểm tra lại thông tin tài khoản trước khi rút để tránh sai số.",
+  },
+
+  // Về lý do link không ghi nhận
+  {
+    group: "Về lý do link không ghi nhận",
+    question: "Tại sao link của tôi không được ghi nhận?",
+    answer:
+      "Có một số nguyên nhân phổ biến: (1) Bạn không bấm vào link iviback trước khi mua — phải bấm link, không copy link rồi tự dán vào Shopee; (2) Sau khi bấm link, bạn thoát ra rồi vào lại Shopee theo cách khác; (3) Điện thoại chặn cookie tracking; (4) Sản phẩm thuộc danh mục không được hỗ trợ hoa hồng; (5) Shop vi phạm chính sách chống gian lận của Shopee.",
+  },
+  {
+    group: "Về lý do link không ghi nhận",
+    question: "Làm sao biết đơn của tôi đã được ghi nhận chưa?",
+    answer:
+      "Vào mục đơn hàng trên iviback.vn → Đơn ghi nhận thành công sẽ hiện trạng thái \"Đang chờ duyệt\" trong vòng 24–48h sau khi mua. Nếu sau 48h không thấy, bạn có thể hủy và đặt lại đơn khác (nếu không gấp) hoặc liên hệ Zalo 0965.965.439 để được hỗ trợ.",
+  },
+  {
+    group: "Về lý do link không ghi nhận",
+    question: "Tôi dùng Bot Telegram có bị ảnh hưởng gì không?",
+    answer:
+      "Không. Bot Telegram và web iviback dùng chung tài khoản — tiền hoàn về cùng một ví, theo dõi được trên cả hai nơi.",
+  },
+
+  // Về mời bạn bè
+  {
+    group: "Về mời bạn bè",
+    question: "Cơ chế 5% mời bạn hoạt động thế nào?",
+    answer:
+      "Khi bạn mời một người dùng mới đăng ký qua link giới thiệu của bạn, bạn nhận thêm 5% trên tiền hoàn của 5 đơn hàng đầu tiên của họ. Người được mời vẫn nhận đủ 100% tiền hoàn của họ — 5% này iviback trả thêm cho bạn, không trừ vào phần của bạn bè.",
+  },
+  {
+    group: "Về mời bạn bè",
+    question: "Tôi lấy link giới thiệu ở đâu?",
+    answer:
+      "Vào dashboard → mục Giới thiệu bạn bè → copy link cá nhân → chia sẻ cho bạn bè. Mỗi tài khoản có một link riêng.",
+  },
+  {
+    group: "Về mời bạn bè",
+    question: "Bạn tôi đăng ký rồi nhưng tôi chưa thấy 5% — sao vậy?",
+    answer:
+      "5% chỉ được ghi nhận sau khi bạn bè hoàn tất đơn hàng đầu tiên và đơn đó được duyệt (7–15 ngày). Nếu họ chưa mua đơn nào, chưa có gì để tính.",
+  },
+
+  // Các tình huống khác
+  {
+    group: "Các tình huống khác",
+    question: "Tôi có thể tạo link cho người khác mua giúp không?",
+    answer:
+      "Được. Link iviback không gắn với tài khoản người mua — chỉ cần người mua bấm đúng link của bạn trước khi thanh toán là hoa hồng về ví bạn.",
+  },
+  {
+    group: "Các tình huống khác",
+    question: "Shopee Flash Sale, deal sốc có được hoàn tiền không?",
+    answer:
+      "Phụ thuộc vào chính sách hoa hồng của Shopee cho từng chương trình. Một số flash sale Shopee loại trừ affiliate — iviback không kiểm soát được điều này. Khuyến nghị tạo link chuyển đổi từ sản phẩm trong Ưu Đãi trước khi mua.",
+  },
+  {
+    group: "Các tình huống khác",
+    question: "Tài khoản iviback có hết hạn không?",
+    answer: "Không. Tài khoản giữ nguyên miễn phí mãi mãi. Số dư trong ví không bị trừ dù bạn không dùng trong thời gian dài.",
+  },
+  {
+    group: "Các tình huống khác",
+    question: "Liên hệ hỗ trợ ở đâu nếu có vấn đề?",
+    answer: "Hotline: 0965.965.439 — hoặc nhắn tin qua Zalo, Facebook, Telegram bot. Phản hồi trong giờ hành chính.",
+  },
+];
