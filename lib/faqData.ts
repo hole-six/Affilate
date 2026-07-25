@@ -80,6 +80,13 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     group: "Về lý do link không ghi nhận",
+    question: "Mua nhiều sản phẩm trong nhiều shop được không?",
+    answer:
+      "Được. Mỗi sản phẩm tạo 1 link → nhấp vào link chuyển đổi và thêm vào giỏ hàng từng sản phẩm → thanh toán 1 lần.\n\n" +
+      "KHÔNG MUA gộp 2 shop cùng lúc.",
+  },
+  {
+    group: "Về lý do link không ghi nhận",
     question: "Làm sao biết đơn của tôi đã được ghi nhận chưa?",
     answer:
       "Vào mục đơn hàng trên iviback.vn → Đơn ghi nhận thành công sẽ hiện trạng thái \"Đang chờ duyệt\" trong vòng 24–48h sau khi mua. Nếu sau 48h không thấy, bạn có thể hủy và đặt lại đơn khác (nếu không gấp) hoặc liên hệ Zalo 0965.965.439 để được hỗ trợ.",
