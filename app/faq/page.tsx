@@ -24,6 +24,16 @@ const FAQ_ITEMS = [
       "Khi bạn mua hàng qua link hoàn tiền của hệ thống, sàn thương mại điện tử sẽ trả một khoản hoa hồng affiliate. Chúng tôi chia lại phần lớn khoản này cho bạn dưới dạng tiền hoàn vào ví.",
   },
   {
+    question: "Mua trên Livestream hoặc Shopee Video có được hoàn tiền không?",
+    answer:
+      "Rất tiếc là KHÔNG bạn nhé. Khi mua qua Livestream hoặc Shopee Video, hoa hồng sẽ được ghi nhận cho người phát Live hoặc người đăng Video — không qua iviback — nên chúng tôi không thể hoàn lại cho bạn. Để nhận hoàn tiền, bạn hãy mua trực tiếp qua link được chuyển đổi từ iviback.vn.",
+  },
+  {
+    question: "Bao lâu thì đơn hàng được ghi nhận?",
+    answer:
+      "Thông thường đơn hàng sẽ xuất hiện trong 24–48 giờ sau khi bạn đặt. Ví dụ: đặt hàng trong ngày 25 → hệ thống ghi nhận vào ngày 26. Bạn vào mục Đơn hàng trên web iviback để theo dõi trạng thái nhé!",
+  },
+  {
     question: "Rút tiền tối thiểu bao nhiêu?",
     answer:
       "Mức rút tối thiểu là 10.000đ. Bạn có thể nhận về tài khoản ngân hàng sau khi đơn hàng được duyệt.",
