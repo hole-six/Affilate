@@ -141,15 +141,15 @@ export function buildConvertLinkPromptMessage(): string {
   return [
     "🔄 <b>Đổi link nhanh</b>",
     "",
-    "Dán link Shopee hoặc TikTok bạn muốn đổi vào ngay khung chat này (chỉ cần gửi link, không cần lệnh gì thêm), bot sẽ trả về link hoàn tiền ngay lập tức.",
+    "Dán link Shopee bạn muốn đổi vào ngay khung chat này (chỉ cần gửi link, không cần lệnh gì thêm), bot sẽ trả về link hoàn tiền ngay lập tức.",
   ].join("\n");
 }
 
 export function buildTelegramHelpMessage(): string {
   return [
-    "👋 <b>Chào mừng đến với bot Hoàn Tiền!</b>",
+    "👋 <b>Chào mừng đến với bot ivi Hoàn Tiền!</b>",
     "",
-    "Gửi link Shopee hoặc TikTok, bot sẽ đổi sang link hoàn tiền ngay lập tức.",
+    "Gửi link Shopee, bot sẽ đổi sang link hoàn tiền ngay lập tức.",
     "",
     "<b>Lệnh nhanh:</b>",
     "💰 /wallet — xem số dư hoàn tiền",
@@ -191,8 +191,17 @@ export function buildLinkExpiredMessage(): string {
 
 export function buildUnsupportedPlatformMessage(rawUrl: string): string {
   return [
-    "🙁 Bot đã nhận link nhưng hiện chỉ hỗ trợ <b>Shopee</b> và <b>TikTok Shop</b>.",
+    "🙁 Bot đã nhận link nhưng hiện chỉ hỗ trợ <b>Shopee</b>.",
     `Link vừa gửi: ${escapeHtml(rawUrl)}`,
+  ].join("\n");
+}
+
+// TikTok Shop tạm thời chỉ đổi được trên website, chưa hỗ trợ qua Telegram —
+// khác với link Shopee vẫn hoạt động bình thường ở cả 2 nơi.
+export function buildTikTokDisabledOnTelegramMessage(): string {
+  return [
+    "🙁 Bot hiện <b>chưa hỗ trợ đổi link TikTok Shop</b> qua Telegram.",
+    "Vui lòng dùng website iviback.vn để đổi link TikTok, hoặc gửi link Shopee vào đây nhé.",
   ].join("\n");
 }
 
@@ -257,7 +266,7 @@ export function buildReferralInfoMessage(params: {
   return [
     "🎁 <b>Mời bạn bè — nhận hoa hồng giới thiệu</b>",
     "",
-    `Mời bạn bè đăng ký bằng link dưới đây, bạn sẽ nhận <b>${params.referralPercent}% hoa hồng</b> từ ${params.maxReferralOrders} đơn hàng đầu tiên của họ (trong vòng ${params.referralValidityMonths} tháng kể từ ngày họ tham gia).`,
+    `Mời bạn bè đăng ký bằng link dưới đây, bạn sẽ nhận <b>${params.referralPercent}% hoa hồng</b> từ ${params.maxReferralOrders} đơn hàng đầu tiên của <b>mỗi người bạn</b> bạn mời — mời càng nhiều bạn, nhận càng nhiều hoa hồng, không giới hạn dồn chung (áp dụng trong vòng ${params.referralValidityMonths} tháng kể từ ngày người đó tham gia).`,
     "",
     `🔗 ${params.inviteUrl}`,
     "",
@@ -320,7 +329,7 @@ export function buildLinksListMessage(
   links: { trackingCode: string; shortUrl: string | null; createdAt: Date }[]
 ): string {
   if (links.length === 0) {
-    return "🔗 Bạn chưa tạo link nào. Gửi link Shopee/TikTok cho bot để bắt đầu đổi link hoàn tiền.";
+    return "🔗 Bạn chưa tạo link nào. Gửi link Shopee cho bot để bắt đầu đổi link hoàn tiền.";
   }
 
   const lines = links.map((l) => `🔗 <a href="${l.shortUrl ?? "#"}">${l.shortUrl ?? l.trackingCode}</a>`);
