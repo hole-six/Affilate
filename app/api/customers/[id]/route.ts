@@ -3,6 +3,42 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
 /**
+ * Số dư khả dụng để admin xem trước trước khi chủ động tạo phiếu rút hộ
+ * khách (không cần khách gửi yêu cầu trước) — cùng công thức unpaid+approved
+ * dùng ở ví khách hàng và /api/withdraw-requests, nhưng tính riêng cho 1
+ * khách theo id thay vì toàn bộ hệ thống.
+ */
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
+  }
+
+  const customer = await prisma.customer.findUnique({
+    where: { id: params.id },
+    select: {
+      id: true,
+      fullName: true,
+      customerCode: true,
+      bankName: true,
+      bankAccountNumber: true,
+      bankAccountName: true,
+    },
+  });
+  if (!customer) {
+    return NextResponse.json({ error: "Không tìm thấy khách hàng" }, { status: 404 });
+  }
+
+  const unpaidOrders = await prisma.order.findMany({
+    where: { customerId: params.id, orderStatus: "approved", payoutStatus: "unpaid" },
+    select: { customerRewardAmount: true },
+  });
+  const available = unpaidOrders.reduce((sum, o) => sum + Number(o.customerRewardAmount), 0);
+
+  return NextResponse.json({ customer, available, orderCount: unpaidOrders.length });
+}
+
+/**
  * Cập nhật cờ Đối tác và/hoặc người giới thiệu của 1 khách hàng.
  * Đối tác (isPartner) là khách được admin gán cho khách khác (qua
  * referredById) để nhận hoa hồng giới thiệu 5% vĩnh viễn, không giới hạn

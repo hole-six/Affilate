@@ -11,11 +11,13 @@ export function CreatePaymentButton({
   customerName,
   amount,
   hasPaymentInfo = true,
+  onSuccess,
 }: {
   customerId: string;
   customerName?: string;
   amount?: number;
   hasPaymentInfo?: boolean;
+  onSuccess?: () => void;
 }) {
   const router = useRouter();
   const modal = useModal();
@@ -60,9 +62,12 @@ export function CreatePaymentButton({
         message: data.error ?? "Đã có lỗi xảy ra, vui lòng thử lại.",
         iconType: "danger",
       });
+      setLoading(false);
+      return;
     }
 
     setLoading(false);
+    onSuccess?.();
     router.refresh();
   }
 
