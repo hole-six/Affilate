@@ -6,6 +6,7 @@ import { Copy, CheckCircle2, Link as LinkIcon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { Select } from "@/components/ui/Select";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Card } from "@/components/ui/Card";
 
 type Option = { id: string; label: string };
@@ -95,11 +96,13 @@ export function QuickLinkForm({
                 <label className="text-[12px] font-bold text-mute uppercase tracking-wide">
                   Khách hàng
                 </label>
-                <Select value={customerId} onChange={(e) => setCustomerId(e.target.value)} className="h-12 bg-canvas-soft">
-                  {customers.map((c) => (
-                    <option key={c.id} value={c.id}>{c.label}</option>
-                  ))}
-                </Select>
+                <SearchableSelect
+                  options={customers}
+                  value={customerId}
+                  onChange={setCustomerId}
+                  placeholder="Tìm tên hoặc mã KH..."
+                  inputClassName="h-12 bg-canvas-soft"
+                />
               </div>
 
               <div className="flex flex-col gap-xs">

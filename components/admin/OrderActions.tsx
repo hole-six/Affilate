@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { CheckCircle, UserPlus, AlertTriangle, XCircle } from "lucide-react";
 
 type Option = { id: string; label: string };
@@ -55,18 +56,15 @@ export function OrderActions({
       {/* Gán khách hàng */}
       {!hasCustomer && (
         <div className="flex items-center gap-xs">
-          <select
-            className="rounded-lg border border-gray-100 bg-canvas px-sm py-[6px] text-[12px] text-gray-900 transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          <SearchableSelect
+            options={customers}
             value={customerId}
-            onChange={(e) => setCustomerId(e.target.value)}
-          >
-            <option value="">Gán khách...</option>
-            {customers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label}
-              </option>
-            ))}
-          </select>
+            onChange={setCustomerId}
+            placeholder="Gán khách (tên/mã)..."
+            size="sm"
+            className="w-[180px]"
+            inputClassName="bg-canvas text-gray-900"
+          />
           <Button
             variant="secondary"
             size="sm"
