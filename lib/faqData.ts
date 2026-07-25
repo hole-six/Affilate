@@ -70,7 +70,13 @@ export const FAQ_ITEMS: FaqItem[] = [
     group: "Về lý do link không ghi nhận",
     question: "Tại sao link của tôi không được ghi nhận?",
     answer:
-      "Có một số nguyên nhân phổ biến: (1) Bạn không bấm vào link iviback trước khi mua — phải bấm link, không copy link rồi tự dán vào Shopee; (2) Sau khi bấm link, bạn thoát ra rồi vào lại Shopee theo cách khác; (3) Điện thoại chặn cookie tracking; (4) Sản phẩm thuộc danh mục không được hỗ trợ hoa hồng; (5) Shop vi phạm chính sách chống gian lận của Shopee.",
+      "Để link được ghi nhận chính xác, bạn cần lưu ý:\n" +
+      "1. Xóa giỏ hàng sản phẩm cần mua trước khi nhấp vào link chuyển đổi.\n" +
+      "2. Không xem video hay live sau khi nhấp vào link chuyển đổi.\n" +
+      "3. Thoát hẳn ứng dụng trước và sau khi đặt đơn.\n" +
+      "4. Mỗi lần chỉ đặt 1 Shop, không đặt nhiều shop khác nhau trong 1 lần thanh toán.\n" +
+      "5. Khi click vào sản phẩm là mua luôn, không click sang sản phẩm khác.\n" +
+      "6. Có những sản phẩm không ghi nhận hoa hồng, vui lòng theo dõi ở Zalo để kiểm tra.",
   },
   {
     group: "Về lý do link không ghi nhận",
