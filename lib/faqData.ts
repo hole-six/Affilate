@@ -29,6 +29,14 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     group: "Về cách hoạt động",
+    question: "Tôi mua sản phẩm trong mục Ưu đãi có được hoàn tiền không?",
+    answer:
+      "Có, nhưng tuỳ loại deal. Mỗi deal trong mục Ưu đãi có 1 trong 2 loại, ghi rõ ngay trên thẻ sản phẩm:\n" +
+      "🎯 Sản phẩm cụ thể — bấm vào là mở đúng sản phẩm đó trên Shopee, mua ngay, hoàn tiền tự động ghi nhận, không cần làm thêm gì.\n" +
+      "🏬 Cả Shop / Bộ sưu tập — deal này giới thiệu cả một shop hoặc nhiều sản phẩm đang giảm giá. Bạn cần chọn đúng sản phẩm mình muốn mua, sau đó vào mục Hoàn tiền dán link sản phẩm đó để tạo link riêng, rồi mới thanh toán — như vậy hoàn tiền mới được ghi nhận chính xác.",
+  },
+  {
+    group: "Về cách hoạt động",
     question: "Tôi mua trên app Shopee điện thoại được không?",
     answer:
       "Được. Sau khi tạo link trên iviback, bấm vào link đó — hệ thống tự mở app Shopee với mã tracking đã gắn sẵn. Bạn mua bình thường trên app, hoàn tiền tự ghi nhận.",
@@ -46,6 +54,12 @@ export const FAQ_ITEMS: FaqItem[] = [
     question: "Tỷ lệ hoàn tiền tính trên cái gì?",
     answer:
       "Tính trên giá trị đơn hàng thực tế sau khi đã áp voucher và giảm giá. Tỷ lệ khác nhau theo từng danh mục sản phẩm.",
+  },
+  {
+    group: "Về tiền hoàn",
+    question: "Đơn hàng của tôi được ghi nhận nhưng lại không có hoa hồng, tại sao?",
+    answer:
+      "Có thể do sản phẩm đó không có hoa hồng affiliate từ Shopee và Shop (không phải sản phẩm nào cũng tham gia chương trình tiếp thị liên kết). Bạn có thể cân nhắc đặt sản phẩm tương tự ở shop khác nhé.",
   },
   {
     group: "Về tiền hoàn",
