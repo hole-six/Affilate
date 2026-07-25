@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { LandingPage } from "@/components/marketing/LandingPage";
 
 export const metadata: Metadata = {
@@ -106,10 +107,22 @@ export default async function RootPage() {
     redirect(session.role === "admin" ? "/admin" : "/app");
   }
 
+  // Social proof thật trên trang chủ — dùng orderStatus: "approved" (tiền
+  // đã về ví khách, hiển thị "💰 Tiền đã về" ở mọi nơi khác trong hệ thống)
+  // chứ KHÔNG dùng payoutStatus: "paid" (đã chuyển khoản ngân hàng thật) —
+  // toàn hệ thống hiện chưa có đơn nào payoutStatus=paid nên dùng field đó
+  // sẽ luôn hiện 0đ, sai lệch với số tiền khách thực sự đã nhận vào ví.
+  const [approvedSumAgg, distinctApprovedCustomers] = await Promise.all([
+    prisma.order.aggregate({ where: { orderStatus: "approved" }, _sum: { customerRewardAmount: true } }),
+    prisma.order.findMany({ where: { orderStatus: "approved" }, distinct: ["customerId"], select: { customerId: true } }),
+  ]);
+  const totalPaidOut = Number(approvedSumAgg._sum.customerRewardAmount ?? 0);
+  const totalCustomers = distinctApprovedCustomers.length;
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <LandingPage />
+      <LandingPage totalPaidOut={totalPaidOut} totalCustomers={totalCustomers} />
     </>
   );
 }

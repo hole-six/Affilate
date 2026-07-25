@@ -18,6 +18,7 @@ import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { PublicFloatingSupport } from "@/components/marketing/PublicFloatingSupport";
+import { SocialProofSection } from "@/components/marketing/SocialProofSection";
 
 const PIG_FEATURES = [
   {
@@ -120,7 +121,7 @@ const FAQ_ITEMS = [
   },
 ];
 
-export function LandingPage() {
+export function LandingPage({ totalPaidOut, totalCustomers }: { totalPaidOut: number; totalCustomers: number }) {
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
       <MarketingHeader activePath="/" />
@@ -293,6 +294,8 @@ export function LandingPage() {
             </div>
           </div>
         </section>
+
+        <SocialProofSection totalPaidOut={totalPaidOut} totalCustomers={totalCustomers} />
 
         {/* Quick Auth Access Section */}
         <section className="py-3xl bg-canvas relative">
