@@ -5,12 +5,14 @@ import {
   Search, Wallet, ClipboardList, CreditCard,
   Copy, Check, X, Eye, Receipt, AlertCircle,
   CheckCircle2, Clock, Image as ImageIcon, ExternalLink,
-  ChevronDown, ChevronUp, ShoppingBag,
+  ChevronDown, ChevronUp, ShoppingBag, UserSearch,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { CreatePaymentButton } from "@/components/admin/CreatePaymentButton";
+import { CreatePaymentForCustomer } from "@/components/admin/CreatePaymentForCustomer";
 import { MarkPaidForm } from "@/components/admin/MarkPaidForm";
+import type { ComboboxOption } from "@/components/ui/SearchableSelect";
 
 type CustomerPending = {
   id: string; name: string; code: string; amount: number; count: number;
@@ -41,6 +43,7 @@ type Props = {
   pendingList: CustomerPending[];
   batches: PaymentBatch[];
   waitingList: CustomerWaiting[];
+  customers: ComboboxOption[];
 };
 
 // ── tiny helpers ──────────────────────────────────────────────────────────────
@@ -266,8 +269,8 @@ function BatchDetailModal({ batchId, onClose }: { batchId: string; onClose: () =
 }
 
 // ── Main Component ────────────────────────────────────────────────────────────
-export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props) {
-  const [activeTab, setActiveTab] = useState<"pending" | "waiting" | "history">("pending");
+export function AdminPaymentsClient({ pendingList, batches, waitingList, customers }: Props) {
+  const [activeTab, setActiveTab] = useState<"pending" | "waiting" | "history" | "manual">("pending");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [viewingBatch, setViewingBatch] = useState<string | null>(null);
@@ -278,7 +281,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
   const paidBatches = batches.filter((b) => b.status === "paid");
   const pendingBatches = batches.filter((b) => b.status !== "paid");
 
-  const handleTabChange = (tab: "pending" | "waiting" | "history") => {
+  const handleTabChange = (tab: "pending" | "waiting" | "history" | "manual") => {
     setActiveTab(tab);
     setCurrentPage(1);
   };
@@ -332,6 +335,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
             { id: "pending" as const, label: "Yêu cầu rút tiền", count: pendingList.length, icon: <Wallet size={14} /> },
             { id: "waiting" as const, label: "Chờ Shopee duyệt", count: waitingList.length, icon: <Clock size={14} /> },
             { id: "history" as const, label: "Lịch sử phiếu", count: batches.length, icon: <ClipboardList size={14} /> },
+            { id: "manual" as const, label: "Tạo phiếu chủ động", count: null, icon: <UserSearch size={14} /> },
           ].map((t) => (
             <button key={t.id} onClick={() => handleTabChange(t.id)}
               className={`flex h-10 shrink-0 items-center gap-xs whitespace-nowrap rounded-full px-lg text-[13px] font-bold transition-all ${
@@ -341,9 +345,11 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
               }`}>
               <span className={activeTab === t.id ? "text-white/80" : "text-gray-400"}>{t.icon}</span>
               {t.label}
-              <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[11px] ${
-                activeTab === t.id ? "bg-white/20 text-white" : "bg-gray-100 text-gray-400"
-              }`}>{t.count}</span>
+              {t.count !== null && (
+                <span className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-[11px] ${
+                  activeTab === t.id ? "bg-white/20 text-white" : "bg-gray-100 text-gray-400"
+                }`}>{t.count}</span>
+              )}
             </button>
           ))}
         </div>
@@ -592,6 +598,13 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList }: Props
               onNext={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} />
           </div>
         )
+      )}
+
+      {/* ── MANUAL TAB ── */}
+      {activeTab === "manual" && (
+        <div className="max-w-lg">
+          <CreatePaymentForCustomer customers={customers} />
+        </div>
       )}
     </div>
   );

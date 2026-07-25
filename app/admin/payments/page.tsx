@@ -10,6 +10,7 @@ export default async function AdminPaymentsPage() {
     paidAgg,
     batchPendingCount,
     withdrawRequests,
+    allCustomers,    // toàn bộ khách — để admin chủ động chọn tạo phiếu, không chỉ ai đã gửi yêu cầu
   ] = await Promise.all([
     // ✅ Đơn ĐỦ ĐIỀU KIỆN: Shopee đã xác nhận hoa hồng (orderStatus=approved) + chưa thanh toán
     // + khách đang có 1 yêu cầu rút tiền "pending" — admin KHÔNG tự động thấy toàn bộ
@@ -47,7 +48,14 @@ export default async function AdminPaymentsPage() {
       where: { status: "pending" },
       orderBy: { createdAt: "asc" },
     }),
+    prisma.customer.findMany({
+      where: { status: "active" },
+      orderBy: { fullName: "asc" },
+      select: { id: true, fullName: true, customerCode: true },
+    }),
   ]);
+
+  const customerOptions = allCustomers.map((c) => ({ id: c.id, label: `${c.fullName} (${c.customerCode})` }));
 
   const requestedAtByCustomer = new Map(withdrawRequests.map((r) => [r.customerId, r.createdAt.toISOString()]));
 
@@ -197,6 +205,7 @@ export default async function AdminPaymentsPage() {
         pendingList={pendingList}
         batches={mappedBatches}
         waitingList={waitingList}
+        customers={customerOptions}
       />
     </div>
   );

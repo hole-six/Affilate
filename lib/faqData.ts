@@ -80,6 +80,18 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     group: "Về lý do link không ghi nhận",
+    question: "Mua trên Livestream hoặc Shopee Video có được hoàn tiền không?",
+    answer:
+      "Rất tiếc là KHÔNG bạn nhé. Khi mua qua Livestream hoặc Shopee Video, hoa hồng sẽ được ghi nhận cho người phát Live hoặc người đăng Video — không qua iviback — nên chúng tôi không thể hoàn lại cho bạn. Để nhận hoàn tiền, bạn hãy mua trực tiếp qua link được chuyển đổi từ iviback.vn.",
+  },
+  {
+    group: "Về lý do link không ghi nhận",
+    question: "Bao lâu thì đơn hàng được ghi nhận?",
+    answer:
+      "Thông thường đơn hàng sẽ xuất hiện trong 24–48 giờ sau khi bạn đặt. Ví dụ: đặt hàng trong ngày 25 → hệ thống ghi nhận vào ngày 26. Bạn vào mục Đơn hàng trên web iviback để theo dõi trạng thái nhé!",
+  },
+  {
+    group: "Về lý do link không ghi nhận",
     question: "Mua nhiều sản phẩm trong nhiều shop được không?",
     answer:
       "Được. Mỗi sản phẩm tạo 1 link → nhấp vào link chuyển đổi và thêm vào giỏ hàng từng sản phẩm → thanh toán 1 lần.\n\n" +
