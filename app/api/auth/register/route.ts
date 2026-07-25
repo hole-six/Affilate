@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { setSessionCookie } from "@/lib/auth";
-import { sendMail, buildAdminNewRegistrationEmail } from "@/lib/mailer";
+import { sendMail, buildAdminNewRegistrationEmail, buildReferralSuccessEmail } from "@/lib/mailer";
 import { generateCustomerCode } from "@/lib/customerCode";
 
 // Đăng ký đồng thời hiếm khi trùng mã (2 request cùng đọc mã lớn nhất trước
@@ -111,6 +111,23 @@ export async function POST(req: NextRequest) {
       .catch((err) => console.error("[register] sendMail throw lỗi:", err));
   } else {
     console.warn("[register] Thiếu ADMIN_NOTIFICATION_EMAIL — không gửi được email thông báo admin");
+  }
+
+  // Báo cho NGƯỜI GIỚI THIỆU biết họ vừa mời thành công — chỉ gửi được nếu
+  // người giới thiệu có tài khoản email (khách chỉ liên kết Zalo/Telegram
+  // thì referrerEmail sẽ null, bỏ qua, không chặn luồng đăng ký chính).
+  if (referrerEmail && referrerName) {
+    sendMail({
+      to: referrerEmail,
+      subject: `🎁 ${fullName} vừa đăng ký bằng link giới thiệu của bạn`,
+      html: buildReferralSuccessEmail({ referrerName, friendName: fullName }),
+    })
+      .then((result) => {
+        if (!result.ok) console.error("[register] Gửi email báo giới thiệu thành công thất bại:", result.error);
+        else if (result.simulated) console.warn("[register] SMTP chưa cấu hình — bỏ qua email báo giới thiệu");
+        else console.log("[register] Đã gửi email báo giới thiệu thành công tới", referrerEmail);
+      })
+      .catch((err) => console.error("[register] sendMail (referral) throw lỗi:", err));
   }
 
   return NextResponse.json({ role: "customer", redirectTo: "/app" });

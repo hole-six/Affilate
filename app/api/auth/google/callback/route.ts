@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { setSessionCookie } from "@/lib/auth";
 import { getRequestOrigin } from "@/lib/requestOrigin";
-import { sendMail, buildAdminNewRegistrationEmail } from "@/lib/mailer";
+import { sendMail, buildAdminNewRegistrationEmail, buildReferralSuccessEmail } from "@/lib/mailer";
 import { generateCustomerCode } from "@/lib/customerCode";
 
 const GOOGLE_OAUTH_STATE_COOKIE = "google_oauth_state";
@@ -148,6 +148,22 @@ export async function GET(req: NextRequest) {
         .catch((err) => console.error("[google-callback] sendMail throw lỗi:", err));
     } else {
       console.warn("[google-callback] Thiếu ADMIN_NOTIFICATION_EMAIL — không gửi được email thông báo admin");
+    }
+
+    // Báo cho NGƯỜI GIỚI THIỆU biết họ vừa mời thành công — cùng cơ chế với
+    // luồng đăng ký email/mật khẩu (app/api/auth/register/route.ts).
+    if (referrerEmail && referrerName) {
+      sendMail({
+        to: referrerEmail,
+        subject: `🎁 ${fullName} vừa đăng ký bằng link giới thiệu của bạn`,
+        html: buildReferralSuccessEmail({ referrerName, friendName: fullName }),
+      })
+        .then((result) => {
+          if (!result.ok) console.error("[google-callback] Gửi email báo giới thiệu thành công thất bại:", result.error);
+          else if (result.simulated) console.warn("[google-callback] SMTP chưa cấu hình — bỏ qua email báo giới thiệu");
+          else console.log("[google-callback] Đã gửi email báo giới thiệu thành công tới", referrerEmail);
+        })
+        .catch((err) => console.error("[google-callback] sendMail (referral) throw lỗi:", err));
     }
   }
 

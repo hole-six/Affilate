@@ -275,6 +275,48 @@ export function buildPaymentSentEmail(params: {
   `);
 }
 
+export function buildAccountCreatedByAdminEmail(params: {
+  fullName: string;
+  setPasswordUrl: string;
+  expiresInDays: number;
+}): string {
+  return emailShell(`
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:900;color:#2d1f14;">🎉 Tài khoản của bạn đã sẵn sàng</h1>
+    <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#6b5847;">Xin chào <strong>${escapeHtml(params.fullName)}</strong>,</p>
+    <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6b5847;">
+      Quản trị viên vừa tạo tài khoản iviback cho bạn bằng email này. Bấm nút bên dưới để đặt mật khẩu và bắt đầu sử dụng
+      (liên kết có hiệu lực trong ${params.expiresInDays} ngày):
+    </p>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
+      <tr>
+        <td style="border-radius:16px;background:linear-gradient(135deg,${BRAND_COLOR},#d65d2a);">
+          <a href="${params.setPasswordUrl}" style="display:inline-block;padding:14px 32px;font-size:14px;font-weight:800;color:#ffffff;text-decoration:none;border-radius:16px;">
+            Đặt mật khẩu
+          </a>
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0 0 8px;font-size:12px;line-height:1.6;color:#a0816a;">
+      Nếu nút không hoạt động, sao chép đường dẫn sau vào trình duyệt:
+    </p>
+    <p style="margin:0;font-size:12px;line-height:1.6;color:${BRAND_COLOR};word-break:break-all;">${params.setPasswordUrl}</p>
+  `);
+}
+
+export function buildReferralSuccessEmail(params: { referrerName: string; friendName: string }): string {
+  return emailShell(`
+    <h1 style="margin:0 0 16px;font-size:22px;font-weight:900;color:#2d1f14;">🎁 Bạn vừa mời thành công!</h1>
+    <p style="margin:0 0 8px;font-size:14px;line-height:1.6;color:#6b5847;">Xin chào <strong>${escapeHtml(params.referrerName)}</strong>,</p>
+    <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#6b5847;">
+      <strong>${escapeHtml(params.friendName)}</strong> vừa đăng ký tài khoản iviback bằng link giới thiệu của bạn.
+      Khi bạn ấy hoàn tất đơn hàng đầu tiên và được duyệt, hoa hồng giới thiệu sẽ tự động cộng vào ví của bạn.
+    </p>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#a0816a;">
+      Xem chi tiết tại mục "Mời bạn bè" trên iviback.vn.
+    </p>
+  `);
+}
+
 function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

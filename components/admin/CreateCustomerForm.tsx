@@ -12,6 +12,7 @@ export function CreateCustomerForm() {
   const [open, setOpen] = useState(false);
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [zaloUserId, setZaloUserId] = useState("");
   const [telegramUserId, setTelegramUserId] = useState("");
   const [telegramUsername, setTelegramUsername] = useState("");
@@ -26,7 +27,7 @@ export function CreateCustomerForm() {
     const res = await fetch("/api/customers", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fullName, phone, zaloUserId, telegramUserId, telegramUsername }),
+      body: JSON.stringify({ fullName, phone, email, zaloUserId, telegramUserId, telegramUsername }),
     });
 
     setLoading(false);
@@ -39,6 +40,7 @@ export function CreateCustomerForm() {
 
     setFullName("");
     setPhone("");
+    setEmail("");
     setZaloUserId("");
     setTelegramUserId("");
     setTelegramUsername("");
@@ -85,6 +87,16 @@ export function CreateCustomerForm() {
             />
           </div>
           <div className="flex flex-col gap-xs">
+            <label className="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Email (tên đăng nhập)</label>
+            <TextInput
+              type="email"
+              placeholder="VD: khach@gmail.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="bg-white"
+            />
+          </div>
+          <div className="flex flex-col gap-xs">
             <label className="text-[12px] font-bold text-gray-700 uppercase tracking-wide">Số điện thoại</label>
             <TextInput
               placeholder="VD: 0912345678"
@@ -121,6 +133,12 @@ export function CreateCustomerForm() {
             />
           </div>
         </div>
+
+        {email && (
+          <p className="text-[12px] text-gray-500 -mt-sm">
+            Khách sẽ nhận email đặt mật khẩu để đăng nhập bằng địa chỉ này — giống như tự đăng ký tài khoản.
+          </p>
+        )}
 
         {error && (
           <div className="flex items-center gap-sm rounded-lg bg-red-50 border border-red-100 px-md py-sm text-[13px] text-red-600 font-medium">
