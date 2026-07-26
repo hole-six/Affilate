@@ -265,13 +265,27 @@ function EditDealModal({ deal, onSave, onClose }: {
               </select>
             </div>
             <div className="flex flex-col gap-xs">
-              <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">Ngày hết hạn</label>
+              <div className="flex items-center justify-between">
+                <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wide">Ngày hết hạn (tuỳ chọn)</label>
+                {expiresAt && (
+                  <button
+                    type="button"
+                    onClick={() => setExpiresAt("")}
+                    className="text-[11px] font-bold text-[#e86a33] hover:underline"
+                  >
+                    Xoá — không hết hạn
+                  </button>
+                )}
+              </div>
               <input
                 type="date"
                 value={expiresAt}
                 onChange={(e) => setExpiresAt(e.target.value)}
                 className="h-11 w-full rounded-2xl bg-gray-50 px-md text-[14px] font-medium text-gray-900 ring-1 ring-black/5 focus:outline-none focus:ring-2 focus:ring-[#e86a33]/50 transition-all"
               />
+              {!expiresAt && (
+                <p className="text-[11px] text-gray-400">Để trống = deal không bao giờ hết hạn.</p>
+              )}
             </div>
           </div>
 
