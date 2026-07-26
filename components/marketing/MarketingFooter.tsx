@@ -8,6 +8,7 @@ import {
   InstagramIcon,
   ThreadsIcon,
 } from "@/components/icons/PlatformIcons";
+import { versionedAsset } from "@/lib/versionedAsset";
 
 const SOCIAL_LINKS = [
   { key: "facebook", label: "Facebook", href: "https://www.facebook.com/share/1BShYKizDV/?mibextid=wwXIfr", Icon: FacebookIcon },
@@ -25,7 +26,7 @@ export function MarketingFooter() {
         {/* Brand & Info */}
         <div className="space-y-lg max-w-sm">
           <div className="flex items-center gap-sm">
-            <img src="/icontitle.png" alt="iviback" className="h-12 w-12 object-cover rounded-full shadow-sm" />
+            <img src={versionedAsset("/icontitle.png")} alt="iviback" className="h-12 w-12 object-cover rounded-full shadow-sm" />
             <span className="text-[24px] font-black text-primary tracking-tight">iviback</span>
           </div>
           <p className="text-mute text-[15px] leading-relaxed font-medium">

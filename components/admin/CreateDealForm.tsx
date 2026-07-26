@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
 import { DEAL_CATEGORIES } from "@/lib/dealCategories";
 import { DEAL_LINK_TYPES, type DealLinkType } from "@/lib/dealLinkTypes";
+import { dealExpiryEndOfDay } from "@/lib/dealExpiry";
 
 type ResolveResult = {
   rawInputLink: string;
@@ -102,7 +103,7 @@ export function CreateDealForm() {
     fd.append("platformCode", "SHOPEE");
     fd.append("linkType", linkType);
     if (category) fd.append("category", category);
-    if (expiresAt) fd.append("expiresAt", new Date(expiresAt).toISOString());
+    if (expiresAt) fd.append("expiresAt", dealExpiryEndOfDay(expiresAt).toISOString());
     if (imageFile) fd.append("image", imageFile);
 
     const res = await fetch("/api/deals", { method: "POST", body: fd });

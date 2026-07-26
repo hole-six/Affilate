@@ -11,6 +11,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 import { DEAL_CATEGORIES } from "@/lib/dealCategories";
 import { DEAL_LINK_TYPES, type DealLinkType } from "@/lib/dealLinkTypes";
+import { dealExpiryEndOfDay } from "@/lib/dealExpiry";
 
 type Deal = {
   id: string;
@@ -71,6 +72,7 @@ function EditDealModal({ deal, onSave, onClose }: {
     setSaving(true);
     setError(null);
     try {
+      const expiresAtIso = expiresAt ? dealExpiryEndOfDay(expiresAt).toISOString() : null;
       // Nếu có ảnh upload mới → dùng FormData
       if (imageFile) {
         const fd = new FormData();
@@ -81,7 +83,7 @@ function EditDealModal({ deal, onSave, onClose }: {
         fd.append("discountPercent", discountPercent);
         fd.append("category", category);
         fd.append("linkType", linkType);
-        if (expiresAt) fd.append("expiresAt", new Date(expiresAt).toISOString());
+        if (expiresAtIso) fd.append("expiresAt", expiresAtIso);
         fd.append("image", imageFile);
         // Gửi qua PATCH endpoint cần hỗ trợ FormData — ta dùng API khác
         const res = await fetch(`/api/deals/${deal.id}/edit`, { method: "POST", body: fd });
@@ -100,7 +102,7 @@ function EditDealModal({ deal, onSave, onClose }: {
             discountPercent: discountPercent ? parseInt(discountPercent) : null,
             category: category || null,
             linkType,
-            expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+            expiresAt: expiresAtIso,
           }),
         });
         if (!res.ok) throw new Error("Lỗi cập nhật");
@@ -114,7 +116,7 @@ function EditDealModal({ deal, onSave, onClose }: {
           discountPercent: discountPercent ? parseInt(discountPercent) : null,
           category: category || null,
           linkType,
-          expiresAt: expiresAt ? new Date(expiresAt).toISOString() : null,
+          expiresAt: expiresAtIso,
         });
       }
       onClose();

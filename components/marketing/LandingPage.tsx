@@ -13,6 +13,7 @@ import {
   Gift,
 } from "lucide-react";
 import { ShopeeIcon, TiktokIcon } from "@/components/icons/PlatformIcons";
+import { versionedAsset } from "@/lib/versionedAsset";
 import { Reveal } from "@/components/marketing/Reveal";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
@@ -155,7 +156,7 @@ export function LandingPage({ totalPaidOut, totalCustomers }: { totalPaidOut: nu
 
               <h1 className="text-[40px] md:text-[56px] font-black leading-tight text-ink tracking-tight">
                 Để tiền tự về ví{" "}
-                <img src="/icontitle.png" alt="iviback" className="inline-block h-[0.9em] w-[0.9em] object-cover rounded-full align-middle" />
+                <img src={versionedAsset("/icontitle.png")} alt="iviback" className="inline-block h-[0.9em] w-[0.9em] object-cover rounded-full align-middle" />
               </h1>
               <p className="text-[18px] text-mute max-w-lg leading-relaxed">
                 Cách thông minh hơn để mua Shopee & TikTok Shop — hoàn tiền tự động cho mọi đơn, tiền về thẳng ví của bạn.

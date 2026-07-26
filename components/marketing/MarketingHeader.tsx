@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { versionedAsset } from "@/lib/versionedAsset";
 
 const NAV_LINKS = [
   { label: "Trang chủ", href: "/" },
@@ -23,7 +24,7 @@ export function MarketingHeader({ activePath = "/" }: { activePath?: string }) {
           className="flex items-center gap-2 hover:opacity-90 transition-opacity"
         >
           <img
-            src="/icontitle.png"
+            src={versionedAsset("/icontitle.png")}
             alt="iviback logo"
             className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-full shrink-0"
           />

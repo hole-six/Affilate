@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { X, Share, SquarePlus } from "lucide-react";
+import { versionedAsset } from "@/lib/versionedAsset";
 
 const DISMISS_KEY = "pwa_install_dismissed_at";
 const DISMISS_COOLDOWN_DAYS = 14;
@@ -43,7 +44,7 @@ function IosStepsModal({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-xl text-center" style={{ background: "linear-gradient(135deg,#fff3ee,#fde8d8)" }}>
-          <img src="/icontitle.png" alt="" className="mx-auto mb-sm h-14 w-14 rounded-full object-cover" />
+          <img src={versionedAsset("/icontitle.png")} alt="" className="mx-auto mb-sm h-14 w-14 rounded-full object-cover" />
           <h3 className="text-[17px] font-black text-gray-900">Thêm vào Màn hình chính</h3>
           <p className="mt-1 text-[12px] text-gray-500">3 bước để dùng iviback như một app thật trên iPhone</p>
         </div>
@@ -146,7 +147,7 @@ export function PwaInstallBanner() {
   return (
     <>
       <div className="mb-lg flex items-center gap-sm rounded-2xl bg-white p-md shadow-sm ring-1 ring-black/5 fade-in">
-        <img src="/icontitle.png" alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
+        <img src={versionedAsset("/icontitle.png")} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
         <div className="min-w-0 flex-1">
           <div className="text-[13px] font-bold text-gray-900">Cài đặt iviback vào máy</div>
           <div className="text-[11px] text-gray-500">Mở nhanh hơn, trải nghiệm mượt như app thật</div>
@@ -210,7 +211,7 @@ export function PwaInstallSettingsCard() {
   return (
     <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/[0.06]">
       <div className="mb-md flex items-center gap-sm">
-        <img src="/icontitle.png" alt="" className="h-9 w-9 rounded-full object-cover" />
+        <img src={versionedAsset("/icontitle.png")} alt="" className="h-9 w-9 rounded-full object-cover" />
         <h2 className="text-[15px] font-bold text-gray-900">Cài đặt ứng dụng</h2>
       </div>
       {installed ? (

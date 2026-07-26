@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/format";
 import { CustomerLinkForm } from "@/components/customer/CustomerLinkForm";
 import { RefundHistoryClient } from "@/components/customer/RefundHistoryClient";
+import { versionedAsset } from "@/lib/versionedAsset";
 
 export default async function CustomerRefundsPage({ searchParams }: { searchParams: { q?: string; page?: string; tab?: string } }) {
   const session = await getSession();
@@ -73,7 +74,7 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
       </div>
 
       {/* GHI CHÚ KHI MUA SẮM — ảnh, đặt ngay dưới tiêu đề */}
-      <img src="/anhluuy.jpg" alt="Lưu ý khi mua sắm" className="w-full rounded-2xl shadow-sm" />
+      <img src={versionedAsset("/anhluuy.jpg")} alt="Lưu ý khi mua sắm" className="w-full rounded-2xl shadow-sm" />
 
       {/* FORM: CHỌN NỀN TẢNG & TẠO LINK */}
       <CustomerLinkForm platforms={platforms.map((p) => ({ id: p.id, code: p.code, label: p.name }))} />
