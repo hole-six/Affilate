@@ -6,18 +6,6 @@ import { Users, TrendingUp, CheckCircle2 } from "lucide-react";
 import { useModal } from "@/components/ui/ModalProvider";
 import { Button } from "@/components/ui/Button";
 
-type BonusHistoryEntry = {
-  id: string;
-  amount: number;
-  status: string;
-  createdAt: string;
-  friendName: string | null;
-  friendCode: string | null;
-  originalOrderExternalId: string;
-  shopName: string | null;
-  itemName: string | null;
-};
-
 type Friend = {
   id: string;
   fullName: string;
@@ -25,6 +13,19 @@ type Friend = {
   joinedAt: string;
   bonusOrderCount: number;
   totalEarned: number;
+};
+
+type FriendOrderTimelineEntry = {
+  id: string;
+  friendName: string;
+  friendCode: string;
+  orderExternalId: string;
+  itemName: string | null;
+  shopName: string | null;
+  orderStatus: string;
+  createdAt: string;
+  bonusState: "received" | "clawed_back" | "not_eligible" | "pending_eligible" | "pending_capped";
+  bonusAmount: number;
 };
 
 interface Props {
@@ -35,17 +36,26 @@ interface Props {
   maxReferralOrders: number;
   referralValidityMonths: number;
   isPartner: boolean;
-  bonusHistory: BonusHistoryEntry[];
   friends: Friend[];
+  friendOrderTimeline: FriendOrderTimelineEntry[];
 }
 
-const STATUS_LABEL: Record<string, { text: string; className: string }> = {
-  approved: { text: "Đã cộng ví", className: "bg-green-50 text-green-600" },
-  pending: { text: "Đang chờ duyệt", className: "bg-amber-50 text-amber-600" },
+const ORDER_STATUS_LABEL: Record<string, { text: string; className: string }> = {
+  approved: { text: "Đã hoàn tất", className: "bg-green-50 text-green-600" },
+  pending: { text: "Chờ xác nhận", className: "bg-amber-50 text-amber-600" },
+  processing: { text: "Đang đối soát", className: "bg-blue-50 text-blue-600" },
   clawback: { text: "Đã thu hồi", className: "bg-red-50 text-red-500" },
 };
 
-export function ReferralClient({ customerCode, totalFriends, totalCommission, referralRate, maxReferralOrders, referralValidityMonths, isPartner, bonusHistory, friends }: Props) {
+const BONUS_STATE_LABEL: Record<FriendOrderTimelineEntry["bonusState"], { text: string; className: string }> = {
+  received: { text: "Đã nhận", className: "text-green-600" },
+  clawed_back: { text: "Đã thu hồi", className: "text-red-500" },
+  not_eligible: { text: "Không đủ điều kiện", className: "text-gray-400" },
+  pending_eligible: { text: "Dự kiến", className: "text-blue-500" },
+  pending_capped: { text: "Đã đạt giới hạn", className: "text-gray-400" },
+};
+
+export function ReferralClient({ customerCode, totalFriends, totalCommission, referralRate, maxReferralOrders, referralValidityMonths, isPartner, friends, friendOrderTimeline }: Props) {
   const modal = useModal();
   const [referralLink, setReferralLink] = useState("");
 
@@ -169,8 +179,10 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
             </div>
           )}
 
-          {/* Lịch sử hoa hồng giới thiệu — truy vết từng khoản về đúng bạn bè + đơn hàng gốc */}
-          {bonusHistory.length === 0 ? (
+          {/* Đơn hàng của bạn bè — hiện cả tiến trình (chờ xác nhận/đối soát),
+              không chỉ đơn đã xong, để người giới thiệu theo dõi được ngay
+              từ lúc bạn mình phát sinh đơn. */}
+          {friendOrderTimeline.length === 0 ? (
             <div className="rounded-3xl bg-gray-50 p-xl ring-1 ring-black/5 border border-gray-100 flex flex-col items-center justify-center h-[200px] text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-200 text-gray-400 mb-md">
                 <Users size={32} />
@@ -184,7 +196,7 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
                 <>
                   <h3 className="text-[15px] font-bold text-gray-700">Bạn đã mời được {totalFriends} người bạn</h3>
                   <p className="text-[13px] text-gray-500 mt-1 max-w-[320px]">
-                    Hoa hồng chỉ hiện khi đơn của bạn bè đã "Đã hoàn tất" (sau khoảng 15 ngày đối soát) — đơn đang "Chờ xác nhận" hoặc "Đang đối soát" thì chưa có gì để hiện, không phải lỗi.
+                    Chưa thấy đơn nào của bạn bè. Ngay khi họ mua hàng qua link đã đăng ký, đơn sẽ hiện ở đây — kể cả lúc còn đang chờ duyệt.
                   </p>
                 </>
               )}
@@ -192,51 +204,59 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
           ) : (
             <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/5">
               <div className="mb-lg flex items-center justify-between gap-md flex-wrap">
-                <h2 className="text-[16px] font-bold text-gray-900">Lịch sử hoa hồng giới thiệu</h2>
+                <h2 className="text-[16px] font-bold text-gray-900">Đơn hàng của bạn bè</h2>
                 <span className="text-[11px] text-gray-400">
-                  Chỉ hiện đơn đã "Đã hoàn tất" — đơn "Chờ xác nhận"/"Đang đối soát" chưa tạo hoa hồng
+                  Số tiền ở đơn chưa xong là <strong>dự kiến</strong> — chỉ chốt khi đơn "Đã hoàn tất"
                 </span>
               </div>
               <div className="max-h-[420px] overflow-auto -mx-xl px-xl">
-                <table className="w-full min-w-[560px] text-left text-[13px]">
+                <table className="w-full min-w-[600px] text-left text-[13px]">
                   <thead>
                     <tr className="border-b border-gray-100 text-[11px] font-bold uppercase tracking-wider text-gray-400">
                       <th className="pb-sm pr-md">Bạn bè</th>
                       <th className="pb-sm pr-md">Tên đơn</th>
                       <th className="pb-sm pr-md">Ngày</th>
-                      <th className="pb-sm pr-md text-right">Hoa hồng</th>
-                      <th className="pb-sm pl-md">Trạng thái</th>
+                      <th className="pb-sm pr-md">Trạng thái đơn</th>
+                      <th className="pb-sm pl-md text-right">Hoa hồng</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {bonusHistory.map((entry) => {
-                      const status = STATUS_LABEL[entry.status] ?? { text: entry.status, className: "bg-gray-100 text-gray-500" };
+                    {friendOrderTimeline.map((entry) => {
+                      const orderStatus = ORDER_STATUS_LABEL[entry.orderStatus] ?? { text: entry.orderStatus, className: "bg-gray-100 text-gray-500" };
+                      const bonus = BONUS_STATE_LABEL[entry.bonusState];
+                      const showAmount = entry.bonusState === "received" || entry.bonusState === "clawed_back" || entry.bonusState === "pending_eligible";
                       return (
                         <tr key={entry.id} className="border-b border-gray-50 last:border-0">
                           <td className="py-sm pr-md align-top">
-                            <div className="font-bold text-gray-900">{entry.friendName ?? "Bạn bè"}</div>
+                            <div className="font-bold text-gray-900">{entry.friendName}</div>
                             {entry.friendCode && (
                               <div className="font-mono text-[11px] text-gray-400">{entry.friendCode}</div>
                             )}
                           </td>
-                          <td className="py-sm pr-md align-top max-w-[220px]">
+                          <td className="py-sm pr-md align-top max-w-[200px]">
                             <div className="truncate font-bold text-gray-900" title={entry.itemName ?? undefined}>
-                              {entry.itemName ?? `Đơn ${entry.originalOrderExternalId}`}
+                              {entry.itemName ?? `Đơn ${entry.orderExternalId}`}
                             </div>
                             <div className="truncate text-[11px] text-gray-400">
                               {entry.shopName}
                               {entry.shopName ? " · " : ""}
-                              <span className="font-mono">{entry.originalOrderExternalId}</span>
+                              <span className="font-mono">{entry.orderExternalId}</span>
                             </div>
                           </td>
-                          <td className="py-sm pr-md align-top text-gray-500">{formatDate(entry.createdAt)}</td>
-                          <td className="py-sm pr-md align-top text-right font-black text-green-600 whitespace-nowrap">
-                            +{formatCurrency(entry.amount)}
-                          </td>
-                          <td className="py-sm pl-md align-top">
-                            <span className={`inline-block whitespace-nowrap rounded-full px-2 py-[2px] text-[10px] font-bold ${status.className}`}>
-                              {status.text}
+                          <td className="py-sm pr-md align-top text-gray-500 whitespace-nowrap">{formatDate(entry.createdAt)}</td>
+                          <td className="py-sm pr-md align-top">
+                            <span className={`inline-block whitespace-nowrap rounded-full px-2 py-[2px] text-[10px] font-bold ${orderStatus.className}`}>
+                              {orderStatus.text}
                             </span>
+                          </td>
+                          <td className="py-sm pl-md align-top text-right whitespace-nowrap">
+                            {showAmount && (
+                              <div className={`font-black ${entry.bonusState === "clawed_back" ? "text-red-500 line-through" : entry.bonusState === "received" ? "text-green-600" : "text-blue-500"}`}>
+                                {entry.bonusState === "pending_eligible" ? "~" : "+"}
+                                {formatCurrency(entry.bonusAmount)}
+                              </div>
+                            )}
+                            <div className={`text-[10px] font-bold ${bonus.className}`}>{bonus.text}</div>
                           </td>
                         </tr>
                       );
