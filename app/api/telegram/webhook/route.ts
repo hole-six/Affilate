@@ -3,8 +3,11 @@ import { prisma } from "@/lib/prisma";
 import {
   answerTelegramCallbackQuery,
   buildAffiliateReplyMessage,
+  buildBankInfoFlowPrompt,
+  buildBankInfoSavedMessage,
   buildConvertLinkPromptMessage,
   buildDealsListMessage,
+  buildFlowCancelledMessage,
   buildLinkExpiredMessage,
   buildLinkPromptMessage,
   buildLinkSuccessMessage,
@@ -16,6 +19,8 @@ import {
   buildUnsupportedPlatformMessage,
   buildTikTokDisabledOnTelegramMessage,
   buildWalletMessage,
+  buildWithdrawErrorMessage,
+  buildWithdrawSuccessMessage,
   extractFirstUrl,
   extractTelegramMessage,
   mapDetectedPlatformToCode,
@@ -25,6 +30,14 @@ import {
 import { createTrackingLink } from "@/lib/trackingLinkService";
 import { getOrCreatePersonalDealLink } from "@/lib/dealPersonalization";
 import { generateCustomerCode } from "@/lib/customerCode";
+import { createWithdrawRequest } from "@/lib/withdrawRequest";
+import {
+  cancelFlow,
+  handleBankInfoFlowReply,
+  isValidFlowStep,
+  parseFlowData,
+  startBankInfoFlow,
+} from "@/lib/telegramBankFlow";
 
 export async function GET(req: NextRequest) {
   const secret = req.nextUrl.searchParams.get("secret");
@@ -146,11 +159,48 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Hội thoại nhiều bước nhập thông tin ngân hàng (bot hỏi lần lượt tên NH
+  // -> số TK -> tên chủ TK) — kiểm tra TRƯỚC mọi lệnh khác, vì trong lúc
+  // này mọi tin nhắn thường (không phải lệnh khác) đều là câu trả lời cho
+  // bước hiện tại, không phải nội dung để xử lý như bình thường.
+  let flowReplyText: string | null = null;
+  const activeFlowStep = customer.telegramFlowStep;
+  if (!isCallback && isValidFlowStep(activeFlowStep)) {
+    const lowerText = normalizedText.toLowerCase();
+    if (lowerText === "/huy" || lowerText === "/cancel") {
+      await cancelFlow(customer.id);
+      flowReplyText = buildFlowCancelledMessage();
+    } else if (normalizedText.startsWith("/")) {
+      // Gõ lệnh khác giữa chừng -> huỷ luồng, để lệnh đó xử lý bình thường bên dưới.
+      await cancelFlow(customer.id);
+    } else {
+      const flowData = parseFlowData(customer.telegramFlowData);
+      const flowResult = await handleBankInfoFlowReply(customer.id, activeFlowStep, flowData, normalizedText);
+      if (!flowResult.done) {
+        flowReplyText = buildBankInfoFlowPrompt(flowResult.next, flowResult.data);
+      } else {
+        const withdrawResult = await createWithdrawRequest(customer.id);
+        const savedMessage = buildBankInfoSavedMessage({
+          bankName: flowResult.bankName,
+          bankAccountNumber: flowResult.bankAccountNumber,
+          bankAccountName: flowResult.bankAccountName,
+        });
+        const withdrawMessage = withdrawResult.ok
+          ? buildWithdrawSuccessMessage(withdrawResult.request.amount)
+          : buildWithdrawErrorMessage(withdrawResult.error);
+        flowReplyText = `${savedMessage}\n\n${withdrawMessage}`;
+      }
+    }
+  }
+
   const originalUrl = extractFirstUrl(normalizedText);
   let replyText = "";
   let processingStatus = "processed";
 
-  if (linkOutcomeMessage) {
+  if (flowReplyText !== null) {
+    replyText = flowReplyText;
+    processingStatus = "processed_bank_flow";
+  } else if (linkOutcomeMessage) {
     replyText = linkOutcomeMessage;
     processingStatus = command === "/start" && args[0] ? "processed_start_link" : processingStatus;
   } else if (!normalizedText || command === "/start" || command === "/help") {
@@ -182,6 +232,21 @@ export async function POST(req: NextRequest) {
       totalOrders: orders.length,
     });
     processingStatus = "processed_wallet";
+  } else if (command === "/rut" || command === "/withdraw") {
+    // Dùng chung đúng 1 hàm với web (lib/withdrawRequest.ts) để 2 kênh
+    // không bao giờ lệch nhau về điều kiện/số tiền tối thiểu/chặn trùng.
+    const result = await createWithdrawRequest(customer.id);
+    if (result.ok) {
+      replyText = buildWithdrawSuccessMessage(result.request.amount);
+      processingStatus = "processed_withdraw_success";
+    } else if (result.code === "missing_bank_info") {
+      await startBankInfoFlow(customer.id);
+      replyText = buildBankInfoFlowPrompt("await_bank_name");
+      processingStatus = "processed_withdraw_start_bank_flow";
+    } else {
+      replyText = buildWithdrawErrorMessage(result.error);
+      processingStatus = "processed_withdraw_error";
+    }
   } else if (command === "/orders") {
     const orders = await prisma.order.findMany({
       where: { customerId: customer.id },

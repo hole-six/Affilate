@@ -56,6 +56,12 @@ model Customer {
   // luôn tính hoa hồng giới thiệu cho đối tác này, KHÔNG áp giới hạn 5 đơn
   // hay hạn 6 tháng như người giới thiệu tự do bình thường (vĩnh viễn).
   isPartner        Boolean  @default(false) @map("is_partner")
+  // State tạm cho hội thoại nhiều bước qua Telegram (vd: bot đang hỏi lần
+  // lượt tên ngân hàng -> số tài khoản -> tên chủ TK trước khi rút tiền).
+  // telegramFlowData lưu JSON các câu trả lời đã thu thập được của bước
+  // hiện tại; null nghĩa là khách không đang ở giữa hội thoại nào.
+  telegramFlowStep String?  @map("telegram_flow_step")
+  telegramFlowData String?  @map("telegram_flow_data")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
 

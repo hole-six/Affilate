@@ -104,16 +104,17 @@ const QUICK_MENU_ITEMS: { label: string; command: string }[][] = [
   [{ label: "🔄 Đổi link nhanh", command: "/newlink" }],
   [
     { label: "💰 Số dư ví", command: "/wallet" },
+    { label: "💸 Rút tiền", command: "/rut" },
+  ],
+  [
     { label: "📦 Đơn hàng", command: "/orders" },
-  ],
-  [
     { label: "🔗 Link của tôi", command: "/links" },
-    { label: "🏷️ Ưu đãi", command: "/deals" },
   ],
   [
+    { label: "🏷️ Ưu đãi", command: "/deals" },
     { label: "🎁 Mời bạn", command: "/referral" },
-    { label: "📖 Hướng dẫn", command: "/help" },
   ],
+  [{ label: "📖 Hướng dẫn", command: "/help" }],
 ];
 
 export function buildReplyKeyboardMenu(): TelegramReplyKeyboard {
@@ -153,6 +154,7 @@ export function buildTelegramHelpMessage(): string {
     "",
     "<b>Lệnh nhanh:</b>",
     "💰 /wallet — xem số dư hoàn tiền",
+    "💸 /rut — yêu cầu rút tiền (chưa có TK ngân hàng? bot sẽ hỏi luôn)",
     "📦 /orders — 5 đơn hàng gần nhất",
     "🔗 /links — 5 link đã tạo gần nhất",
     "🏷️ /deals — ưu đãi hot đang chạy",
@@ -355,6 +357,68 @@ export function buildWalletMessage(params: {
     "",
     `📦 Tổng số đơn: ${params.totalOrders}`,
   ].join("\n");
+}
+
+export function buildWithdrawSuccessMessage(amount: number): string {
+  return [
+    "✅ <b>Đã gửi yêu cầu rút tiền!</b>",
+    "",
+    `Số tiền: <b>${formatCurrency(amount)}</b>`,
+    "",
+    "Admin sẽ xử lý và chuyển khoản trong vòng 24h. Gõ /wallet để theo dõi số dư.",
+  ].join("\n");
+}
+
+export function buildWithdrawErrorMessage(error: string): string {
+  return `⚠️ ${escapeHtml(error)}`;
+}
+
+export function buildBankInfoFlowPrompt(
+  step: "await_bank_name" | "await_bank_account_number" | "await_bank_account_name",
+  context?: { bankName?: string; bankAccountNumber?: string }
+): string {
+  if (step === "await_bank_name") {
+    return [
+      "🏦 <b>Bạn chưa có thông tin tài khoản ngân hàng để nhận tiền.</b>",
+      "",
+      "Cho tôi biết <b>tên ngân hàng</b> của bạn (vd: Vietcombank, Techcombank, MB Bank...).",
+      "",
+      "Gõ /huy để huỷ bất cứ lúc nào.",
+    ].join("\n");
+  }
+  if (step === "await_bank_account_number") {
+    return [
+      `✅ Đã ghi nhận ngân hàng: <b>${escapeHtml(context?.bankName ?? "")}</b>`,
+      "",
+      "Giờ cho tôi <b>số tài khoản</b> ngân hàng của bạn.",
+    ].join("\n");
+  }
+  return [
+    `✅ Đã ghi nhận số tài khoản: <b>${escapeHtml(context?.bankAccountNumber ?? "")}</b>`,
+    "",
+    "Cuối cùng, cho tôi <b>tên chủ tài khoản</b> (viết đúng như trên thẻ/tài khoản, thường là IN HOA không dấu).",
+  ].join("\n");
+}
+
+export function buildBankInfoSavedMessage(params: {
+  bankName: string;
+  bankAccountNumber: string;
+  bankAccountName: string;
+}): string {
+  return [
+    "✅ <b>Đã lưu thông tin ngân hàng!</b>",
+    "",
+    `Ngân hàng: <b>${escapeHtml(params.bankName)}</b>`,
+    `Số tài khoản: <code>${escapeHtml(params.bankAccountNumber)}</code>`,
+    `Chủ tài khoản: <b>${escapeHtml(params.bankAccountName)}</b>`,
+    "",
+    "Thông tin này đồng bộ trực tiếp với web — bạn có thể sửa lại bất cứ lúc nào ở mục Cài đặt trên web.",
+    "Đang tiếp tục gửi yêu cầu rút tiền cho bạn...",
+  ].join("\n");
+}
+
+export function buildFlowCancelledMessage(): string {
+  return "❌ Đã huỷ. Gõ /rut bất cứ lúc nào để thử lại.";
 }
 
 export function mapDetectedPlatformToCode(url: string): "SHOPEE" | "TIKTOK" | null {
