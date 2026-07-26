@@ -50,9 +50,26 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
 
+  // Đổi/bỏ gán khách chỉ an toàn khi đơn CHƯA có khách + đã duyệt (đó vẫn
+  // là luồng "Gán khách" bình thường cho đơn approved nhưng chưa map) —
+  // nếu đơn ĐÃ có khách VÀ đã approved/clawback, tiền + hoa hồng giới
+  // thiệu (nếu có) đã tính theo đúng khách đó, đổi khách lúc này sẽ để
+  // lại dữ liệu sai lệch không tự dọn được. Phải Clawback trước rồi mới
+  // gán lại khách khác.
+  if (
+    customerId !== undefined &&
+    order.customerId &&
+    (order.orderStatus === "approved" || order.orderStatus === "clawback")
+  ) {
+    return NextResponse.json(
+      { error: "Đơn đã có khách và đã duyệt — không thể đổi/bỏ gán khách. Dùng Clawback trước nếu cần gán lại khách khác." },
+      { status: 400 }
+    );
+  }
+
   let data: Record<string, unknown> = {};
 
-  if (customerId) data.customerId = customerId;
+  if (customerId !== undefined) data.customerId = customerId;
   if (orderStatus) {
     data.orderStatus = orderStatus;
     if (orderStatus === "approved") data.approvedAt = new Date();

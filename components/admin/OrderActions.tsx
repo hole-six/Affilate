@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { CheckCircle, UserPlus, AlertTriangle, XCircle } from "lucide-react";
+import { CheckCircle, UserPlus, AlertTriangle, XCircle, Pencil, X } from "lucide-react";
 
 type Option = { id: string; label: string };
 
@@ -25,6 +25,12 @@ export function OrderActions({
   const [customerId, setCustomerId] = useState("");
   const [loading, setLoading] = useState(false);
   const [showClawbackConfirm, setShowClawbackConfirm] = useState(false);
+  const [editingCustomer, setEditingCustomer] = useState(false);
+
+  // Đổi/bỏ gán khách chỉ an toàn khi đơn CHƯA duyệt — sau khi approved, tiền
+  // và hoa hồng giới thiệu (nếu có) đã tính theo đúng khách, đổi lúc này sẽ
+  // để lại dữ liệu sai lệch. Khớp đúng luật chặn ở API.
+  const canChangeCustomer = hasCustomer && orderStatus !== "approved" && orderStatus !== "clawback";
 
   async function patch(body: Record<string, unknown>) {
     setLoading(true);
@@ -74,6 +80,57 @@ export function OrderActions({
             <UserPlus size={13} strokeWidth={1.75} />
             Gán
           </Button>
+        </div>
+      )}
+
+      {/* Đổi/bỏ gán khách — chỉ khi đơn chưa duyệt (xem canChangeCustomer) */}
+      {canChangeCustomer && !editingCustomer && (
+        <button
+          type="button"
+          onClick={() => setEditingCustomer(true)}
+          className="flex w-fit items-center gap-1 text-[11px] font-bold text-gray-400 hover:text-[#e86a33] transition-colors"
+        >
+          <Pencil size={11} strokeWidth={2} />
+          Đổi khách
+        </button>
+      )}
+
+      {canChangeCustomer && editingCustomer && (
+        <div className="flex items-center gap-xs flex-wrap">
+          <SearchableSelect
+            options={customers}
+            value={customerId}
+            onChange={setCustomerId}
+            placeholder="Chọn khách mới..."
+            size="sm"
+            className="w-[180px]"
+            inputClassName="bg-canvas text-gray-900"
+          />
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={!customerId || loading}
+            onClick={() => { patch({ customerId }); setEditingCustomer(false); }}
+          >
+            <UserPlus size={13} strokeWidth={1.75} />
+            Lưu
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={loading}
+            onClick={() => { patch({ customerId: null }); setEditingCustomer(false); }}
+            title="Bỏ gán, chuyển đơn về Chưa map khách"
+          >
+            Bỏ gán
+          </Button>
+          <button
+            type="button"
+            onClick={() => { setEditingCustomer(false); setCustomerId(""); }}
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+          >
+            <X size={14} />
+          </button>
         </div>
       )}
 
