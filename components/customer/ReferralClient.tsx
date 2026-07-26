@@ -129,9 +129,15 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
               với lịch sử hoa hồng bên dưới chỉ có giao dịch đã phát sinh. */}
           {friends.length > 0 && (
             <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/5">
-              <div className="mb-lg flex items-center justify-between">
+              <div className="mb-md flex items-center justify-between">
                 <h2 className="text-[16px] font-bold text-gray-900">Danh sách bạn bè đã mời</h2>
                 <span className="rounded-full bg-gray-100 px-2 py-[2px] text-[11px] font-bold text-gray-500">{friends.length}</span>
+              </div>
+              <div className="mb-lg flex items-start gap-xs rounded-xl bg-blue-50 px-md py-sm">
+                <span className="mt-[1px] flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-200 text-[10px] font-bold text-blue-700">i</span>
+                <p className="text-[12px] text-blue-700 leading-relaxed">
+                  Số đơn và hoa hồng chỉ cập nhật khi đơn của bạn bè đã <strong>"Đã hoàn tất"</strong> (sau khoảng 15 ngày đối soát). Đơn đang <strong>"Chờ xác nhận"</strong> hoặc <strong>"Đang đối soát"</strong> là bình thường — hoa hồng chưa được tạo nên chưa hiện ở đây, không phải lỗi.
+                </p>
               </div>
               <div className="flex flex-col gap-sm max-h-[420px] overflow-y-auto">
                 {friends.map((f) => (
@@ -177,13 +183,20 @@ export function ReferralClient({ customerCode, totalFriends, totalCommission, re
               ) : (
                 <>
                   <h3 className="text-[15px] font-bold text-gray-700">Bạn đã mời được {totalFriends} người bạn</h3>
-                  <p className="text-[13px] text-gray-500 mt-1">Hoa hồng sẽ tự động cập nhật khi họ mua sắm.</p>
+                  <p className="text-[13px] text-gray-500 mt-1 max-w-[320px]">
+                    Hoa hồng chỉ hiện khi đơn của bạn bè đã "Đã hoàn tất" (sau khoảng 15 ngày đối soát) — đơn đang "Chờ xác nhận" hoặc "Đang đối soát" thì chưa có gì để hiện, không phải lỗi.
+                  </p>
                 </>
               )}
             </div>
           ) : (
             <div className="rounded-3xl bg-white p-xl shadow-sm ring-1 ring-black/5">
-              <h2 className="text-[16px] font-bold text-gray-900 mb-lg">Lịch sử hoa hồng giới thiệu</h2>
+              <div className="mb-lg flex items-center justify-between gap-md flex-wrap">
+                <h2 className="text-[16px] font-bold text-gray-900">Lịch sử hoa hồng giới thiệu</h2>
+                <span className="text-[11px] text-gray-400">
+                  Chỉ hiện đơn đã "Đã hoàn tất" — đơn "Chờ xác nhận"/"Đang đối soát" chưa tạo hoa hồng
+                </span>
+              </div>
               <div className="max-h-[420px] overflow-auto -mx-xl px-xl">
                 <table className="w-full min-w-[560px] text-left text-[13px]">
                   <thead>
