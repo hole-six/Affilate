@@ -5,6 +5,7 @@ import { ShopeeIcon, TiktokIcon } from "@/components/icons/PlatformIcons";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
   title: "Cửa Hàng — iviback | Nền Tảng Hỗ Trợ Hoàn Tiền",
@@ -38,7 +39,7 @@ export default async function CuaHangPage() {
 
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(breadcrumbJsonLd) }} />
       <MarketingHeader activePath="/cua-hang" />
 
       <main className="pt-[80px]">

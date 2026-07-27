@@ -3,6 +3,7 @@ import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { FAQ_ITEMS } from "@/lib/faqData";
+import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
   title: "Câu Hỏi Thường Gặp (FAQ) — iviback",
@@ -40,8 +41,8 @@ const breadcrumbJsonLd = {
 export default function FaqPage() {
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(faqJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(breadcrumbJsonLd) }} />
       <MarketingHeader activePath="/faq" />
 
       <main className="pt-[80px]">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
+import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
   title: "Điều Khoản Sử Dụng — iviback",
@@ -129,7 +130,7 @@ const SECTIONS = [
 export default function TermsOfUsePage() {
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(breadcrumbJsonLd) }} />
       <MarketingHeader activePath="/dieu-khoan-su-dung" />
 
       <main className="pt-[80px]">

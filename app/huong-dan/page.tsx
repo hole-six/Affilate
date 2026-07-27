@@ -3,6 +3,7 @@ import { MarketingHeader } from "@/components/marketing/MarketingHeader";
 import { MarketingFooter } from "@/components/marketing/MarketingFooter";
 import { Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
   title: "Hướng Dẫn Sử Dụng — iviback Hoàn Tiền Shopee, TikTok Shop",
@@ -45,7 +46,7 @@ const breadcrumbJsonLd = {
 export default function HuongDanPage() {
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(breadcrumbJsonLd) }} />
       <MarketingHeader activePath="/huong-dan" />
 
       <main className="pt-[80px]">
