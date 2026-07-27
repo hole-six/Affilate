@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
 import { sendMail, buildPasswordChangedEmail } from "@/lib/mailer";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get("token");
@@ -14,6 +15,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Chặn dò token tự động — 1 IP tối đa 10 lần/15 phút.
+  const ip = getClientIp(req);
+  const limit = checkRateLimit(`reset-password:ip:${ip}`, 10, 15 * 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Thử quá nhiều lần, vui lòng thử lại sau ${Math.ceil((limit.retryAfterSeconds ?? 0) / 60)} phút` },
+      { status: 429 }
+    );
+  }
+
   const { token, newPassword } = await req.json();
 
   if (!token || !newPassword) {
