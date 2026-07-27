@@ -6,6 +6,7 @@ import { PublicFloatingSupport } from "@/components/marketing/PublicFloatingSupp
 import { DealGrid } from "@/components/customer/DealGrid";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 import { Flame } from "lucide-react";
+import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
   title: "Ưu Đãi & Mã Giảm Giá Shopee, TikTok Shop Mới Nhất — iviback",
@@ -111,9 +112,9 @@ export default async function PublicDealsPage({
 
   return (
     <div className="min-h-screen bg-canvas font-sans overflow-x-hidden text-ink">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(breadcrumbJsonLd) }} />
       {itemListJsonLd && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(itemListJsonLd) }} />
       )}
       <MarketingHeader activePath="/uu-dai" />
 

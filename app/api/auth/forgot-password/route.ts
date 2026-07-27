@@ -3,10 +3,21 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getRequestOrigin } from "@/lib/requestOrigin";
 import { sendMail, buildPasswordResetEmail } from "@/lib/mailer";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 const TOKEN_TTL_MINUTES = 30;
 
 export async function POST(req: NextRequest) {
+  // Chặn spam gửi email đặt lại mật khẩu (email-bombing) — 1 IP tối đa 5 lần/giờ.
+  const ip = getClientIp(req);
+  const limit = checkRateLimit(`forgot-password:ip:${ip}`, 5, 60 * 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Yêu cầu quá nhiều lần, vui lòng thử lại sau ${Math.ceil((limit.retryAfterSeconds ?? 0) / 60)} phút` },
+      { status: 429 }
+    );
+  }
+
   const { email } = await req.json();
 
   if (!email || typeof email !== "string") {

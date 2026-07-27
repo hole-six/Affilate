@@ -31,10 +31,14 @@ export default async function CustomerHomePage() {
   if (!session) redirect("/login");
   if (session.role === "admin" || !session.customerId) redirect("/admin");
 
-  const [customer, activeRule] = await Promise.all([
+  const [customer, activeRule, allOrders] = await Promise.all([
     prisma.customer.findUnique({
       where: { id: session.customerId },
       include: {
+        // CHỈ dùng để hiển thị preview "Lịch sử đơn hàng" bên dưới (cần ảnh/
+        // tên sản phẩm) — KHÔNG dùng số liệu này để tính tổng, vì take:6 sẽ
+        // cắt mất đơn cũ hơn nếu khách có nhiều hơn 6 đơn. Số liệu thật lấy
+        // từ allOrders (không giới hạn) ở dưới.
         orders: {
           orderBy: { createdAt: "desc" },
           take: 6,
@@ -50,9 +54,16 @@ export default async function CustomerHomePage() {
       where: { active: true },
       orderBy: { createdAt: "desc" },
     }),
+    // Toàn bộ đơn (không giới hạn) — dùng để tính đúng số dư/số đơn tổng,
+    // trước đây tái dùng nhầm danh sách take:6 ở trên khiến khách có hơn 6
+    // đơn bị hiện thiếu cả số đơn lẫn số tiền trên trang chủ.
+    prisma.order.findMany({
+      where: { customerId: session.customerId },
+      select: { orderStatus: true, payoutStatus: true, customerRewardAmount: true },
+    }),
   ]);
 
-  const allOrders = customer?.orders ?? [];
+  const recentOrders = customer?.orders ?? [];
   const totalIncome = allOrders.reduce((s, o) => s + Number(o.customerRewardAmount), 0);
   const pendingIncome = allOrders
     .filter((o) => o.orderStatus === "pending")
@@ -221,7 +232,7 @@ export default async function CustomerHomePage() {
             </a>
           </div>
 
-          {allOrders.length === 0 ? (
+          {recentOrders.length === 0 ? (
             <div className="flex flex-col items-center py-2xl text-center">
               <img src="/heochodoi.png" alt="" className="mb-lg h-20 w-20 object-contain" />
               <div className="text-[14px] font-semibold text-gray-700">Chưa có đơn hàng nào</div>
@@ -229,7 +240,7 @@ export default async function CustomerHomePage() {
             </div>
           ) : (
             <ul className="flex flex-col divide-y divide-gray-50">
-              {allOrders.map((order) => {
+              {recentOrders.map((order) => {
                 const platformCode = order.platform?.code?.toUpperCase() ?? "";
                 const platformColor = PLATFORM_STYLE[platformCode]?.color ?? "#e86a33";
                 const productImage = order.trackingLink?.productImage ?? null;

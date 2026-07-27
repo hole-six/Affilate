@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { LandingPage } from "@/components/marketing/LandingPage";
+import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
   title: "iviback — Mua sắm Shopee, TikTok Shop nhận hoàn tiền tự động",
@@ -121,7 +122,7 @@ export default async function RootPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLdString(jsonLd) }} />
       <LandingPage totalPaidOut={totalPaidOut} totalCustomers={totalCustomers} />
     </>
   );

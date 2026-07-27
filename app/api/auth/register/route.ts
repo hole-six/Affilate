@@ -5,6 +5,7 @@ import { hashPassword } from "@/lib/password";
 import { setSessionCookie } from "@/lib/auth";
 import { sendMail, buildAdminNewRegistrationEmail, buildReferralSuccessEmail } from "@/lib/mailer";
 import { generateCustomerCode } from "@/lib/customerCode";
+import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
 
 // Đăng ký đồng thời hiếm khi trùng mã (2 request cùng đọc mã lớn nhất trước
 // khi request nào insert xong) — thử lại tối đa 3 lần thay vì để lỗi 500.
@@ -29,6 +30,16 @@ async function createCustomerWithUniqueCode(data: {
 }
 
 export async function POST(req: NextRequest) {
+  // Chặn tạo tài khoản hàng loạt tự động — 1 IP tối đa 10 lần đăng ký/giờ.
+  const ip = getClientIp(req);
+  const limit = checkRateLimit(`register:ip:${ip}`, 10, 60 * 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: `Đăng ký quá nhiều lần, vui lòng thử lại sau ${Math.ceil((limit.retryAfterSeconds ?? 0) / 60)} phút` },
+      { status: 429 }
+    );
+  }
+
   const { email, password, fullName, phone } = await req.json();
 
   if (!email || !password || !fullName) {
