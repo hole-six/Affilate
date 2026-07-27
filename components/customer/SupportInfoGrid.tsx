@@ -18,7 +18,7 @@ const CHANNELS = [
   {
     key: "facebook",
     label: "Facebook",
-    handle: "Fanpage Hoàn Tiền Ví Heo",
+    handle: "Fanpage iviback Hoàn Tiền",
     cta: "Nhắn tin ngay",
     href: "https://www.facebook.com/share/1BShYKizDV/?mibextid=wwXIfr",
     Icon: FacebookIcon,

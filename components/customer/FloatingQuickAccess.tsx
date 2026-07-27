@@ -52,7 +52,7 @@ export function FloatingQuickAccess({ unreadCount }: { unreadCount: number }) {
                 <img src="/heoQA.png" alt="" className="h-10 w-10 object-contain" />
                 <div>
                   <h3 className="text-[16px] font-black text-gray-900">Hỗ trợ nhanh</h3>
-                  <p className="text-[12px] text-gray-500">Liên hệ với Ví Heo qua các kênh dưới đây</p>
+                  <p className="text-[12px] text-gray-500">Liên hệ với iviback qua các kênh dưới đây</p>
                 </div>
               </div>
               <button
@@ -74,7 +74,7 @@ export function FloatingQuickAccess({ unreadCount }: { unreadCount: number }) {
                 </div>
                 <div className="flex-1">
                   <div className="font-bold text-gray-900">Nhắn tin với cộng đồng</div>
-                  <div className="text-[12px] text-gray-500">Trò chuyện trực tiếp cùng đội ngũ Ví Heo và các thành viên khác</div>
+                  <div className="text-[12px] text-gray-500">Trò chuyện trực tiếp cùng đội ngũ iviback và các thành viên khác</div>
                 </div>
               </Link>
 

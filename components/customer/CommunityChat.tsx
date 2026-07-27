@@ -100,7 +100,7 @@ export function CommunityChat({
       <div className="flex items-center gap-sm border-b border-gray-100 px-lg py-md bg-gradient-to-r from-[#fff3ee] to-[#fde8d8]">
         <img src="/heochaomung.png" alt="" className="h-9 w-9 object-contain" />
         <div className="flex-1 min-w-0">
-          <div className="font-bold text-gray-900 text-[14px]">Cộng đồng Ví Heo</div>
+          <div className="font-bold text-gray-900 text-[14px]">Cộng đồng iviback</div>
           <div className="text-[11px] text-gray-500 flex items-center gap-1">
             <Users size={11} /> Mọi thành viên đều thấy tin nhắn này
           </div>
@@ -130,7 +130,7 @@ export function CommunityChat({
                 <div className={`flex flex-col gap-[2px] max-w-[75%] ${isMine ? "items-end" : "items-start"}`}>
                   <div className="flex items-center gap-xs px-1">
                     <span className="text-[11px] font-bold text-gray-500">
-                      {isMsgAdmin ? "Đội ngũ Ví Heo" : m.user?.fullName}
+                      {isMsgAdmin ? "Đội ngũ iviback" : m.user?.fullName}
                     </span>
                     <span className="text-[10px] text-gray-300">{formatTime(m.createdAt)}</span>
                   </div>
