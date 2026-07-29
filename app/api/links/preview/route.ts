@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { detectPlatform, resolveShortLink, normalizeUrl } from "@/lib/linkConversion";
 import { fetchProductInfo } from "@/lib/productInfo";
+import { fetchSanCamProductData } from "@/lib/sanCamApi";
 import { estimateCashback } from "@/lib/cashbackEstimate";
 
 // Xem trước link KHÔNG cần đăng nhập — cho khách vãng lai "dùng thử trước
@@ -21,14 +22,22 @@ export async function POST(req: NextRequest) {
   try {
     const resolved = await resolveShortLink(url.trim());
     const normalized = normalizeUrl(resolved);
-    const productInfo = await fetchProductInfo(normalized);
-    const cashback = await estimateCashback(productInfo?.title ?? null, productInfo?.price ?? null);
+
+    // Thử API Sàn Cam trước (nhanh, chính xác, xử lý được cả link /opaanlp/)
+    // — chỉ Shopee mới có, TikTok vẫn dùng scrape HTML như cũ.
+    const sanCamData = platform === "shopee" ? await fetchSanCamProductData(normalized) : null;
+    const productInfo = sanCamData ? null : await fetchProductInfo(normalized);
+
+    const title = sanCamData?.title ?? productInfo?.title ?? null;
+    const image = sanCamData?.image ?? productInfo?.image ?? null;
+    const price = sanCamData?.price ?? productInfo?.price ?? null;
+    const cashback = await estimateCashback(title, price, sanCamData?.commission);
 
     return NextResponse.json({
       platformCode: platform === "shopee" ? "SHOPEE" : "TIKTOK",
-      productTitle: productInfo?.title ?? null,
-      productImage: productInfo?.image ?? null,
-      productPrice: productInfo?.price ?? null,
+      productTitle: title,
+      productImage: image,
+      productPrice: price,
       estimatedCashback: cashback ? Number(cashback.estimatedCashback) : null,
       categoryName: cashback?.categoryName ?? null,
     });
