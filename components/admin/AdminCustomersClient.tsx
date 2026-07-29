@@ -113,7 +113,7 @@ export function AdminCustomersClient({ customers, totalPages, currentPage, count
         </div>
 
         <div className="w-full sm:w-[280px]">
-          <ServerSearchInput placeholder="Tìm theo tên, mã KH, số điện thoại..." />
+          <ServerSearchInput placeholder="Tìm theo tên, mã KH, SĐT, Gmail, Zalo, người giới thiệu..." />
         </div>
       </div>
 

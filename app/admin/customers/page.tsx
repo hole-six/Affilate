@@ -17,6 +17,10 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
       { customerCode: { contains: q } },
       { phone: { contains: q } },
       { telegramUsername: { contains: q } },
+      { zaloUserId: { contains: q } },
+      { user: { email: { contains: q } } },
+      { referredBy: { fullName: { contains: q } } },
+      { referredBy: { customerCode: { contains: q } } },
     ];
   }
   if (tab === "active") where.status = "active";
