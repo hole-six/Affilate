@@ -7,12 +7,13 @@ import { setSessionCookie } from "@/lib/auth";
 import { getRequestOrigin } from "@/lib/requestOrigin";
 import { sendMail, buildAdminNewRegistrationEmail, buildReferralSuccessEmail } from "@/lib/mailer";
 import { generateCustomerCode } from "@/lib/customerCode";
+import { appendCustomerRow } from "@/lib/googleSheets";
 
 const GOOGLE_OAUTH_STATE_COOKIE = "google_oauth_state";
 
 // Đăng ký đồng thời hiếm khi trùng mã (2 request cùng đọc mã lớn nhất trước
 // khi request nào insert xong) — thử lại tối đa 3 lần thay vì để lỗi 500.
-async function createCustomerWithUniqueCode(data: { fullName: string; referredById: string | null }) {
+async function createCustomerWithUniqueCode(data: { fullName: string; referredById: string | null; registrationSource: string }) {
   for (let attempt = 0; attempt < 3; attempt++) {
     const customerCode = await generateCustomerCode();
     try {
@@ -112,7 +113,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const customer = await createCustomerWithUniqueCode({ fullName, referredById });
+    const customer = await createCustomerWithUniqueCode({ fullName, referredById, registrationSource: "google" });
     const customerCode = customer.customerCode;
 
     user = await prisma.user.create({
@@ -123,6 +124,17 @@ export async function GET(req: NextRequest) {
         role: "customer",
         customerId: customer.id,
       },
+    });
+
+    // Đẩy khách mới lên Google Sheet CRM admin đang quản lý — best-effort.
+    void appendCustomerRow({
+      customerCode,
+      fullName,
+      phone: null,
+      email,
+      registeredAt: customer.createdAt,
+      registrationSource: "google",
+      referredBy: referredById ? { fullName: referrerName ?? "", customerCode: refCode ?? "" } : null,
     });
 
     const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;

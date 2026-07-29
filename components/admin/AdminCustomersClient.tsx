@@ -6,7 +6,8 @@ import { Users, Trash2, Handshake } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Table, Thead, Tr, Th, Td } from "@/components/ui/Table";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { formatRegistrationSourceLabel } from "@/lib/googleSheets";
 import { Pagination } from "@/components/ui/Pagination";
 import { ServerSearchInput } from "@/components/ui/ServerSearchInput";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -16,6 +17,7 @@ type Customer = {
   fullName: string;
   customerCode: string;
   phone: string | null;
+  email: string | null;
   zaloUserId: string | null;
   telegramUsername: string | null;
   telegramUserId: string | null;
@@ -24,6 +26,9 @@ type Customer = {
   linkCount: number;
   totalReward: number;
   debt: number;
+  createdAt: string;
+  registrationSource: string | null;
+  source: string;
 };
 
 interface AdminCustomersClientProps {
@@ -126,7 +131,11 @@ export function AdminCustomersClient({ customers, totalPages, currentPage, count
                 <Tr>
                   <Th>Khách hàng</Th>
                   <Th>Mã KH</Th>
+                  <Th>Ngày đăng ký</Th>
                   <Th>Liên hệ</Th>
+                  <Th>Gmail</Th>
+                  <Th>Hình thức đăng ký</Th>
+                  <Th>Nguồn</Th>
                   <Th align="right">Tổng hoàn tiền</Th>
                   <Th align="right">Công nợ</Th>
                   <Th align="center">Link</Th>
@@ -159,11 +168,25 @@ export function AdminCustomersClient({ customers, totalPages, currentPage, count
                       <span className="font-mono text-gray-500">{c.customerCode}</span>
                     </Td>
                     <Td>
+                      <span className="text-[12px] text-gray-500 whitespace-nowrap">{formatDate(c.createdAt)}</span>
+                    </Td>
+                    <Td>
                       <div className="flex flex-col gap-1 text-[12px]">
                         {c.phone && <span>📞 {c.phone}</span>}
                         {c.zaloUserId && <span className="text-blue-600">Zalo: {c.zaloUserId}</span>}
                         {c.telegramUsername && <span className="text-sky-500">Telegram: @{c.telegramUsername}</span>}
                       </div>
+                    </Td>
+                    <Td>
+                      <span className="text-[12px] text-gray-600">{c.email ?? "—"}</span>
+                    </Td>
+                    <Td>
+                      <span className="inline-block rounded-md bg-gray-100 px-2 py-[3px] text-[11px] font-bold text-gray-600 whitespace-nowrap">
+                        {formatRegistrationSourceLabel(c.registrationSource)}
+                      </span>
+                    </Td>
+                    <Td>
+                      <span className="text-[12px] text-gray-500 whitespace-nowrap">{c.source}</span>
                     </Td>
                     <Td align="right">
                       <span className="font-bold text-gray-900">{formatCurrency(c.totalReward)}</span>

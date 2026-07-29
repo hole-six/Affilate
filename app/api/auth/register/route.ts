@@ -6,6 +6,7 @@ import { setSessionCookie } from "@/lib/auth";
 import { sendMail, buildAdminNewRegistrationEmail, buildReferralSuccessEmail } from "@/lib/mailer";
 import { generateCustomerCode } from "@/lib/customerCode";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
+import { appendCustomerRow } from "@/lib/googleSheets";
 
 // Đăng ký đồng thời hiếm khi trùng mã (2 request cùng đọc mã lớn nhất trước
 // khi request nào insert xong) — thử lại tối đa 3 lần thay vì để lỗi 500.
@@ -13,6 +14,7 @@ async function createCustomerWithUniqueCode(data: {
   fullName: string;
   phone: string | null;
   referredById: string | null;
+  registrationSource: string;
 }) {
   for (let attempt = 0; attempt < 3; attempt++) {
     const customerCode = await generateCustomerCode();
@@ -78,6 +80,7 @@ export async function POST(req: NextRequest) {
     fullName,
     phone: phone || null,
     referredById,
+    registrationSource: "email",
   });
   const customerCode = customer.customerCode;
 
@@ -96,6 +99,18 @@ export async function POST(req: NextRequest) {
     role: "customer",
     fullName: user.fullName,
     customerId: customer.id,
+  });
+
+  // Đẩy khách mới lên Google Sheet CRM admin đang quản lý — best-effort,
+  // không chặn luồng đăng ký nếu Sheets API lỗi.
+  void appendCustomerRow({
+    customerCode,
+    fullName,
+    phone: phone || null,
+    email,
+    registeredAt: customer.createdAt,
+    registrationSource: "email",
+    referredBy: referredById ? { fullName: referrerName ?? "", customerCode: refCode ?? "" } : null,
   });
 
   const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;

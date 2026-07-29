@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
         fullName: `Zalo User ${incoming.senderId}`,
         zaloUserId: incoming.senderId,
         note: "Tự tạo từ webhook Zalo OA",
+        registrationSource: "zalo",
       },
     });
   }

@@ -150,6 +150,7 @@ export async function POST(req: NextRequest) {
         telegramUserId: incoming.senderId,
         telegramUsername: incoming.username,
         note: "Tu dong tao tu webhook Telegram (chua lien ket web)",
+        registrationSource: "telegram",
       },
     });
   } else if (incoming.username && customer.telegramUsername !== incoming.username) {

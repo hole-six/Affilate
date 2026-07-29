@@ -62,6 +62,10 @@ model Customer {
   // hiện tại; null nghĩa là khách không đang ở giữa hội thoại nào.
   telegramFlowStep String?  @map("telegram_flow_step")
   telegramFlowData String?  @map("telegram_flow_data")
+  // "email" | "google" | "admin" | "telegram" | "zalo" — ghi lại lúc tạo,
+  // dùng để hiển thị "Hình thức đăng ký" ở admin/customers và quyết định có
+  // đẩy lên Google Sheet CRM hay không (chỉ 3 loại đầu là đăng ký thật).
+  registrationSource String? @map("registration_source")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
 

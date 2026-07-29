@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { CreateCustomerForm } from "@/components/admin/CreateCustomerForm";
 import { AdminCustomersClient } from "@/components/admin/AdminCustomersClient";
+import { formatReferralSourceLabel } from "@/lib/googleSheets";
 
 export default async function AdminCustomersPage({ searchParams }: { searchParams: { q?: string; page?: string; tab?: string; sort?: string; order?: string } }) {
   const page = Number(searchParams.page) || 1;
@@ -42,6 +43,8 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
       include: {
         _count: { select: { trackingLinks: true, orders: true } },
         orders: { select: { customerRewardAmount: true, payoutStatus: true } },
+        user: { select: { email: true } },
+        referredBy: { select: { fullName: true, customerCode: true } },
       },
     }),
     prisma.customer.count({ where }),
@@ -57,6 +60,7 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
       fullName: c.fullName,
       customerCode: c.customerCode,
       phone: c.phone,
+      email: c.user?.email ?? null,
       zaloUserId: c.zaloUserId,
       telegramUsername: c.telegramUsername,
       telegramUserId: c.telegramUserId,
@@ -65,6 +69,9 @@ export default async function AdminCustomersPage({ searchParams }: { searchParam
       linkCount: c._count.trackingLinks,
       totalReward,
       debt,
+      createdAt: c.createdAt.toISOString(),
+      registrationSource: c.registrationSource,
+      source: formatReferralSourceLabel(c.referredBy),
     };
   });
 

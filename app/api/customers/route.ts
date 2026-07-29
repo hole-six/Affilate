@@ -6,6 +6,7 @@ import { generateCustomerCode } from "@/lib/customerCode";
 import { hashPassword } from "@/lib/password";
 import { sendMail, buildAccountCreatedByAdminEmail } from "@/lib/mailer";
 import { getRequestOrigin } from "@/lib/requestOrigin";
+import { appendCustomerRow } from "@/lib/googleSheets";
 
 const SET_PASSWORD_TOKEN_TTL_DAYS = 7; // dài hơn quên mật khẩu thường (30 phút) vì khách có thể không mở mail ngay
 
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
   const customerCode = await generateCustomerCode();
 
   const customer = await prisma.customer.create({
-    data: { customerCode, fullName, phone, zaloUserId, telegramUserId, telegramUsername, note },
+    data: { customerCode, fullName, phone, zaloUserId, telegramUserId, telegramUsername, note, registrationSource: "admin" },
   });
 
   if (normalizedEmail) {
@@ -86,6 +87,17 @@ export async function POST(req: NextRequest) {
         setPasswordUrl,
         expiresInDays: SET_PASSWORD_TOKEN_TTL_DAYS,
       }),
+    });
+
+    // Đẩy khách mới lên Google Sheet CRM admin đang quản lý — best-effort.
+    void appendCustomerRow({
+      customerCode,
+      fullName,
+      phone: phone || null,
+      email: normalizedEmail,
+      registeredAt: customer.createdAt,
+      registrationSource: "admin",
+      referredBy: null,
     });
   }
 
