@@ -35,7 +35,6 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
   const router = useRouter();
   const [platformId, setPlatformId] = useState(platforms[0]?.id ?? "");
   const [originalUrl, setOriginalUrl] = useState("");
-  const [productPrice, setProductPrice] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<LinkResult | null>(null);
@@ -58,7 +57,6 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
         originalUrl,
         platformId,
         channelSource: "web",
-        productPrice: productPrice ? Number(productPrice) : undefined,
       }),
     });
 
@@ -82,7 +80,6 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
       estimatedCashback: data.link.estimatedCashback ?? null,
     });
     setOriginalUrl("");
-    setProductPrice("");
     router.refresh();
   }
 
@@ -168,32 +165,6 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
             </div>
           </div>
 
-          {/* Ô nhập giá — nổi bật riêng để user không bỏ qua */}
-          <div className="flex items-center gap-md rounded-xl bg-amber-50 border border-amber-200 px-md py-sm">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-100">
-              <Wallet size={15} className="text-amber-600" strokeWidth={2.5} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-bold text-amber-800 mb-[3px]">Nhập giá để xem hoàn tiền ước tính</p>
-              <input
-                type="number"
-                min={0}
-                placeholder="VD: 183000"
-                value={productPrice}
-                onChange={(e) => setProductPrice(e.target.value)}
-                className="w-full bg-white rounded-lg border border-amber-200 px-sm py-[6px] text-[14px] font-bold text-gray-900 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400/30 placeholder:font-normal placeholder:text-gray-400"
-              />
-            </div>
-            {productPrice && Number(productPrice) > 0 && (
-              <div className="shrink-0 text-right">
-                <p className="text-[10px] text-amber-600 font-medium">Giá nhập</p>
-                <p className="text-[14px] font-black text-amber-800">{formatCurrency(Number(productPrice))}</p>
-              </div>
-            )}
-          </div>
-          <p className="text-[11px] text-gray-400 -mt-xs">
-            Shopee không cho phép lấy giá tự động — nhập giá sản phẩm để xem ước tính số tiền sẽ được hoàn.
-          </p>
           <Button
             type="submit"
             disabled={loading || !platformId}
