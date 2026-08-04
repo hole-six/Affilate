@@ -1,10 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CreditCard, AlertCircle, UserSearch } from "lucide-react";
+import { CreditCard, AlertCircle, UserSearch, Copy, Check } from "lucide-react";
 import { SearchableSelect, ComboboxOption } from "@/components/ui/SearchableSelect";
 import { CreatePaymentButton } from "@/components/admin/CreatePaymentButton";
 import { formatCurrency } from "@/lib/format";
+
+function CopyAmountBtn({ amount }: { amount: number }) {
+  const [ok, setOk] = useState(false);
+  const go = () => {
+    navigator.clipboard.writeText(String(Math.round(amount)));
+    setOk(true);
+    setTimeout(() => setOk(false), 1400);
+  };
+  return (
+    <button onClick={go} title="Copy số tiền"
+      className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+    >
+      {ok ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+    </button>
+  );
+}
 
 type Preview = {
   customer: {
@@ -99,7 +115,10 @@ export function CreatePaymentForCustomer({ customers }: { customers: ComboboxOpt
             </div>
             <div className="text-right shrink-0">
               <div className="text-[11px] text-gray-400">{preview.orderCount} đơn khả dụng</div>
-              <div className="text-[20px] font-black text-[#e86a33] tabular-nums">{formatCurrency(preview.available)}</div>
+              <div className="flex items-center justify-end gap-xs">
+                <div className="text-[20px] font-black text-[#e86a33] tabular-nums">{formatCurrency(preview.available)}</div>
+                <CopyAmountBtn amount={preview.available} />
+              </div>
             </div>
           </div>
 

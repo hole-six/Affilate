@@ -404,7 +404,10 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList, custome
                   {/* Amount */}
                   <div>
                     <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-[2px]">{c.count} đơn cần thanh toán</div>
-                    <div className="text-[28px] font-black text-[#e86a33] leading-none tabular-nums">{formatCurrency(c.amount)}</div>
+                    <div className="flex items-center gap-xs">
+                      <div className="text-[28px] font-black text-[#e86a33] leading-none tabular-nums">{formatCurrency(c.amount)}</div>
+                      <CopyBtn value={String(Math.round(c.amount))} />
+                    </div>
                   </div>
 
                   {/* Payment info */}
