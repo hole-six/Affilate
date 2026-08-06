@@ -36,7 +36,7 @@ const CHANNELS = [
     label: "Youtube",
     handle: "@hoanphihoahongaff",
     cta: "Xem kênh ngay",
-    href: "https://youtube.com/@hoanphihoahongaff?si=aNywoErGCAi7BGxV",
+    href: "https://www.youtube.com/@iviback",
     Icon: YoutubeIcon,
   },
   {
