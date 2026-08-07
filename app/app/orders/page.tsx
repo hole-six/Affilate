@@ -16,7 +16,11 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
 
   const where: any = { customerId: session.customerId };
   if (q) {
-    where.orderExternalId = { contains: q };
+    where.OR = [
+      { orderExternalId: { contains: q } },
+      { itemName: { contains: q } },
+      { trackingLink: { productTitle: { contains: q } } },
+    ];
   }
 
   if (tab === "completed") { where.orderStatus = "approved"; where.payoutStatus = "paid"; }
@@ -39,7 +43,7 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
       orderBy: { createdAt: "desc" },
       skip,
       take: limit,
-      include: { platform: true },
+      include: { platform: true, trackingLink: { select: { productTitle: true, productImage: true } } },
     }),
     prisma.order.count({ where })
   ]);
@@ -61,6 +65,8 @@ export default async function CustomerOrdersPage({ searchParams }: { searchParam
     return {
       id: o.id,
       orderExternalId: o.orderExternalId,
+      productTitle: o.trackingLink?.productTitle ?? o.itemName ?? null,
+      productImage: o.trackingLink?.productImage ?? null,
       platformName: o.platform.name,
       sourceType: o.sourceType,
       createdAt: formatDate(o.createdAt),

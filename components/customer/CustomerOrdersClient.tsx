@@ -8,6 +8,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 type Order = {
   id: string;
   orderExternalId: string;
+  productTitle: string | null;
+  productImage: string | null;
   platformName: string;
   sourceType: string;
   createdAt: string;
@@ -151,13 +153,19 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
               >
                 <div className="flex items-start gap-md">
                   <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ring-1 ${
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl ring-1 ${
                       o.sourceType === "referral"
                         ? "bg-purple-100 text-purple-500 ring-purple-100"
                         : "bg-gray-50 text-gray-400 ring-gray-100 group-hover:bg-white group-hover:text-[#e86a33]"
                     }`}
                   >
-                    {o.sourceType === "referral" ? <Gift size={20} strokeWidth={2.5} /> : <Package size={20} strokeWidth={2.5} />}
+                    {o.sourceType === "referral" ? (
+                      <Gift size={20} strokeWidth={2.5} />
+                    ) : o.productImage ? (
+                      <img src={o.productImage} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <Package size={20} strokeWidth={2.5} />
+                    )}
                   </div>
                   <div>
                     <div className="flex items-center gap-xs">
@@ -170,7 +178,12 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
                         {o.createdAt}
                       </span>
                     </div>
-                    <div className="mt-[2px] text-[14px] font-bold text-gray-900 font-mono">
+                    {o.sourceType !== "referral" && o.productTitle && (
+                      <div className="mt-[2px] max-w-[260px] truncate text-[14px] font-bold text-gray-900">
+                        {o.productTitle}
+                      </div>
+                    )}
+                    <div className={`font-mono ${o.sourceType !== "referral" && o.productTitle ? "mt-[1px] text-[11px] text-gray-400" : "mt-[2px] text-[14px] font-bold text-gray-900"}`}>
                       {o.orderExternalId}
                     </div>
                     {o.sourceType === "referral" && (
