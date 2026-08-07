@@ -253,6 +253,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] text-right">Giá trị đơn</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] text-right">HH trước thuế</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-[#e86a33] text-[11px] text-right">Tiền hoàn / Giữ lại</th>
+                <th className="px-md py-sm font-bold uppercase tracking-wider text-purple-600 text-[11px] text-right w-[110px]">🎁 Trích GT</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] w-[150px]">Trạng thái</th>
                 <th className="px-md py-sm font-bold uppercase tracking-wider text-gray-500 text-[11px] w-[160px]">Thao tác</th>
               </tr>
@@ -260,7 +261,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
             <tbody>
               {orders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-2xl text-center">
+                  <td colSpan={9} className="py-2xl text-center">
                     <div className="flex flex-col items-center gap-sm">
                       <img src="/heochodoi.png" alt="" className="h-16 w-16 object-contain opacity-70" />
                       <span className="text-[14px] font-bold text-gray-400">Không tìm thấy đơn hàng nào phù hợp</span>
@@ -334,14 +335,15 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                       <div className="text-[11px] font-medium text-gray-400 mt-[2px]">
                         Giữ: {formatCurrency(o.systemProfitAmount)}
                       </div>
-                      {o.referralBonusDeducted > 0 && (
-                        <div
-                          className="mt-[3px] inline-flex items-center gap-[3px] rounded-md bg-purple-50 px-1.5 py-[2px] text-[10px] font-bold text-purple-700"
-                          title="Số tiền đã trích từ phần hệ thống giữ để trả hoa hồng cho người giới thiệu"
-                        >
-                          🎁 -{formatCurrency(o.referralBonusDeducted)} cho GT
-                        </div>
-                      )}
+                    </td>
+
+                    {/* Trích cho người giới thiệu */}
+                    <td
+                      className="px-md py-sm text-right font-bold text-[13px] text-purple-600"
+                      data-label="Trích GT"
+                      title="Số tiền đã trích từ phần hệ thống giữ để trả hoa hồng cho người giới thiệu"
+                    >
+                      {o.referralBonusDeducted > 0 ? `-${formatCurrency(o.referralBonusDeducted)}` : <span className="text-gray-300">—</span>}
                     </td>
 
                     {/* Statuses */}
