@@ -38,6 +38,7 @@ type Order = {
   customerRewardAmount: number;
   systemProfitAmount: number;
   referralBonusDeducted: number;
+  estimatedReferralBonus: number;
   orderStatus: string;
   payoutStatus: string;
   orderedAt: string | null;
@@ -338,12 +339,24 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                     </td>
 
                     {/* Trích cho người giới thiệu */}
-                    <td
-                      className="px-md py-sm text-right font-bold text-[13px] text-purple-600"
-                      data-label="Trích GT"
-                      title="Số tiền đã trích từ phần hệ thống giữ để trả hoa hồng cho người giới thiệu"
-                    >
-                      {o.referralBonusDeducted > 0 ? `-${formatCurrency(o.referralBonusDeducted)}` : <span className="text-gray-300">—</span>}
+                    <td className="px-md py-sm text-right" data-label="Trích GT">
+                      {o.referralBonusDeducted > 0 ? (
+                        <span
+                          className="font-bold text-[13px] text-purple-600"
+                          title="Số tiền đã trích từ phần hệ thống giữ để trả hoa hồng cho người giới thiệu"
+                        >
+                          -{formatCurrency(o.referralBonusDeducted)}
+                        </span>
+                      ) : o.estimatedReferralBonus > 0 ? (
+                        <span
+                          className="font-semibold text-[12px] text-purple-300"
+                          title="Ước tính — chỉ chính thức trích khi đơn được duyệt (Tiền đã về), có thể ít hơn nếu bạn này đã hết hạn mức 5 đơn"
+                        >
+                          ~-{formatCurrency(o.estimatedReferralBonus)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
                     </td>
 
                     {/* Statuses */}

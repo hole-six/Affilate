@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
 import { AdminOrdersClient } from "@/components/admin/AdminOrdersClient";
 import { Upload } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
+import { getActiveCommissionRule } from "@/lib/commission";
 
 export default async function AdminOrdersPage({ searchParams }: { searchParams: { q?: string; page?: string; tab?: string; sort?: string; order?: string } }) {
   const page = Number(searchParams.page) || 1;
@@ -40,7 +42,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
 
   const [
     allCount, unassignedCount, assignedCount, pendingCount, processingCount, moneyInCount, unpaidCount, paidCount, cancelledCount, completedCount, clawbackCount, referralCount,
-    orders, customers, filteredCount, sumsAgg, moneyInSumAgg, unpaidSumAgg,
+    orders, customers, filteredCount, sumsAgg, moneyInSumAgg, unpaidSumAgg, rule,
   ] = await Promise.all([
     prisma.order.count(),
     prisma.order.count({ where: { customerId: null } }),
@@ -60,32 +62,54 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     prisma.order.aggregate({ where, _sum: { orderAmount: true, commissionAmount: true, customerRewardAmount: true, systemProfitAmount: true, referralBonusDeducted: true } }),
     prisma.order.aggregate({ where: { orderStatus: "approved" }, _sum: { customerRewardAmount: true } }),
     prisma.order.aggregate({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }),
+    getActiveCommissionRule(),
   ]);
 
   const customerOptions = customers.map((c) => ({ id: c.id, label: `${c.fullName} (${c.customerCode})` }));
+  const referralRate = rule?.referralRate ?? new Prisma.Decimal(0.05);
 
-  const mappedOrders = orders.map((o) => ({
-    id: o.id,
-    orderExternalId: o.orderExternalId,
-    itemName: o.itemName,
-    platformName: o.platform.name,
-    customerName: o.customer?.fullName ?? null,
-    customerId: o.customerId,
-    trackingCode: o.trackingCode,
-    sourceType: o.sourceType,
-    orderAmount: Number(o.orderAmount ?? 0),
-    commissionAmount: Number(o.commissionAmount),
-    customerRewardAmount: Number(o.customerRewardAmount),
-    systemProfitAmount: Number(o.systemProfitAmount),
-    referralBonusDeducted: Number(o.referralBonusDeducted),
-    orderStatus: o.orderStatus,
-    payoutStatus: o.payoutStatus,
-    orderedAt: o.orderedAt?.toISOString() ?? null,
-    completedAt: o.completedAt?.toISOString() ?? null,
-    clawbackWarning: o.orderStatus === "completed" && o.completedAt
-      ? (new Date().getTime() - new Date(o.completedAt).getTime()) > 15 * 24 * 60 * 60 * 1000
-      : false,
-  }));
+  // Đơn CHƯA approved (pending/processing/completed) không có gì để "trích"
+  // thật cả — hoa hồng giới thiệu chỉ tạo lúc đơn CHUYỂN sang approved. Nhưng
+  // nếu khách đã có người giới thiệu, tính trước một số ƯỚC TÍNH (không ghi
+  // DB, chỉ hiển thị) để admin biết trước khoản sắp bị trích khi đơn về tiền
+  // — không tính hạn mức 5 đơn/6 tháng ở đây vì chỉ là xem trước, số thật có
+  // thể ít hơn nếu bạn đó đã hết hạn mức lúc đơn thực sự được duyệt.
+  const NOT_YET_DECIDED_STATUSES = new Set(["pending", "processing", "completed"]);
+
+  const mappedOrders = orders.map((o) => {
+    const referralBonusDeducted = Number(o.referralBonusDeducted);
+    const hasReferrer = o.sourceType !== "referral" && !!o.customer?.referredById;
+    const estimatedReferralBonus =
+      referralBonusDeducted === 0 && hasReferrer && NOT_YET_DECIDED_STATUSES.has(o.orderStatus)
+        ? Number(
+            new Prisma.Decimal(o.customerRewardAmount).add(new Prisma.Decimal(o.systemProfitAmount)).mul(referralRate).toDecimalPlaces(0)
+          )
+        : 0;
+
+    return {
+      id: o.id,
+      orderExternalId: o.orderExternalId,
+      itemName: o.itemName,
+      platformName: o.platform.name,
+      customerName: o.customer?.fullName ?? null,
+      customerId: o.customerId,
+      trackingCode: o.trackingCode,
+      sourceType: o.sourceType,
+      orderAmount: Number(o.orderAmount ?? 0),
+      commissionAmount: Number(o.commissionAmount),
+      customerRewardAmount: Number(o.customerRewardAmount),
+      systemProfitAmount: Number(o.systemProfitAmount),
+      referralBonusDeducted,
+      estimatedReferralBonus,
+      orderStatus: o.orderStatus,
+      payoutStatus: o.payoutStatus,
+      orderedAt: o.orderedAt?.toISOString() ?? null,
+      completedAt: o.completedAt?.toISOString() ?? null,
+      clawbackWarning: o.orderStatus === "completed" && o.completedAt
+        ? (new Date().getTime() - new Date(o.completedAt).getTime()) > 15 * 24 * 60 * 60 * 1000
+        : false,
+    };
+  });
 
   const totalPages = Math.ceil(filteredCount / limit);
   const counts = { all: allCount, unassigned: unassignedCount, assigned: assignedCount, pending: pendingCount, processing: processingCount, moneyIn: moneyInCount, unpaid: unpaidCount, paid: paidCount, cancelled: cancelledCount, completed: completedCount, clawback: clawbackCount, referral: referralCount };
