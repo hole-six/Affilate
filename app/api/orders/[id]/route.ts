@@ -230,10 +230,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   // ============================================================
   // Xử LÝ CLAWBACK (Shopee đòi lại hoa hồng)
-  // Nếu đơn đã được duyệt và chưa thanh toán cho khách:
-  //   → Chỉ đổi trạng thái, không có tác động tài chính thêm
+  // Nếu đơn đã được duyệt và CHƯA thanh toán cho khách:
+  //   → Đổi trạng thái + xoá luôn customerRewardAmount/systemProfitAmount
+  //     về 0 (không cần bút toán đảo vì chưa có gì để đảo — chỉ cần đơn
+  //     không còn góp số tiền ảo vào thống kê tổng ở các tab không lọc
+  //     theo trạng thái, vd "Tất cả").
   // Nếu đơn đã thanh toán cho khách (payoutStatus=paid):
-  //   → Tạo bụt toán đảo (Order âm) để trừ tiền ví
+  //   → Tạo bút toán đảo (Order âm) để trừ tiền ví, giữ nguyên đơn gốc
+  //     làm lịch sử đã từng trả bao nhiêu.
   // ============================================================
   if (orderStatus === "clawback") {
     // Đảo referral bonus nếu có
@@ -269,6 +273,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             sourceType: "clawback",
           },
         });
+      } else {
+        // Chưa trả cho người giới thiệu — không cần bút toán đảo, nhưng
+        // phải xoá số tiền ảo trên chính đơn REF- này, nếu không nó vẫn bị
+        // cộng nhầm vào "Tổng hệ thống giữ"/"Tổng hoàn khách" ở các tab
+        // không lọc theo trạng thái (vd "Tất cả").
+        await prisma.order.update({
+          where: { id: refOrder.id },
+          data: { customerRewardAmount: 0 },
+        });
       }
     }
 
@@ -295,6 +308,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           payoutStatus: "unpaid",
           sourceType: "clawback",
         },
+      });
+    } else {
+      // Chưa trả cho khách — không cần bút toán đảo (không có gì để đảo),
+      // nhưng phải xoá số tiền ảo trên chính đơn để không bị tính nhầm vào
+      // "Tổng hệ thống giữ"/"Tổng hoàn khách" ở các tab không lọc theo
+      // trạng thái (vd "Tất cả") — trước đây chỉ đổi orderStatus, để lại
+      // customerRewardAmount/systemProfitAmount cũ làm phồng số liệu thống kê.
+      await prisma.order.update({
+        where: { id: updated.id },
+        data: { customerRewardAmount: 0, systemProfitAmount: 0 },
       });
     }
   }
