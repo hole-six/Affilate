@@ -15,7 +15,11 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
       where: { id: params.id },
       include: {
         trackingLinks: { orderBy: { createdAt: "desc" }, take: 20, include: { platform: true } },
-        orders: { orderBy: { createdAt: "desc" }, take: 20, include: { platform: true } },
+        orders: {
+          orderBy: { createdAt: "desc" },
+          take: 20,
+          include: { platform: true, trackingLink: { select: { productTitle: true, productImage: true } } },
+        },
         paymentBatches: { orderBy: { createdAt: "desc" }, take: 20 },
         referredBy: { select: { id: true, fullName: true, customerCode: true } },
         referredUsers: { select: { id: true, fullName: true, customerCode: true }, orderBy: { fullName: "asc" } },
@@ -101,6 +105,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
           <Table>
             <Thead>
               <Tr>
+                <Th>Sản phẩm</Th>
                 <Th>Order ID</Th>
                 <Th>Nền tảng</Th>
                 <Th align="right">Giá trị đơn</Th>
@@ -112,6 +117,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
             <tbody>
               {customer.orders.map((o) => (
                 <Tr key={o.id}>
+                  <Td className="max-w-[220px] truncate">{o.trackingLink?.productTitle ?? o.itemName ?? "—"}</Td>
                   <Td>{o.orderExternalId}</Td>
                   <Td>{o.platform.name}</Td>
                   <Td numeric>{formatCurrency(o.orderAmount ?? 0)}</Td>

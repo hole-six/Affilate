@@ -568,9 +568,13 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList, custome
                         <td className="px-md py-md font-semibold text-gray-800">{b.customerName}</td>
                         <td className="px-md py-md font-black text-[14px] text-[#e86a33]">{formatCurrency(b.totalAmount)}</td>
                         <td className="px-md py-md text-center">
-                          <span className="inline-flex items-center justify-center h-6 min-w-6 rounded-md bg-gray-100 font-mono text-[12px] font-bold text-gray-600 px-sm">
+                          <button
+                            onClick={() => setViewingBatch(b.id)}
+                            title="Xem danh sách đơn hàng trong phiếu"
+                            className="inline-flex items-center justify-center h-6 min-w-6 rounded-md bg-gray-100 font-mono text-[12px] font-bold text-gray-600 px-sm hover:bg-[#e86a33]/10 hover:text-[#e86a33] transition-colors"
+                          >
                             {b.itemCount}
-                          </span>
+                          </button>
                         </td>
                         <td className="px-md py-md">
                           <Badge tone={b.status === "paid" ? "positive" : "warning"} dot>
