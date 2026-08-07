@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { backfillReferralBonusForCustomer } from "@/lib/referralBonus";
 
 /**
  * Số dư khả dụng để admin xem trước trước khi chủ động tạo phiếu rút hộ
@@ -81,6 +82,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   const updated = await prisma.customer.update({ where: { id: params.id }, data });
+
+  // Gán/đổi người giới thiệu có thể xảy ra SAU KHI khách đã có đơn approved
+  // từ trước — luồng approved bình thường chỉ tính hoa hồng đúng lúc đơn
+  // CHUYỂN sang approved nên các đơn cũ đó sẽ bị bỏ sót nếu không quét bù lại.
+  if (data.referredById) {
+    void backfillReferralBonusForCustomer(params.id);
+  }
+
   return NextResponse.json({ customer: updated });
 }
 
