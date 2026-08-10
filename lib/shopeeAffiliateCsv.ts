@@ -49,6 +49,7 @@ export const SHOPEE_AFFILIATE_CSV_HEADERS = [
   "Sub_id4",
   "Sub_id5",
   "Kênh",
+  "Content Type",
 ] as const;
 
 export type ShopeeAffiliateCsvHeader = (typeof SHOPEE_AFFILIATE_CSV_HEADERS)[number];
