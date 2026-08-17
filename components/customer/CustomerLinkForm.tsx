@@ -2,10 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Store, Check, Copy, ExternalLink, Link2, Plus, Package, Sparkles, Wallet } from "lucide-react";
+import { Check, Copy, ExternalLink, Link2, Package, Plus, Sparkles, Store, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { TextInput } from "@/components/ui/TextInput";
-import { Card } from "@/components/ui/Card";
 import { ShopeeIcon, TiktokIcon } from "@/components/icons/PlatformIcons";
 import { formatCurrency } from "@/lib/format";
 
@@ -21,7 +20,6 @@ type LinkResult = {
   estimatedCashback: number | string | null;
 };
 
-// Brand icons render their own colors, so the wrapper skips tinting for them.
 const PLATFORM_STYLE: Record<string, { icon: typeof ShopeeIcon; color: string; branded: boolean }> = {
   SHOPEE: { icon: ShopeeIcon, color: "#ee4d2d", branded: true },
   TIKTOK: { icon: TiktokIcon, color: "#000000", branded: true },
@@ -53,18 +51,14 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
     const res = await fetch("/api/links", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        originalUrl,
-        platformId,
-        channelSource: "web",
-      }),
+      body: JSON.stringify({ originalUrl, platformId, channelSource: "web" }),
     });
 
     setLoading(false);
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Không tạo được link");
+      setError(data.error ?? "Khong tao duoc link");
       return;
     }
 
@@ -92,88 +86,75 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
 
   return (
     <div className="flex flex-col gap-xl">
-      {/* Platform selection (1 Chọn nền tảng) */}
       <div>
         <div className="mb-md flex items-center gap-sm">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e86a33] text-[12px] font-bold text-white shadow-sm">
             1
           </span>
-          <span className="text-[15px] font-bold text-gray-900">Chọn nền tảng</span>
+          <span className="text-[15px] font-bold text-gray-900">Chon nen tang</span>
         </div>
-        
+
         <div className="flex flex-wrap gap-md">
           {platforms.map((p) => {
             const style = platformStyle(p.code);
             const Icon = style.icon;
             const active = p.id === platformId;
-            const isTiktok = p.code.toUpperCase() === "TIKTOK";
             return (
               <div key={p.id} className="relative">
                 <button
                   type="button"
-                  onClick={() => !isTiktok && setPlatformId(p.id)}
-                  disabled={isTiktok}
+                  onClick={() => setPlatformId(p.id)}
                   className={`group flex h-[88px] w-[100px] flex-col items-center justify-center gap-xs rounded-2xl border transition-all duration-200 ${
-                    isTiktok
-                      ? "border-gray-100 bg-gray-50 opacity-40 cursor-not-allowed"
-                      : active
+                    active
                       ? "border-[#e86a33] bg-white shadow-[0_4px_12px_rgba(232,106,51,0.15)] scale-105"
                       : "border-gray-100 bg-white hover:border-gray-300 hover:bg-gray-50 hover:-translate-y-1 hover:shadow-sm"
                   }`}
                 >
                   <div
-                    className={`flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 ${active && !isTiktok ? "scale-110" : "group-hover:scale-110"}`}
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl transition-transform duration-200 ${active ? "scale-110" : "group-hover:scale-110"}`}
                     style={{ color: style.color, backgroundColor: `${style.color}15` }}
                   >
                     <Icon size={22} />
                   </div>
-                  <span className={`text-[12px] font-bold ${active && !isTiktok ? "text-gray-900" : "text-gray-500"}`}>
+                  <span className={`text-[12px] font-bold ${active ? "text-gray-900" : "text-gray-500"}`}>
                     {p.label}
                   </span>
                 </button>
-                {isTiktok && (
-                  <span className="absolute -top-1 -right-1 rounded-full bg-gray-400 px-[5px] py-[1px] text-[9px] font-bold text-white leading-tight">
-                    Tạm tắt
-                  </span>
-                )}
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Input area (2 Dán link) */}
       <div className="rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/5">
         <div className="mb-md flex items-center gap-sm">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e86a33] text-[12px] font-bold text-white shadow-sm">
             2
           </span>
           <span className="text-[14px] font-bold text-gray-900">
-            Dán link {selectedPlatform?.label ?? "sản phẩm"}
+            Dan link {selectedPlatform?.label ?? "san pham"}
           </span>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-md">
-          <div className="flex flex-col gap-md sm:flex-row sm:items-end">
-            <div className="flex-1">
-              <TextInput
-                placeholder={`Dán link ${selectedPlatform?.label ?? "sản phẩm"} muốn hoàn tiền vào đây...`}
-                required
-                value={originalUrl}
-                onChange={(e) => setOriginalUrl(e.target.value)}
-                className="h-12 bg-gray-50 border-gray-200 focus:border-[#e86a33] focus:ring-[#e86a33]/20"
-              />
-            </div>
-          </div>
+          <TextInput
+            placeholder={`Dan link ${selectedPlatform?.label ?? "san pham"} muon hoan tien vao day...`}
+            required
+            value={originalUrl}
+            onChange={(e) => setOriginalUrl(e.target.value)}
+            className="h-12 bg-gray-50 border-gray-200 focus:border-[#e86a33] focus:ring-[#e86a33]/20"
+          />
 
           <Button
             type="submit"
             disabled={loading || !platformId}
             className="h-12 w-fit bg-[#e86a33] text-white hover:bg-[#d65d2a] hover:shadow-md hover:shadow-[#e86a33]/30 active:bg-[#c25324] focus-visible:ring-[#e86a33]"
           >
-            {loading ? "Đang tạo..." : (
+            {loading ? (
+              "Dang tao..."
+            ) : (
               <>
                 <Plus size={16} strokeWidth={2.5} />
-                Tạo link
+                Tao link
               </>
             )}
           </Button>
@@ -181,14 +162,12 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
         {error && <div className="mt-sm text-[13px] font-medium text-red-500">{error}</div>}
       </div>
 
-      {/* Result Card */}
       {result && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-md fade-in">
-          {/* Panel trai: THONG TIN SAN PHAM */}
           <div className="rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/5">
             <div className="mb-md flex items-center gap-xs text-[12px] font-bold uppercase tracking-wider text-gray-500">
               <Package size={14} strokeWidth={2.5} />
-              Thông tin sản phẩm
+              Thong tin san pham
             </div>
             <div className="flex gap-md">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gray-50 ring-1 ring-black/5 overflow-hidden">
@@ -205,23 +184,22 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-[14px] font-bold text-gray-900 leading-snug">
-                  {result.productTitle ?? "Sản phẩm mua sắm"}
+                  {result.productTitle ?? "San pham mua sam"}
                 </p>
                 <div className="mt-xs flex items-center gap-xs flex-wrap">
                   <span className="rounded-md bg-[#e86a33]/10 px-sm py-[2px] text-[11px] font-bold text-[#e86a33]">
-                    {selectedPlatform?.label ?? "Sản phẩm"}
+                    {selectedPlatform?.label ?? "San pham"}
                   </span>
                   <span className="font-mono text-[11px] text-gray-400 truncate">{result.trackingCode}</span>
                 </div>
               </div>
             </div>
 
-            {/* Giá + Cashback — hiển thị ngay dưới thông tin sản phẩm */}
             {(result.productPrice != null || (result.estimatedCashback != null && Number(result.estimatedCashback) > 0)) && (
               <div className="mt-md flex items-center gap-md rounded-xl bg-gray-50 px-md py-sm ring-1 ring-gray-100">
                 {result.productPrice != null && (
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Giá sản phẩm</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Gia san pham</span>
                     <span className="text-[15px] font-black text-gray-900 tabular-nums">
                       {formatCurrency(result.productPrice)}
                     </span>
@@ -232,7 +210,7 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
                 )}
                 {result.estimatedCashback != null && Number(result.estimatedCashback) > 0 && (
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Hoàn tiền ước tính</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Hoan tien uoc tinh</span>
                     <span className="text-[15px] font-black text-emerald-600 tabular-nums">
                       {formatCurrency(result.estimatedCashback)}
                     </span>
@@ -243,19 +221,12 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
                 </div>
               </div>
             )}
-
-            {result.estimatedCashback != null && Number(result.estimatedCashback) > 0 && (
-              <p className="mt-xs text-[11px] text-gray-400 leading-relaxed">
-                * Ước tính dựa trên tỷ lệ hoa hồng — số tiền thực nhận có thể khác tuỳ Shopee ghi nhận.
-              </p>
-            )}
           </div>
 
-          {/* Panel phai: LINK HOAN TIEN CUA BAN */}
           <div className="rounded-2xl bg-[#2bc48a]/10 p-lg ring-1 ring-[#2bc48a]/20">
             <div className="mb-md flex items-center gap-xs text-[12px] font-bold uppercase tracking-wider text-[#1f9c6d]">
               <Sparkles size={14} strokeWidth={2.5} />
-              Link hoàn tiền của bạn
+              Link hoan tien cua ban
             </div>
             <input
               readOnly
@@ -270,12 +241,12 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
                 className="flex-1 bg-[#2bc48a] text-white hover:bg-[#25ad7a] hover:shadow-md hover:shadow-[#2bc48a]/30"
               >
                 {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? "Đã copy" : "Copy link"}
+                {copied ? "Da copy" : "Copy link"}
               </Button>
               <a href={result.shortUrl} target="_blank" rel="noreferrer">
                 <Button type="button" variant="tertiary">
                   <ExternalLink size={16} />
-                  Mở
+                  Mo
                 </Button>
               </a>
             </div>

@@ -20,6 +20,7 @@ type Deal = {
   expiresAt: string | null;
   imageUrl: string | null;
   shortUrl: string | null;
+  platformCode: string;
   clicks: number;
   createdAt: string;
 };
@@ -35,6 +36,12 @@ function formatExpiry(iso: string) {
 function DealCard({ deal }: { deal: Deal }) {
   const [clicked, setClicked] = useState(false);
   const isShop = deal.linkType === "shop";
+  const platformCode = deal.platformCode?.toUpperCase() || "SHOPEE";
+  const platformName = platformCode === "TIKTOK" ? "TikTok Shop" : "Shopee";
+  const platformClass =
+    platformCode === "TIKTOK"
+      ? "bg-black/10 text-gray-900"
+      : "bg-[#ee4d2d]/10 text-[#ee4d2d]";
 
   function handleClick() {
     setClicked(true);
@@ -100,7 +107,7 @@ function DealCard({ deal }: { deal: Deal }) {
         {clicked && (
           <div className="absolute inset-0 bg-[#e86a33]/20 flex items-center justify-center animate-in fade-in zoom-in-95 duration-150 p-sm text-center">
             <div className="rounded-2xl bg-white/95 px-md py-sm text-[12px] font-bold text-[#e86a33] shadow-lg leading-snug">
-              {isShop ? "Đang mở Shop... 🏬 Chọn SP rồi tạo link riêng ở mục Hoàn tiền nhé!" : "Đang mở Shopee... 🛒"}
+              {isShop ? "Đang mở Shop... 🏬 Chọn SP rồi tạo link riêng ở mục Hoàn tiền nhé!" : `Đang mở ${platformName}...`}
             </div>
           </div>
         )}
@@ -131,7 +138,7 @@ function DealCard({ deal }: { deal: Deal }) {
               )}
             </div>
           ) : (
-            <span className="text-[13px] font-bold text-[#e86a33]">Xem giá trên Shopee</span>
+            <span className="text-[13px] font-bold text-[#e86a33]">Xem giá trên {platformName}</span>
           )}
         </div>
 
@@ -141,8 +148,8 @@ function DealCard({ deal }: { deal: Deal }) {
             <MousePointerClick size={11} />
             {deal.clicks > 0 ? `${deal.clicks.toLocaleString()} lượt` : "Mới đăng"}
           </span>
-          <span className="rounded-md bg-[#ee4d2d]/10 px-1.5 py-0.5 text-[10px] font-bold text-[#ee4d2d] uppercase">
-            Shopee
+          <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase ${platformClass}`}>
+            {platformName}
           </span>
         </div>
       </div>

@@ -60,6 +60,7 @@ export default async function CustomerDealsPage({ searchParams }: { searchParams
     expiresAt: d.expiresAt ? d.expiresAt.toISOString() : null,
     imageUrl: d.uploadedImageUrl || d.shopeeImageUrl || null,
     shortUrl: d.shortUrl,
+    platformCode: d.platformCode,
     clicks: d.clicks,
     createdAt: d.createdAt.toISOString(),
   }));

@@ -1,0 +1,76 @@
+name: Deploy production
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$VPS_PORT" -H "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Package source
+        run: |
+          set -euo pipefail
+          tar \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='.next' \
+            --exclude='.env' \
+            --exclude='prisma/dev.db' \
+            --exclude='prisma/prod.db' \
+            --exclude='prisma/*.db' \
+            --exclude='storage/imports/*' \
+            --exclude='storage/bills/*' \
+            --exclude='public/uploads/*' \
+            -czf /tmp/affiliate-hoantien-source.tar.gz .
+
+      - name: Upload source
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          scp -P "$VPS_PORT" -i ~/.ssh/deploy_key /tmp/affiliate-hoantien-source.tar.gz "$VPS_USER@$VPS_HOST:/tmp/affiliate-hoantien-source.tar.gz"
+
+      - name: Build and restart on VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_PORT: ${{ secrets.VPS_PORT }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          set -euo pipefail
+          ssh -p "$VPS_PORT" -i ~/.ssh/deploy_key "$VPS_USER@$VPS_HOST" <<'SSH'
+            set -euo pipefail
+            cd /var/www/affiliate-hoantien
+            tar -xzf /tmp/affiliate-hoantien-source.tar.gz
+            npm install
+            npx prisma db push
+            npm run build
+            pm2 restart affiliate-hoantien --update-env
+            pm2 save
+          SSH

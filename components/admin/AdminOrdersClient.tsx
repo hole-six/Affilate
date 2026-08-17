@@ -19,6 +19,7 @@ import {
   Archive,
   AlertTriangle,
   Gift,
+  Store,
   type LucideIcon,
 } from "lucide-react";
 
@@ -29,6 +30,7 @@ type Order = {
   orderExternalId: string;
   itemName: string | null;
   platformName: string;
+  platformCode: string;
   customerName: string | null;
   customerId: string | null;
   trackingCode: string | null;
@@ -53,6 +55,8 @@ type Props = {
   currentPage: number;
   counts: { all: number; unassigned: number; assigned: number; pending: number; processing: number; moneyIn: number; unpaid: number; paid: number; cancelled: number; completed: number; clawback: number; referral: number };
   sums: { orderAmount: number; commissionAmount: number; customerRewardAmount: number; systemProfitAmount: number; referralBonusDeductedTotal: number; moneyInTotal: number; unpaidTotal: number };
+  platformSummaries: { code: string; name: string; count: number; unpaidTotal: number; unmappedCount: number }[];
+  currentPlatform: string;
 };
 
 const orderStatusLabel: Record<string, string> = {
@@ -86,11 +90,22 @@ function formatDate(iso: string | null) {
   return d.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
-export function AdminOrdersClient({ orders, customers, totalPages, currentPage, counts, sums }: Props) {
+export function AdminOrdersClient({ orders, customers, totalPages, currentPage, counts, sums, platformSummaries, currentPlatform }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "all";
+
+  const handlePlatformChange = (platformCode: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (platformCode === "ALL") {
+      params.delete("platform");
+    } else {
+      params.set("platform", platformCode);
+    }
+    params.delete("page");
+    router.replace(`${pathname}?${params.toString()}`);
+  };
 
   const handleTabChange = (tab: string) => {
     const params = new URLSearchParams(searchParams);
@@ -112,7 +127,46 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         </div>
       </div>
 
-      {/* TABS — 2 luồng tách biệt: (1) Shopee đã trả tiền cho MÌNH chưa, (2) mình đã trả khách chưa */}
+      <div className="grid grid-cols-1 gap-md md:grid-cols-3">
+        {platformSummaries.map((platform) => (
+          <button
+            key={platform.code}
+            type="button"
+            onClick={() => handlePlatformChange(platform.code)}
+            className={`flex min-h-[88px] items-center justify-between rounded-2xl border px-lg py-md text-left shadow-sm transition-all ${
+              currentPlatform === platform.code
+                ? "border-gray-900 bg-white ring-2 ring-gray-900/10"
+                : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            <div className="flex items-center gap-md">
+              <span
+                className={`flex h-10 w-10 items-center justify-center rounded-xl ${
+                  platform.code === "TIKTOK"
+                    ? "bg-gray-900 text-white"
+                    : platform.code === "SHOPEE"
+                    ? "bg-orange-50 text-[#e86a33]"
+                    : "bg-emerald-50 text-emerald-600"
+                }`}
+              >
+                <Store size={18} strokeWidth={2.25} />
+              </span>
+              <div>
+                <div className="text-[14px] font-black text-gray-900">{platform.name}</div>
+                <div className="mt-1 text-[12px] font-medium text-gray-500">
+                  {platform.count.toLocaleString("vi-VN")} don - {platform.unmappedCount.toLocaleString("vi-VN")} chua map
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-[11px] font-bold uppercase text-gray-400">Chua tra</div>
+              <div className="mt-1 text-[14px] font-black text-[#e86a33]">{formatCurrency(platform.unpaidTotal)}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* TABS — 2 luồng tách biệt: (1) sàn đã trả tiền cho MÌNH chưa, (2) mình đã trả khách chưa */}
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
         <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} icon={LayoutGrid} />
         <TabButton active={currentTab === "unassigned"} onClick={() => handleTabChange("unassigned")} label="Chưa map khách" count={counts.unassigned} icon={UserRoundX} />
@@ -136,13 +190,13 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         )}
       </div>
 
-      {/* INFO BOX theo từng tab — giải thích rõ ý nghĩa để đỡ nhầm giữa "tiền Shopee trả mình" và "mình trả khách" */}
+      {/* INFO BOX theo từng tab — giải thích rõ ý nghĩa để đỡ nhầm giữa "tiền sàn trả mình" và "mình trả khách" */}
       {currentTab === "pending" && (
         <div className="flex items-start gap-sm bg-gray-50 border border-gray-200 rounded-2xl px-lg py-md">
           <img src="/heoQA.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
           <p className="text-[13px] text-gray-600 font-medium leading-relaxed">
-            Shopee <strong>chưa xác nhận</strong> sản phẩm nào trong đơn là "Hoàn thành" hay "Đã huỷ" — số tiền hiển thị chỉ là ước tính,
-            có thể thay đổi khi <strong>import lại CSV mới</strong> sau khi Shopee cập nhật trạng thái.
+            Sàn <strong>chưa xác nhận</strong> sản phẩm nào trong đơn là "Hoàn thành" hay "Đã huỷ" — số tiền hiển thị chỉ là ước tính.
+            Shopee cập nhật qua CSV import; TikTok Shop cập nhật qua webhook/sync RioHub.
           </p>
         </div>
       )}
@@ -150,7 +204,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         <div className="flex items-start gap-sm bg-red-50 border border-red-200 rounded-2xl px-lg py-md">
           <img src="/heoQA.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
           <p className="text-[13px] text-red-700 font-medium leading-relaxed">
-            Shopee báo <strong>tất cả sản phẩm trong đơn đều bị huỷ</strong> (khách huỷ đơn hoặc trả hàng trước khi được duyệt) — không tính hoa hồng.
+            Sàn báo <strong>tất cả sản phẩm trong đơn đều bị huỷ</strong> (khách huỷ đơn hoặc trả hàng trước khi được duyệt) — không tính hoa hồng.
             Đơn đã duyệt rồi mới bị huỷ nằm ở tab <strong>⚠️ Clawback</strong> riêng, không nằm ở đây.
           </p>
         </div>
@@ -168,9 +222,9 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         <div className="flex items-start gap-sm bg-amber-50 border border-amber-200 rounded-2xl px-lg py-md">
           <img src="/heochodoi.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
           <p className="text-[13px] text-amber-700 font-medium leading-relaxed">
-            Shopee đã báo <strong>"Hoàn thành"</strong> nhưng hoa hồng còn trong thời gian đối soát — hệ thống chỉ tính là
+            Sàn đã báo <strong>"Hoàn thành"</strong> nhưng hoa hồng còn trong thời gian đối soát — hệ thống chỉ tính là
             <strong> "💰 Tiền đã về"</strong> (và cho khách rút) sau <strong>15 ngày kể từ ngày hoàn thành</strong>.
-            Các đơn này sẽ tự chuyển tab khi đủ điều kiện ở lần import CSV tiếp theo.
+            Các đơn này sẽ tự chuyển tab khi đủ điều kiện ở lần đối soát tiếp theo.
           </p>
         </div>
       )}
@@ -178,7 +232,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         <div className="flex items-start gap-sm bg-emerald-50 border border-emerald-200 rounded-2xl px-lg py-md">
           <img src="/heovitien.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
           <p className="text-[13px] text-emerald-700 font-medium leading-relaxed">
-            Toàn bộ đơn ở đây <strong>Shopee đã duyệt và trả hoa hồng thật cho bạn</strong> — không phân biệt đã trả tiền cho khách hay chưa.
+            Toàn bộ đơn ở đây <strong>sàn đã duyệt và trả hoa hồng thật cho bạn</strong> — không phân biệt đã trả tiền cho khách hay chưa.
             Muốn xem riêng phần <strong>chưa trả khách</strong> hay <strong>đã trả khách</strong>, bấm 2 tab kế bên.
           </p>
         </div>
@@ -187,7 +241,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         <div className="flex items-start gap-sm bg-amber-50 border border-amber-200 rounded-2xl px-lg py-md">
           <img src="/heochodoi.png" alt="" className="h-[26px] w-[26px] object-contain shrink-0 -mt-[2px]" />
           <p className="text-[13px] text-amber-700 font-medium leading-relaxed">
-            Tiền Shopee đã về (approved) nhưng <strong>bạn chưa chuyển cho khách</strong>. Vào trang <strong>Thanh toán</strong> để tạo phiếu chi cho khách.
+            Tiền sàn đã về (approved) nhưng <strong>bạn chưa chuyển cho khách</strong>. Vào trang <strong>Thanh toán</strong> để tạo phiếu chi cho khách.
           </p>
         </div>
       )}
@@ -195,7 +249,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
         <div className="flex items-start gap-sm bg-purple-50 border border-purple-200 rounded-2xl px-lg py-md">
           <span className="text-[20px] leading-none">🎁</span>
           <p className="text-[13px] text-purple-700 font-medium leading-relaxed">
-            Đây là các dòng <strong>hoa hồng giới thiệu</strong> tự động sinh ra khi đơn của người được giới thiệu (F1) được duyệt — mã đơn luôn có dạng <strong>REF-...</strong>, không phải đơn Shopee thật.
+            Đây là các dòng <strong>hoa hồng giới thiệu</strong> tự động sinh ra khi đơn của người được giới thiệu (F1) được duyệt — mã đơn luôn có dạng <strong>REF-...</strong>, không phải đơn sàn thật.
             Số tiền ở cột "Tiền hoàn" được trích thẳng từ phần hệ thống giữ (không đụng vào phần khách F1 nhận), và cộng vào ví người giới thiệu y hệt tiền hoàn bình thường — rút được đầy đủ.
           </p>
         </div>
@@ -276,7 +330,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
                     <td className="px-md py-sm" data-label="Đơn hàng / Tracking">
                       <div className="font-mono font-bold text-gray-900 flex items-center gap-1">
                         {o.clawbackWarning && (
-                          <span title="Quá 15 ngày — kiểm tra Shopee đã thanh toán chưa">
+                          <span title="Quá thời gian đối soát — kiểm tra sàn đã thanh toán chưa">
                             <img src="/heothongbao.png" alt="" className="h-4 w-4 object-contain shrink-0" />
                           </span>
                         )}

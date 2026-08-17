@@ -41,10 +41,11 @@ export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
   const [commitResult, setCommitResult] = useState<CommitResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasCsvPlatform = platforms.length > 0;
 
   async function runPreview(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) return;
+    if (!file || !hasCsvPlatform) return;
     setLoading(true);
     setError(null);
     setCommitResult(null);
@@ -68,7 +69,7 @@ export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
   }
 
   async function runCommit() {
-    if (!file) return;
+    if (!file || !hasCsvPlatform) return;
     setLoading(true);
     setError(null);
 
@@ -96,8 +97,13 @@ export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
     <div className="flex flex-col gap-lg">
       <Card variant="default" className="border border-gray-100">
         <form onSubmit={runPreview} className="flex flex-col gap-lg">
+          {!hasCsvPlatform && (
+            <div className="rounded-xl bg-amber-50 px-lg py-md text-[13px] font-medium text-amber-700">
+              Chua co nen tang nao dung CSV import. TikTok Shop duoc dong bo qua RioHub trong trang Cai dat.
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-lg sm:grid-cols-2">
-            <Select value={platformId} onChange={(e) => setPlatformId(e.target.value)}>
+            <Select value={platformId} onChange={(e) => setPlatformId(e.target.value)} disabled={!hasCsvPlatform}>
               {platforms.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.label}
@@ -134,7 +140,7 @@ export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
           </label>
 
           {error && <div className="text-[14px] text-red-500">{error}</div>}
-          <Button type="submit" disabled={loading || !file} className="w-fit">
+          <Button type="submit" disabled={loading || !file || !hasCsvPlatform} className="w-fit">
             {loading ? "Đang đọc file..." : "Xem trước dữ liệu"}
           </Button>
         </form>

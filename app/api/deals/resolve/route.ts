@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { resolveShortLink, normalizeUrl } from "@/lib/linkConversion";
+import { detectPlatform, resolveShortLink, normalizeUrl } from "@/lib/linkConversion";
 import { generateShortCode, buildShortUrl } from "@/lib/shortLink";
 import { fetchProductInfo } from "@/lib/productInfo";
 import { createTrackingLink } from "@/lib/trackingLinkService";
@@ -55,10 +55,15 @@ export async function POST(req: NextRequest) {
   let affiliateUrl = cleanLink;
   let productTitle: string | null = null;
   let shopeeImageUrl: string | null = null;
+  const detectedPlatform = detectPlatform(cleanLink);
+  const platformCode =
+    detectedPlatform === "shopee" ? "SHOPEE" :
+    detectedPlatform === "tiktok" ? "TIKTOK" :
+    null;
 
-  if (cleanLink.includes("shopee.vn")) {
+  if (platformCode) {
     try {
-      const platform = await prisma.platform.findFirst({ where: { code: "SHOPEE" } });
+      const platform = await prisma.platform.findFirst({ where: { code: platformCode, status: "active" } });
       if (platform) {
         const systemCustomer = await getSystemCustomer();
         const result = await createTrackingLink({
@@ -90,6 +95,7 @@ export async function POST(req: NextRequest) {
     rawInputLink: url.trim(),
     cleanLink,
     affiliateUrl,
+    platformCode: platformCode ?? "SHOPEE",
     shortCode,   // trả về để client giữ và truyền lên khi tạo deal
     shortUrl,    // link đã dạng tên miền của mình, hiện ngay cho admin
     productTitle,

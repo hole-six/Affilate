@@ -1,5 +1,3 @@
-import { buildTikTokAffiliateUrlViaAccessTrade } from "./accesstrade";
-
 export type DetectedPlatform = "shopee" | "tiktok" | "unknown";
 export type AffiliateSubIds = {
   subId1?: string;
@@ -114,11 +112,8 @@ function safeDecodeURIComponent(value: string): string {
   }
 }
 
-// NOTE: Shopee dung link mock dang s.shopee.vn/an_redir (chua co API affiliate
-// Shopee that — xem 05-ghi-chu-nghien-cuu-va-rui-ro.md). TikTok Shop di qua
-// AccessTrade (mang affiliate that, xem lib/accesstrade.ts) khi da cau hinh
-// ACCESSTRADE_API_TOKEN/ACCESSTRADE_TIKTOK_CAMPAIGN_ID, neu chua thi fallback
-// ve link mock (gan sub_id truc tiep vao URL goc) de khong lam gian doan flow.
+// NOTE: Shopee still uses the existing affiliate URL builder. TikTok Shop no
+// longer uses this fallback; trackingLinkService routes it through RioHub.
 export async function buildAffiliateUrl(
   normalizedUrl: string,
   trackingCode: string,
@@ -131,8 +126,7 @@ export async function buildAffiliateUrl(
   }
 
   if (platformCode === "TIKTOK") {
-    const accessTradeLink = await buildTikTokAffiliateUrlViaAccessTrade(normalizedUrl, trackingCode, subIds);
-    if (accessTradeLink) return accessTradeLink;
+    throw new Error("TikTok Shop phai tao link qua RioHub");
   }
 
   try {

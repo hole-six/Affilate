@@ -142,7 +142,7 @@ export function buildConvertLinkPromptMessage(): string {
   return [
     "🔄 <b>Đổi link nhanh</b>",
     "",
-    "Dán link Shopee bạn muốn đổi vào ngay khung chat này (chỉ cần gửi link, không cần lệnh gì thêm), bot sẽ trả về link hoàn tiền ngay lập tức.",
+    "Dán link Shopee hoặc TikTok Shop vào ngay khung chat này, bot sẽ trả về link hoàn tiền ngay lập tức.",
   ].join("\n");
 }
 
@@ -150,7 +150,7 @@ export function buildTelegramHelpMessage(): string {
   return [
     "👋 <b>Chào mừng đến với bot ivi Hoàn Tiền!</b>",
     "",
-    "Gửi link Shopee, bot sẽ đổi sang link hoàn tiền ngay lập tức.",
+    "Gửi link Shopee hoặc TikTok Shop, bot sẽ đổi sang link hoàn tiền ngay lập tức.",
     "",
     "<b>Lệnh nhanh:</b>",
     "💰 /wallet — xem số dư hoàn tiền",
@@ -161,7 +161,7 @@ export function buildTelegramHelpMessage(): string {
     "🎁 /referral — link mời bạn & hoa hồng giới thiệu",
     "📖 /help — xem lại hướng dẫn này",
     "",
-    "Ví dụ: <code>https://shopee.vn/...</code>",
+    "Ví dụ: <code>https://shopee.vn/...</code> hoặc <code>https://www.tiktok.com/...</code>",
   ].join("\n");
 }
 
@@ -193,17 +193,8 @@ export function buildLinkExpiredMessage(): string {
 
 export function buildUnsupportedPlatformMessage(rawUrl: string): string {
   return [
-    "🙁 Bot đã nhận link nhưng hiện chỉ hỗ trợ <b>Shopee</b>.",
+    "🙁 Bot đã nhận link nhưng hiện chỉ hỗ trợ <b>Shopee/TikTok Shop</b>.",
     `Link vừa gửi: ${escapeHtml(rawUrl)}`,
-  ].join("\n");
-}
-
-// TikTok Shop tạm thời chỉ đổi được trên website, chưa hỗ trợ qua Telegram —
-// khác với link Shopee vẫn hoạt động bình thường ở cả 2 nơi.
-export function buildTikTokDisabledOnTelegramMessage(): string {
-  return [
-    "🙁 Bot hiện <b>chưa hỗ trợ đổi link TikTok Shop</b> qua Telegram.",
-    "Vui lòng dùng website iviback.vn để đổi link TikTok, hoặc gửi link Shopee vào đây nhé.",
   ].join("\n");
 }
 

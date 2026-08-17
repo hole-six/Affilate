@@ -12,7 +12,7 @@ export default async function AdminPaymentsPage() {
     withdrawRequests,
     allCustomers,    // toàn bộ khách — để admin chủ động chọn tạo phiếu, không chỉ ai đã gửi yêu cầu
   ] = await Promise.all([
-    // ✅ Đơn ĐỦ ĐIỀU KIỆN: Shopee đã xác nhận hoa hồng (orderStatus=approved) + chưa thanh toán
+    // ✅ Đơn ĐỦ ĐIỀU KIỆN: sàn đã xác nhận hoa hồng (orderStatus=approved) + chưa thanh toán
     // + khách đang có 1 yêu cầu rút tiền "pending" — admin KHÔNG tự động thấy toàn bộ
     // khách có số dư, chỉ thấy ai đã chủ động yêu cầu, để dễ quản lý hơn.
     prisma.order.findMany({
@@ -193,7 +193,7 @@ export default async function AdminPaymentsPage() {
           <div className="relative flex items-center gap-md">
             <img src="/heoQA.png" alt="" className="h-12 w-12 object-contain transition-transform group-hover:scale-110" />
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Chờ Shopee duyệt</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Chờ sàn duyệt</div>
               <div className="text-[24px] font-black text-blue-500 tabular-nums leading-tight">{waitingOrders.length}</div>
               <div className="text-[10px] text-gray-400">Chưa thể tạo phiếu</div>
             </div>

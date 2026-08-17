@@ -26,6 +26,7 @@ type Deal = {
   uploadedImageUrl: string | null;
   shopeeImageUrl: string | null;
   affiliateUrl: string;
+  platformCode: string;
   shortUrl: string | null;
   status: string;
   clicks: number;
@@ -291,7 +292,9 @@ function EditDealModal({ deal, onSave, onClose }: {
 
           {/* Affiliate link (read-only) */}
           <div className="rounded-xl bg-gray-50 border border-gray-100 px-md py-sm">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">Link Shopee (affiliate của bạn)</div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-0.5">
+              Link {deal.platformCode === "TIKTOK" ? "TikTok Shop" : "Shopee"} (affiliate)
+            </div>
             <a href={deal.affiliateUrl} target="_blank" rel="noopener" className="text-[12px] text-sky-600 hover:underline break-all line-clamp-2">
               {deal.affiliateUrl}
             </a>

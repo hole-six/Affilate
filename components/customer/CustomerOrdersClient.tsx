@@ -60,7 +60,7 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
       const daysText = order.daysLeft === 0 ? "hôm nay" : order.daysLeft === 1 ? "1 ngày nữa" : `${order.daysLeft} ngày nữa`;
       return <span className="inline-flex rounded-md bg-blue-50 px-2 py-1 text-[11px] font-bold text-blue-600">🕐 Đang đối soát — còn {daysText}</span>;
     }
-    return <span className="inline-flex rounded-md bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-600">⏳ Chờ Shopee xác nhận</span>;
+    return <span className="inline-flex rounded-md bg-amber-50 px-2 py-1 text-[11px] font-bold text-amber-600">⏳ Chờ sàn xác nhận</span>;
   };
 
   const getStatusHint = (order: Order) => {
@@ -70,9 +70,9 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
       if (order.completedAtText && order.readyAtText) {
         return `Hoàn thành ngày ${order.completedAtText} — đủ điều kiện rút từ ngày ${order.readyAtText} (theo quy định 15 ngày đối soát, phòng trường hợp đổi/trả hàng).`;
       }
-      return "Shopee đã xác nhận đơn hoàn thành. Theo quy định, tiền hoàn chỉ chắc chắn về ví sau đúng 15 ngày kể từ ngày hoàn thành (thời gian Shopee đối soát, phòng trường hợp đổi/trả hàng).";
+      return "Sàn đã xác nhận đơn hoàn thành. Theo quy định, tiền hoàn chỉ chắc chắn về ví sau thời gian đối soát, phòng trường hợp đổi/trả hàng.";
     }
-    return "Shopee chưa xác nhận đơn đã hoàn thành giao hàng — tiền hoàn ước tính bên dưới chưa chắc chắn, có thể thay đổi hoặc không được ghi nhận nếu đơn bị huỷ.";
+    return "Sàn chưa xác nhận đơn đã hoàn thành giao hàng — tiền hoàn ước tính bên dưới chưa chắc chắn, có thể thay đổi hoặc không được ghi nhận nếu đơn bị huỷ.";
   };
 
   return (
@@ -97,7 +97,7 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
       {/* TABS */}
       <div className="flex flex-nowrap md:flex-wrap items-center gap-sm overflow-x-auto pb-2 -mx-md px-md md:mx-0 md:px-0 scrollbar-hide w-full max-w-[100vw]">
         <TabButton active={currentTab === "all"} onClick={() => handleTabChange("all")} label="Tất cả" count={counts.all} />
-        <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="⏳ Chờ Shopee xác nhận" count={counts.pending} />
+        <TabButton active={currentTab === "pending"} onClick={() => handleTabChange("pending")} label="⏳ Chờ sàn xác nhận" count={counts.pending} />
         <TabButton active={currentTab === "reconciling"} onClick={() => handleTabChange("reconciling")} label="🕐 Đang đối soát" count={counts.reconciling} />
         <TabButton active={currentTab === "processing"} onClick={() => handleTabChange("processing")} label="💰 Chờ chuyển khoản" count={counts.processing} />
         <TabButton active={currentTab === "completed"} onClick={() => handleTabChange("completed")} label="✅ Đã nhận tiền" count={counts.completed} />
@@ -107,14 +107,14 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
       {/* GIẢI THÍCH THEO TAB — giúp khách hiểu rõ từng trạng thái nghĩa là gì */}
       {currentTab === "pending" && (
         <InfoBox tone="amber">
-          Shopee <strong>chưa xác nhận</strong> bạn đã nhận hàng/hoàn tất đơn. Số tiền hoàn hiển thị chỉ là{" "}
-          <strong>ước tính</strong> — có thể thay đổi hoặc mất nếu đơn bị huỷ/hoàn trả trước khi Shopee xác nhận.
+          Sàn <strong>chưa xác nhận</strong> bạn đã nhận hàng/hoàn tất đơn. Số tiền hoàn hiển thị chỉ là{" "}
+          <strong>ước tính</strong> — có thể thay đổi hoặc mất nếu đơn bị huỷ/hoàn trả trước khi sàn xác nhận.
         </InfoBox>
       )}
       {currentTab === "reconciling" && (
         <InfoBox tone="blue">
-          Shopee đã xác nhận đơn <strong>hoàn thành</strong> — số tiền hoàn đã chắc chắn hơn nhiều, nhưng theo quy định
-          vẫn cần đợi đúng <strong>15 ngày kể từ ngày hoàn thành</strong> (thời gian Shopee đối soát, phòng trường hợp
+          Sàn đã xác nhận đơn <strong>hoàn thành</strong> — số tiền hoàn đã chắc chắn hơn nhiều, nhưng theo quy định
+          vẫn cần đợi hết thời gian đối soát (Shopee/TikTok Shop, phòng trường hợp
           đổi/trả hàng) trước khi được cộng vào ví và cho rút.
         </InfoBox>
       )}
@@ -129,7 +129,7 @@ export function CustomerOrdersClient({ orders, totalPages, currentPage, counts }
       )}
       {currentTab === "cancelled" && (
         <InfoBox tone="red">
-          Đơn không được ghi nhận hoàn tiền — do Shopee huỷ/hoàn trả, hoặc hoa hồng bị Shopee đòi lại sau khi đã duyệt.
+          Đơn không được ghi nhận hoàn tiền — do sàn huỷ/hoàn trả, hoặc hoa hồng bị sàn đòi lại sau khi đã duyệt.
         </InfoBox>
       )}
 

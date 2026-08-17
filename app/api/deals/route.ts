@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   const cleanLink = formData.get("cleanLink") as string;
   const affiliateUrl = formData.get("affiliateUrl") as string;
   const shopeeImageUrl = formData.get("shopeeImageUrl") as string | null;
-  const platformCode = (formData.get("platformCode") as string) || "SHOPEE";
+  const platformCode = ((formData.get("platformCode") as string) || "SHOPEE").toUpperCase();
   const tags = formData.get("tags") as string | null;
   const category = formData.get("category") as string | null;
   const linkType = (formData.get("linkType") as string) || "product";
@@ -51,6 +51,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Xử lý upload ảnh (nếu có) — resize + nén trước khi lưu
+  const platform = await prisma.platform.findFirst({ where: { code: platformCode, status: "active" } });
+  if (!platform) {
+    return NextResponse.json({ error: "Nen tang chua duoc bat hoac khong ton tai" }, { status: 400 });
+  }
+
   let uploadedImageUrl: string | null = null;
   if (imageFile && imageFile.size > 0) {
     uploadedImageUrl = await saveOptimizedImage(imageFile, "deals");

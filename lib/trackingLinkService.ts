@@ -6,6 +6,7 @@ import { fetchProductInfo } from "./productInfo";
 import { fetchShopeeProductDetail } from "./shopeeProductApi";
 import { fetchSanCamProductData } from "./sanCamApi";
 import { estimateCashback } from "./cashbackEstimate";
+import { buildRioHubSubId, buildTikTokProductSnapshot, createRioHubTikTokProductLink } from "./riohubTikTok";
 
 export async function createTrackingLink(params: {
   originalUrl: string;
@@ -23,6 +24,9 @@ export async function createTrackingLink(params: {
   if (!platform || !customer) {
     throw new Error("Nen tang hoac khach hang khong hop le");
   }
+  if (platform.status !== "active") {
+    throw new Error("Nen tang nay dang tam tat");
+  }
 
   const trackingCode = await generateTrackingCode({
     platformCode: platform.code,
@@ -39,11 +43,34 @@ export async function createTrackingLink(params: {
     trackingCode,
     channelSource: params.channelSource,
   });
-  const affiliateUrl = await buildAffiliateUrl(normalizedUrl, trackingCode, subIds, {
-    platformCode: platform.code,
-  });
-
   const isShopee = platform.code.toUpperCase() === "SHOPEE";
+  const isTikTok = platform.code.toUpperCase() === "TIKTOK";
+
+  let affiliateUrl: string;
+  let tiktokSnapshot: Awaited<ReturnType<typeof buildTikTokProductSnapshot>> | null = null;
+  if (isTikTok) {
+    const rioHubSubId = buildRioHubSubId({
+      customerCode: customer.customerCode,
+      trackingCode,
+      channelSource: params.channelSource,
+    });
+    const rioHubLink = await createRioHubTikTokProductLink({
+      productUrl: params.originalUrl,
+      subId: rioHubSubId,
+      channel: params.channelSource,
+    });
+    affiliateUrl = rioHubLink.affiliate_link;
+    tiktokSnapshot = await buildTikTokProductSnapshot(rioHubLink.product);
+    subIds.subId1 = customer.customerCode;
+    subIds.subId2 = trackingCode;
+    subIds.subId3 = params.channelSource.toUpperCase();
+    subIds.subId4 = "";
+    subIds.subId5 = "";
+  } else {
+    affiliateUrl = await buildAffiliateUrl(normalizedUrl, trackingCode, subIds, {
+      platformCode: platform.code,
+    });
+  }
 
   // Thử API Sàn Cam (data.addlivetag.com) TRƯỚC — nhanh, chính xác, giải
   // quyết được cả link dạng /opaanlp/ mà scrape HTML không lấy được. Đây là
@@ -53,21 +80,23 @@ export async function createTrackingLink(params: {
   const sanCamData = isShopee ? await fetchSanCamProductData(normalizedUrl) : null;
 
   const [productInfo, shopeeDetail] = await Promise.all([
-    sanCamData ? Promise.resolve(null) : fetchProductInfo(normalizedUrl),
+    sanCamData || tiktokSnapshot ? Promise.resolve(null) : fetchProductInfo(normalizedUrl),
     !sanCamData && isShopee ? fetchShopeeProductDetail(normalizedUrl) : Promise.resolve(null),
   ]);
 
-  const productTitle = sanCamData?.title ?? productInfo?.title ?? shopeeDetail?.name ?? null;
-  const productImage = sanCamData?.image ?? productInfo?.image ?? shopeeDetail?.image ?? null;
+  const productTitle = tiktokSnapshot?.productTitle ?? sanCamData?.title ?? productInfo?.title ?? shopeeDetail?.name ?? null;
+  const productImage = tiktokSnapshot?.productImage ?? sanCamData?.image ?? productInfo?.image ?? shopeeDetail?.image ?? null;
   // Ưu tiên: nhập tay > Sàn Cam API > JSON-LD (Googlebot scrape) > Shopee internal API
   const productPrice =
     (params.manualPrice && params.manualPrice > 0)
       ? params.manualPrice
-      : (sanCamData?.price ?? productInfo?.price ?? shopeeDetail?.price ?? null);
-  const productSold = sanCamData?.sold ?? shopeeDetail?.sold ?? productInfo?.sold ?? null;
+      : (tiktokSnapshot?.productPrice ?? sanCamData?.price ?? productInfo?.price ?? shopeeDetail?.price ?? null);
+  const productSold = tiktokSnapshot?.productSold ?? sanCamData?.sold ?? shopeeDetail?.sold ?? productInfo?.sold ?? null;
 
   const cashback =
-    productPrice != null
+    tiktokSnapshot
+      ? null
+      : productPrice != null
       ? await estimateCashback(productTitle, productPrice, sanCamData?.commission)
       : null;
 
@@ -84,7 +113,7 @@ export async function createTrackingLink(params: {
       productImage,
       productPrice,
       productSold,
-      estimatedCashback: cashback?.estimatedCashback ?? null,
+      estimatedCashback: tiktokSnapshot?.estimatedCashback ?? cashback?.estimatedCashback ?? null,
       shortCode,
       shortUrl,
       ...subIds,
@@ -99,6 +128,6 @@ export async function createTrackingLink(params: {
     shortCode,
     shortUrl,
     subId: subIds.subId2,
-    estimatedCashbackCategory: cashback?.categoryName ?? null,
+    estimatedCashbackCategory: tiktokSnapshot?.estimatedCashbackCategory ?? cashback?.categoryName ?? null,
   };
 }

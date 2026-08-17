@@ -16,6 +16,7 @@ type ResolveResult = {
   rawInputLink: string;
   cleanLink: string;
   affiliateUrl: string;
+  platformCode: string;
   shortCode: string;
   shortUrl: string;
   productTitle: string | null;
@@ -100,7 +101,7 @@ export function CreateDealForm() {
     fd.append("shortCode", resolved.shortCode); // dùng shortCode đã pre-generate
     fd.append("shortUrl", resolved.shortUrl);
     fd.append("shopeeImageUrl", resolved.shopeeImageUrl || "");
-    fd.append("platformCode", "SHOPEE");
+    fd.append("platformCode", resolved.platformCode || "SHOPEE");
     fd.append("linkType", linkType);
     if (category) fd.append("category", category);
     if (expiresAt) fd.append("expiresAt", dealExpiryEndOfDay(expiresAt).toISOString());
@@ -275,6 +276,12 @@ export function CreateDealForm() {
         {/* ═══ STEP 2: Điền thông tin ═══ */}
         {step === 2 && resolved && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-xl">
+            <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-md py-sm">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Nen tang</span>
+              <span className="rounded-md bg-gray-900 px-2 py-1 text-[11px] font-bold text-white">
+                {resolved.platformCode === "TIKTOK" ? "TikTok Shop" : "Shopee"}
+              </span>
+            </div>
             <div className="flex flex-col lg:flex-row gap-xl">
               {/* Left: Image */}
               <div className="flex flex-col gap-sm lg:w-[280px] shrink-0">
