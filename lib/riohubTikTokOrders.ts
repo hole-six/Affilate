@@ -61,7 +61,7 @@ export async function upsertRioHubTikTokOrder(order: RioHubOrder): Promise<{
   customerId: string | null;
 }> {
   const platform = await prisma.platform.findUnique({ where: { code: "TIKTOK" } });
-  if (!platform) throw new Error("Nen tang TIKTOK chua duoc cau hinh");
+  if (!platform) throw new Error("Nền tảng TIKTOK chưa được cấu hình");
 
   const orderExternalId = buildRioHubOrderExternalId(order);
   const existing = await prisma.order.findUnique({
@@ -215,8 +215,8 @@ async function handleApprovedRioHubOrder(orderId: string) {
 
   void notifyCustomerInApp(order.customerId, {
     type: "order_approved",
-    title: "Tien da ve!",
-    message: `Don hang ${order.orderExternalId}${order.shopName ? ` (${order.shopName})` : ""} da duoc duyet - ban se nhan ${Number(order.customerRewardAmount).toLocaleString("vi-VN")}d hoan tien.`,
+    title: "Tiền đã về!",
+    message: `Đơn hàng ${order.orderExternalId}${order.shopName ? ` (${order.shopName})` : ""} đã được duyệt - bạn sẽ nhận ${Number(order.customerRewardAmount).toLocaleString("vi-VN")}đ hoàn tiền.`,
     link: "/app/orders",
   });
 
@@ -277,7 +277,7 @@ async function handleApprovedRioHubOrder(orderId: string) {
       orderedAt: order.orderedAt,
       completedAt: order.completedAt,
       shopName: order.shopName,
-      itemName: `Hoa hong gioi thieu: ${order.orderExternalId}`,
+      itemName: `Hoa hồng giới thiệu: ${order.orderExternalId}`,
       orderAmount: order.orderAmount,
       grossCommissionAmount: 0,
       netCommissionAmount: 0,
@@ -292,8 +292,8 @@ async function handleApprovedRioHubOrder(orderId: string) {
 
   void notifyCustomerInApp(customerData.referredById, {
     type: "referral_bonus",
-    title: "Hoa hong gioi thieu",
-    message: `Ban vua nhan ${Number(bonusAmount).toLocaleString("vi-VN")}d hoa hong gioi thieu tu don hang cua ban be.`,
+    title: "Hoa hồng giới thiệu",
+    message: `Bạn vừa nhận ${Number(bonusAmount).toLocaleString("vi-VN")}đ hoa hồng giới thiệu từ đơn hàng của bạn bè.`,
     link: "/app/referral",
   });
 

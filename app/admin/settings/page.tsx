@@ -30,7 +30,7 @@ export default async function AdminSettingsPage() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
             <Plug size={16} strokeWidth={1.75} />
           </span>
-          Tich hop TikTok Shop RioHub
+          Tích hợp TikTok Shop RioHub
         </h2>
         <TikTokIntegrationPanel platformStatus={tiktokPlatform?.status ?? "inactive"} config={getRioHubConfigStatus()} />
       </Card>
@@ -53,7 +53,7 @@ export default async function AdminSettingsPage() {
         />
       </Card>
 
-      {/* Category commission rate table (uoc tinh cashback) */}
+      {/* Category commission rate table (ước tính cashback) */}
       <Card variant="default" className="border border-gray-100">
         <h2 className="display-xs mb-lg flex items-center gap-sm">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">

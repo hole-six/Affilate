@@ -22,10 +22,10 @@ export async function createTrackingLink(params: {
   ]);
 
   if (!platform || !customer) {
-    throw new Error("Nen tang hoac khach hang khong hop le");
+    throw new Error("Nền tảng hoặc khách hàng không hợp lệ");
   }
   if (platform.status !== "active") {
-    throw new Error("Nen tang nay dang tam tat");
+    throw new Error("Nền tảng này đang tạm tắt");
   }
 
   const trackingCode = await generateTrackingCode({

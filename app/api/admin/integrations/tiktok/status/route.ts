@@ -6,7 +6,7 @@ import { getRioHubConfigStatus } from "@/lib/riohubTikTok";
 export async function GET() {
   const session = await getSession();
   if (!session || session.role !== "admin") {
-    return NextResponse.json({ error: "Khong co quyen" }, { status: 403 });
+    return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
   const platform = await prisma.platform.findUnique({ where: { code: "TIKTOK" } });

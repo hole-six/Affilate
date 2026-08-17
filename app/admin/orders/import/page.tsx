@@ -9,17 +9,17 @@ export default async function AdminOrdersImportPage() {
   return (
     <div className="flex flex-col gap-2xl">
       <PageHeader
-        title="Import doi soat don hang"
-        subtitle="Shopee dung CSV import. TikTok Shop dung RioHub webhook/sync de lay sub2/trackingCode va tu map khach."
+        title="Import đối soát đơn hàng"
+        subtitle="Shopee dùng CSV import. TikTok Shop dùng RioHub webhook/sync để lấy sub2/trackingCode và tự map khách."
       />
 
       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-lg py-md text-[13px] leading-relaxed text-amber-800">
-        File xuat tu TikTok dashboard thuong khong co sub2/trackingCode nen khong the map khach chinh xac bang CSV. Voi
-        TikTok, vao{" "}
+        File xuất từ TikTok dashboard thường không có sub2/trackingCode nên không thể map khách chính xác bằng CSV. Với
+        TikTok, vào{" "}
         <a href="/admin/settings" className="font-bold underline">
-          Cai dat - Tich hop nen tang
+          Cài đặt - Tích hợp nền tảng
         </a>{" "}
-        de dong bo qua RioHub theo khoang ngay hoac dan ID don hang tu file.
+        để đồng bộ qua RioHub theo khoảng ngày hoặc dán ID đơn hàng từ file.
       </div>
 
       <ImportOrdersWizard platforms={csvPlatforms.map((p) => ({ id: p.id, label: p.name }))} />

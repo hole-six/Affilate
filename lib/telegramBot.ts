@@ -309,7 +309,14 @@ export function buildOrdersListMessage(
     return "📦 Bạn chưa có đơn hàng nào. Đổi link và mua sắm để bắt đầu tích luỹ nhé!";
   }
 
-  const statusEmoji: Record<string, string> = { approved: "✅", pending: "⏳", rejected: "❌" };
+  const statusEmoji: Record<string, string> = {
+    approved: "✅",
+    pending: "⏳",
+    processing: "🕐",
+    cancelled: "❌",
+    rejected: "❌",
+    clawback: "⚠️",
+  };
   const lines = orders.map((o) => {
     const emoji = statusEmoji[o.orderStatus] ?? "•";
     return `${emoji} <code>${escapeHtml(o.orderExternalId)}</code> — ${escapeHtml(o.orderStatus)} — <b>${formatCurrency(o.customerRewardAmount)}</b>`;
@@ -322,7 +329,7 @@ export function buildLinksListMessage(
   links: { trackingCode: string; shortUrl: string | null; createdAt: Date }[]
 ): string {
   if (links.length === 0) {
-    return "🔗 Bạn chưa tạo link nào. Gửi link Shopee cho bot để bắt đầu đổi link hoàn tiền.";
+    return "🔗 Bạn chưa tạo link nào. Gửi link Shopee hoặc TikTok Shop cho bot để bắt đầu đổi link hoàn tiền.";
   }
 
   const lines = links.map((l) => `🔗 <a href="${l.shortUrl ?? "#"}">${l.shortUrl ?? l.trackingCode}</a>`);

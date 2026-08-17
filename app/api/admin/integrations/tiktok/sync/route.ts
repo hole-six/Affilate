@@ -5,7 +5,7 @@ import { syncRioHubTikTokOrders } from "@/lib/riohubTikTokOrders";
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session || session.role !== "admin") {
-    return NextResponse.json({ error: "Khong co quyen" }, { status: 403 });
+    return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
   const body = await req.json().catch(() => ({}));
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, result });
   } catch (error) {
     return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : "Khong dong bo duoc don TikTok" },
+      { ok: false, error: error instanceof Error ? error.message : "Không đồng bộ được đơn TikTok" },
       { status: 400 }
     );
   }

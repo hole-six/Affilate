@@ -63,6 +63,7 @@ export default async function ReferralPage() {
           orderExternalId: true,
           orderStatus: true,
           customerRewardAmount: true,
+          systemProfitAmount: true,
           itemName: true,
           shopName: true,
           createdAt: true,
@@ -103,7 +104,7 @@ export default async function ReferralPage() {
   const friendOrderTimeline = friendOrders.map((fo) => {
     const friend = friendById.get(fo.customerId ?? "");
     const refBonus = refBonusByOriginalKey.get(`${fo.platformId}:${fo.orderExternalId}`);
-    const estimatedBonus = Number(fo.customerRewardAmount) * referralRate;
+    const estimatedBonus = (Number(fo.customerRewardAmount) + Number(fo.systemProfitAmount)) * referralRate;
 
     let bonusState: "received" | "clawed_back" | "not_eligible" | "pending_eligible" | "pending_capped";
     let bonusAmount: number;

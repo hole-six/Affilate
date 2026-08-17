@@ -6,7 +6,7 @@ import { createTrackingLink } from "@/lib/trackingLinkService";
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Chua dang nhap" }, { status: 401 });
+    return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
   }
 
   const customerId = session.role === "customer" ? session.customerId : req.nextUrl.searchParams.get("customerId");
@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session) {
-    return NextResponse.json({ error: "Chua dang nhap" }, { status: 401 });
+    return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
   }
 
   const body = await req.json();
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   };
 
   if (!originalUrl || (!bodyPlatformId && !platformCode)) {
-    return NextResponse.json({ error: "Thieu link goc hoac nen tang" }, { status: 400 });
+    return NextResponse.json({ error: "Thiếu link gốc hoặc nền tảng" }, { status: 400 });
   }
 
   // Cho phép truyền platformCode ("SHOPEE"/"TIKTOK") thay vì platformId nội
@@ -53,17 +53,17 @@ export async function POST(req: NextRequest) {
   if (!platformId && platformCode) {
     const platform = await prisma.platform.findUnique({ where: { code: platformCode } });
     if (!platform) {
-      return NextResponse.json({ error: "Nen tang khong hop le" }, { status: 400 });
+      return NextResponse.json({ error: "Nền tảng không hợp lệ" }, { status: 400 });
     }
     platformId = platform.id;
   }
   if (!platformId) {
-    return NextResponse.json({ error: "Thieu nen tang" }, { status: 400 });
+    return NextResponse.json({ error: "Thiếu nền tảng" }, { status: 400 });
   }
 
   const customerId = session.role === "customer" ? session.customerId : body.customerId;
   if (!customerId) {
-    return NextResponse.json({ error: "Thieu khach hang" }, { status: 400 });
+    return NextResponse.json({ error: "Thiếu khách hàng" }, { status: 400 });
   }
 
   try {
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Khong tao duoc link",
+        error: error instanceof Error ? error.message : "Không tạo được link",
       },
       { status: 400 }
     );

@@ -58,7 +58,7 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Khong tao duoc link");
+      setError(data.error ?? "Không tạo được link");
       return;
     }
 
@@ -91,7 +91,7 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#e86a33] text-[12px] font-bold text-white shadow-sm">
             1
           </span>
-          <span className="text-[15px] font-bold text-gray-900">Chon nen tang</span>
+          <span className="text-[15px] font-bold text-gray-900">Chọn nền tảng</span>
         </div>
 
         <div className="flex flex-wrap gap-md">
@@ -132,12 +132,12 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
             2
           </span>
           <span className="text-[14px] font-bold text-gray-900">
-            Dan link {selectedPlatform?.label ?? "san pham"}
+            Dán link {selectedPlatform?.label ?? "sản phẩm"}
           </span>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-md">
           <TextInput
-            placeholder={`Dan link ${selectedPlatform?.label ?? "san pham"} muon hoan tien vao day...`}
+            placeholder={`Dán link ${selectedPlatform?.label ?? "sản phẩm"} muốn hoàn tiền vào đây...`}
             required
             value={originalUrl}
             onChange={(e) => setOriginalUrl(e.target.value)}
@@ -150,11 +150,11 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
             className="h-12 w-fit bg-[#e86a33] text-white hover:bg-[#d65d2a] hover:shadow-md hover:shadow-[#e86a33]/30 active:bg-[#c25324] focus-visible:ring-[#e86a33]"
           >
             {loading ? (
-              "Dang tao..."
+              "Đang tạo..."
             ) : (
               <>
                 <Plus size={16} strokeWidth={2.5} />
-                Tao link
+                Tạo link
               </>
             )}
           </Button>
@@ -167,7 +167,7 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
           <div className="rounded-2xl bg-white p-lg shadow-sm ring-1 ring-black/5">
             <div className="mb-md flex items-center gap-xs text-[12px] font-bold uppercase tracking-wider text-gray-500">
               <Package size={14} strokeWidth={2.5} />
-              Thong tin san pham
+              Thông tin sản phẩm
             </div>
             <div className="flex gap-md">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gray-50 ring-1 ring-black/5 overflow-hidden">
@@ -184,11 +184,11 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="line-clamp-2 text-[14px] font-bold text-gray-900 leading-snug">
-                  {result.productTitle ?? "San pham mua sam"}
+                  {result.productTitle ?? "Sản phẩm mua sắm"}
                 </p>
                 <div className="mt-xs flex items-center gap-xs flex-wrap">
                   <span className="rounded-md bg-[#e86a33]/10 px-sm py-[2px] text-[11px] font-bold text-[#e86a33]">
-                    {selectedPlatform?.label ?? "San pham"}
+                    {selectedPlatform?.label ?? "Sản phẩm"}
                   </span>
                   <span className="font-mono text-[11px] text-gray-400 truncate">{result.trackingCode}</span>
                 </div>
@@ -199,7 +199,7 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
               <div className="mt-md flex items-center gap-md rounded-xl bg-gray-50 px-md py-sm ring-1 ring-gray-100">
                 {result.productPrice != null && (
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Gia san pham</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Giá sản phẩm</span>
                     <span className="text-[15px] font-black text-gray-900 tabular-nums">
                       {formatCurrency(result.productPrice)}
                     </span>
@@ -210,7 +210,7 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
                 )}
                 {result.estimatedCashback != null && Number(result.estimatedCashback) > 0 && (
                   <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Hoan tien uoc tinh</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Hoàn tiền ước tính</span>
                     <span className="text-[15px] font-black text-emerald-600 tabular-nums">
                       {formatCurrency(result.estimatedCashback)}
                     </span>
@@ -226,7 +226,7 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
           <div className="rounded-2xl bg-[#2bc48a]/10 p-lg ring-1 ring-[#2bc48a]/20">
             <div className="mb-md flex items-center gap-xs text-[12px] font-bold uppercase tracking-wider text-[#1f9c6d]">
               <Sparkles size={14} strokeWidth={2.5} />
-              Link hoan tien cua ban
+              Link hoàn tiền của bạn
             </div>
             <input
               readOnly
@@ -241,12 +241,12 @@ export function CustomerLinkForm({ platforms }: { platforms: Option[] }) {
                 className="flex-1 bg-[#2bc48a] text-white hover:bg-[#25ad7a] hover:shadow-md hover:shadow-[#2bc48a]/30"
               >
                 {copied ? <Check size={16} /> : <Copy size={16} />}
-                {copied ? "Da copy" : "Copy link"}
+                {copied ? "Đã copy" : "Copy link"}
               </Button>
               <a href={result.shortUrl} target="_blank" rel="noreferrer">
                 <Button type="button" variant="tertiary">
                   <ExternalLink size={16} />
-                  Mo
+                  Mở
                 </Button>
               </a>
             </div>

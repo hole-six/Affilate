@@ -99,7 +99,7 @@ export function ImportOrdersWizard({ platforms }: { platforms: Option[] }) {
         <form onSubmit={runPreview} className="flex flex-col gap-lg">
           {!hasCsvPlatform && (
             <div className="rounded-xl bg-amber-50 px-lg py-md text-[13px] font-medium text-amber-700">
-              Chua co nen tang nao dung CSV import. TikTok Shop duoc dong bo qua RioHub trong trang Cai dat.
+              Chưa có nền tảng nào dùng CSV import. TikTok Shop được đồng bộ qua RioHub trong trang Cài đặt.
             </div>
           )}
           <div className="grid grid-cols-1 gap-lg sm:grid-cols-2">

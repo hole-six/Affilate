@@ -41,7 +41,7 @@ export function TikTokIntegrationPanel({ platformStatus, config }: Props) {
     });
     const data = await res.json().catch(() => ({}));
     setLoading(null);
-    setMessage(res.ok ? (active ? "Da tam tat TikTok Shop." : "Da bat TikTok Shop.") : data.error ?? "Khong cap nhat duoc nen tang");
+    setMessage(res.ok ? (active ? "Đã tạm tắt TikTok Shop." : "Đã bật TikTok Shop.") : data.error ?? "Không cập nhật được nền tảng");
     if (res.ok) router.refresh();
   }
 
@@ -51,7 +51,7 @@ export function TikTokIntegrationPanel({ platformStatus, config }: Props) {
     const res = await fetch("/api/admin/integrations/tiktok/test", { method: "POST" });
     const data = await res.json().catch(() => ({}));
     setLoading(null);
-    setMessage(res.ok ? `Ket noi RioHub OK. Creator ${data.creatorUsername}, ${data.total ?? 0} link.` : data.error ?? "Test that bai");
+    setMessage(res.ok ? `Kết nối RioHub OK. Creator ${data.creatorUsername}, ${data.total ?? 0} link.` : data.error ?? "Test thất bại");
   }
 
   async function syncOrders() {
@@ -71,11 +71,11 @@ export function TikTokIntegrationPanel({ platformStatus, config }: Props) {
     const data = await res.json().catch(() => ({}));
     setLoading(null);
     if (!res.ok) {
-      setMessage(data.error ?? "Dong bo that bai");
+      setMessage(data.error ?? "Đồng bộ thất bại");
       return;
     }
     const r = data.result;
-    setMessage(`Dong bo xong: ${r.processed} don, tao moi ${r.created}, cap nhat ${r.updated}, approved ${r.approved}, chua map ${r.unmapped}.`);
+    setMessage(`Đồng bộ xong: ${r.processed} đơn, tạo mới ${r.created}, cập nhật ${r.updated}, approved ${r.approved}, chưa map ${r.unmapped}.`);
     router.refresh();
   }
 
@@ -86,39 +86,39 @@ export function TikTokIntegrationPanel({ platformStatus, config }: Props) {
           <div className="mb-md flex items-center justify-between gap-md">
             <div className="flex items-center gap-sm">
               <Power size={16} className="text-gray-500" />
-              <div className="text-[14px] font-bold text-gray-900">Nen tang TikTok Shop</div>
+              <div className="text-[14px] font-bold text-gray-900">Nền tảng TikTok Shop</div>
             </div>
             <Badge tone={active ? "positive" : "warning"} dot>
-              {active ? "Dang bat" : "Tam tat"}
+              {active ? "Đang bật" : "Tạm tắt"}
             </Badge>
           </div>
           <p className="mb-md text-[13px] leading-relaxed text-gray-500">
-            Khi tam tat, TikTok se an khoi man tao link va API se tu choi tao link TikTok moi.
+            Khi tạm tắt, TikTok sẽ ẩn khỏi màn tạo link và API sẽ từ chối tạo link TikTok mới.
           </p>
           <Button type="button" variant={active ? "danger" : "primary"} onClick={togglePlatform} disabled={loading === "toggle"}>
             <Power size={16} />
-            {active ? "Tam tat TikTok" : "Bat TikTok"}
+            {active ? "Tạm tắt TikTok" : "Bật TikTok"}
           </Button>
         </div>
 
         <div className="rounded-2xl border border-gray-100 p-lg">
           <div className="mb-md flex items-center gap-sm">
             <ShieldCheck size={16} className="text-gray-500" />
-            <div className="text-[14px] font-bold text-gray-900">Cau hinh RioHub</div>
+            <div className="text-[14px] font-bold text-gray-900">Cấu hình RioHub</div>
           </div>
           <div className="grid grid-cols-2 gap-sm text-[12px]">
             <Status label="API key" ok={config.hasApiKey} />
             <Status label="Creator" ok={config.hasCreatorUsername} />
             <Status label="Webhook secret" ok={config.hasSigningSecret} />
-            <Status label="Tao link" ok={config.readyForLinks} />
+            <Status label="Tạo link" ok={config.readyForLinks} />
           </div>
           <div className="mt-md rounded-xl bg-gray-50 p-sm text-[12px] text-gray-500">
             <div>Base URL: <span className="font-mono">{config.baseUrl}</span></div>
-            <div>Creator: <span className="font-mono">{config.creatorUsername ?? "chua cau hinh"}</span></div>
+            <div>Creator: <span className="font-mono">{config.creatorUsername ?? "chưa cấu hình"}</span></div>
           </div>
           <Button type="button" variant="secondary" className="mt-md" onClick={testConnection} disabled={loading === "test"}>
             <Activity size={16} />
-            Kiem tra ket noi
+            Kiểm tra kết nối
           </Button>
         </div>
       </div>
@@ -126,7 +126,7 @@ export function TikTokIntegrationPanel({ platformStatus, config }: Props) {
       <div className="rounded-2xl border border-gray-100 p-lg">
         <div className="mb-md flex items-center gap-sm">
           <RefreshCw size={16} className="text-gray-500" />
-          <div className="text-[14px] font-bold text-gray-900">Dong bo don TikTok</div>
+          <div className="text-[14px] font-bold text-gray-900">Đồng bộ đơn TikTok</div>
         </div>
         <div className="grid grid-cols-1 gap-md md:grid-cols-4">
           <TextInput placeholder="time_start" value={timeStart} onChange={(e) => setTimeStart(e.target.value)} />
@@ -136,7 +136,7 @@ export function TikTokIntegrationPanel({ platformStatus, config }: Props) {
         </div>
         <div className="mt-md">
           <TextInput
-            placeholder="order_id TikTok, ngan cach dau phay neu nhieu don"
+            placeholder="order_id TikTok, ngăn cách dấu phẩy nếu nhiều đơn"
             value={orderId}
             onChange={(e) => setOrderId(e.target.value)}
           />
@@ -144,10 +144,10 @@ export function TikTokIntegrationPanel({ platformStatus, config }: Props) {
         <div className="mt-md flex items-center gap-md">
           <Button type="button" onClick={syncOrders} disabled={loading === "sync"}>
             <RefreshCw size={16} />
-            Dong bo ngay
+            Đồng bộ ngay
           </Button>
           <p className="text-[12px] text-gray-500">
-            File TikTok dashboard khong co tracking/sub2, chi dung de copy ID don hang. He thong se keo qua RioHub de map khach.
+            File TikTok dashboard không có tracking/sub2, chỉ dùng để copy ID đơn hàng. Hệ thống sẽ kéo qua RioHub để map khách.
           </p>
         </div>
       </div>
@@ -161,7 +161,7 @@ function Status({ label, ok }: { label: string; ok: boolean }) {
   return (
     <div className="flex items-center justify-between rounded-lg bg-gray-50 px-sm py-xs">
       <span className="text-gray-500">{label}</span>
-      <span className={ok ? "font-bold text-emerald-600" : "font-bold text-amber-600"}>{ok ? "OK" : "Thieu"}</span>
+      <span className={ok ? "font-bold text-emerald-600" : "font-bold text-amber-600"}>{ok ? "OK" : "Thiếu"}</span>
     </div>
   );
 }

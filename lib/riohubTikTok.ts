@@ -242,13 +242,13 @@ function getEffectiveCommissionRate(product: RioHubProduct): number {
 
 function requireCreatorUsername() {
   const { creatorUsername } = getRioHubConfig();
-  if (!creatorUsername) throw new Error("Thieu RIOHUB_TIKTOK_CREATOR_USERNAME trong .env");
+  if (!creatorUsername) throw new Error("Thiếu RIOHUB_TIKTOK_CREATOR_USERNAME trong .env");
   return creatorUsername;
 }
 
 async function rioHubRequest<T>(path: string, init: RequestInit = {}, attempt = 0): Promise<T> {
   const config = getRioHubConfig();
-  if (!config.apiKey) throw new Error("Thieu RIOHUB_API_KEY trong .env");
+  if (!config.apiKey) throw new Error("Thiếu RIOHUB_API_KEY trong .env");
 
   const response = await fetch(`${config.baseUrl}${path}`, {
     ...init,
@@ -275,7 +275,7 @@ async function rioHubRequest<T>(path: string, init: RequestInit = {}, attempt = 
         ? data.message
         : typeof data?.error === "string"
         ? data.error
-        : `RioHub API loi HTTP ${response.status}`;
+        : `RioHub API lỗi HTTP ${response.status}`;
     console.error("[RIOHUB_TIKTOK_ERROR]", { status: response.status, code, message, path, data });
     throw new RioHubError(message, response.status, code, data);
   }
