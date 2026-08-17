@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
-import { Copy, Check, Share2, QrCode, X, ChevronRight } from "lucide-react";
+import { Copy, Check, Download, QrCode, X, ChevronRight } from "lucide-react";
 import { Star } from "lucide-react";
 
 type Props = {
@@ -27,6 +27,7 @@ export function InviteSection({
   const [copied, setCopied] = useState(false);
   const [showQR, setShowQR] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const referralPercent = Math.round(referralRate * 1000) / 10; // vd: 0.05 -> 5
 
   useEffect(() => {
@@ -39,6 +40,73 @@ export function InviteSection({
     navigator.clipboard.writeText(inviteUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleDownloadQR() {
+    if (!qrDataUrl || !inviteUrl || downloading) return;
+
+    setDownloading(true);
+    try {
+      const canvas = document.createElement("canvas");
+      const scale = 2;
+      const width = 420;
+      const height = 620;
+      canvas.width = width * scale;
+      canvas.height = height * scale;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.scale(scale, scale);
+
+      drawRoundRect(ctx, 0, 0, width, height, 32);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+
+      ctx.fillStyle = "#fff1e9";
+      ctx.fillRect(0, 0, width, 150);
+
+      const mascot = await loadImage("/heoqua.png").catch(() => null);
+      if (mascot) ctx.drawImage(mascot, width / 2 - 32, 22, 64, 64);
+
+      ctx.fillStyle = "#111827";
+      ctx.font = "800 25px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("Mã QR giới thiệu", width / 2, 112);
+
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "600 15px Arial, sans-serif";
+      ctx.fillText("Cho bạn bè quét để đăng ký ngay", width / 2, 136);
+
+      drawRoundRect(ctx, 82, 185, 256, 256, 18);
+      ctx.fillStyle = "#ffffff";
+      ctx.fill();
+      ctx.strokeStyle = "#f3f4f6";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      const qrImage = await loadImage(qrDataUrl);
+      ctx.drawImage(qrImage, 102, 205, 216, 216);
+
+      drawRoundRect(ctx, 42, 468, 336, 70, 28);
+      ctx.fillStyle = "#f9fafb";
+      ctx.fill();
+
+      ctx.fillStyle = "#9ca3af";
+      ctx.font = "600 13px Arial, sans-serif";
+      ctx.fillText("Link giới thiệu của bạn", width / 2, 492);
+
+      ctx.fillStyle = "#334155";
+      ctx.font = "700 15px Arial, sans-serif";
+      wrapCenteredText(ctx, inviteUrl, width / 2, 516, 300, 18);
+
+      ctx.fillStyle = "#e86a33";
+      ctx.font = "800 15px Arial, sans-serif";
+      ctx.fillText(`Bạn nhận ${referralPercent}% hoa hồng`, width / 2, 575);
+
+      downloadDataUrl(canvas.toDataURL("image/png"), `ma-qr-gioi-thieu-${customerCode}.png`);
+    } finally {
+      setDownloading(false);
+    }
   }
 
   return (
@@ -194,6 +262,15 @@ export function InviteSection({
 
               {/* Copy in modal */}
               <button
+                onClick={handleDownloadQR}
+                disabled={!qrDataUrl || downloading}
+                className="w-full flex items-center justify-center gap-sm rounded-2xl bg-gray-900 py-[11px] text-[14px] font-bold text-white transition-all hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Download size={16} strokeWidth={2} />
+                {downloading ? "Đang lưu ảnh..." : "Lưu ảnh QR"}
+              </button>
+
+              <button
                 onClick={handleCopy}
                 className={`w-full flex items-center justify-center gap-sm rounded-2xl py-[11px] text-[14px] font-bold transition-all ${
                   copied
@@ -214,13 +291,6 @@ export function InviteSection({
                 )}
               </button>
 
-              <p className="text-[11px] text-gray-400 text-center leading-relaxed">
-                ⭐ Bạn nhận{" "}
-                <span className="font-bold text-[#e86a33]">{referralPercent}% hoa hồng</span>{" "}
-                {isPartner
-                  ? "trên tất cả đơn hàng của mỗi người bạn mời, không giới hạn số đơn hay thời gian"
-                  : `từ ${maxReferralOrders} đơn đầu tiên của mỗi người bạn mời (trong ${referralValidityMonths} tháng kể từ khi họ đăng ký)`}
-              </p>
             </div>
           </div>
         </div>,
@@ -228,4 +298,69 @@ export function InviteSection({
       )}
     </div>
   );
+}
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
+}
+
+function downloadDataUrl(dataUrl: string, filename: string) {
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+function drawRoundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+function wrapCenteredText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  x: number,
+  y: number,
+  maxWidth: number,
+  lineHeight: number
+) {
+  const words = text.split("");
+  let line = "";
+  let lineIndex = 0;
+
+  for (const char of words) {
+    const testLine = line + char;
+    if (ctx.measureText(testLine).width > maxWidth && line) {
+      ctx.fillText(line, x, y + lineIndex * lineHeight);
+      line = char;
+      lineIndex += 1;
+    } else {
+      line = testLine;
+    }
+  }
+
+  if (line) ctx.fillText(line, x, y + lineIndex * lineHeight);
 }
