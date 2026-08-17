@@ -33,11 +33,11 @@ const notes = [
   },
   {
     title: "Không dùng thêm app/link hoàn tiền khác",
-    body: "Shopee chỉ tính hoa hồng cho lượt click gần nhất trước khi đặt hàng. Nếu bạn bấm thêm link từ ứng dụng hoàn tiền khác, mã giảm giá ngoài hệ thống, hoặc link chia sẻ từ người khác sau khi đã bấm link của iviback, đơn sẽ bị tính cho nguồn khác.",
+    body: "Sàn thường tính hoa hồng cho lượt click hợp lệ gần nhất trước khi đặt hàng. Nếu bạn bấm thêm link từ ứng dụng hoàn tiền khác, mã giảm giá ngoài hệ thống, hoặc link chia sẻ từ người khác sau khi đã bấm link của iviback, đơn có thể bị tính cho nguồn khác.",
   },
   {
     title: "Hoàn tất đơn trong phiên, không thoát giữa chừng",
-    body: "Sau khi bấm link, nên hoàn tất đặt hàng trong cùng phiên truy cập. Thoát ứng dụng, tắt wifi hoặc chuyển sang app khác giữa lúc chuyển hướng có thể khiến Shopee không ghi nhận được nguồn click.",
+    body: "Sau khi bấm link, nên hoàn tất đặt hàng trong cùng phiên truy cập. Thoát ứng dụng, tắt wifi hoặc chuyển sang app khác giữa lúc chuyển hướng có thể khiến sàn không ghi nhận được nguồn click.",
   },
   {
     title: "Một số ngành hàng không được tính hoa hồng",
@@ -45,7 +45,7 @@ const notes = [
   },
   {
     title: "Đơn có thể bị huỷ hoa hồng ngay cả khi đã \"đã về\"",
-    body: "Nếu sau đó bạn đổi trả hàng, huỷ đơn, hoặc Shopee phát hiện gian lận, hoa hồng đã ghi nhận có thể bị thu hồi (clawback) — số tiền tương ứng sẽ được trừ lại khỏi ví nếu chưa thanh toán.",
+    body: "Nếu sau đó bạn đổi trả hàng, huỷ đơn, hoặc sàn phát hiện gian lận, hoa hồng đã ghi nhận có thể bị thu hồi (clawback) — số tiền tương ứng sẽ được trừ lại khỏi ví nếu chưa thanh toán.",
   },
   {
     title: "Thời gian đối soát thường mất 7–20 ngày",

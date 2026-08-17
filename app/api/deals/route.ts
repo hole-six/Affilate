@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   // Xử lý upload ảnh (nếu có) — resize + nén trước khi lưu
   const platform = await prisma.platform.findFirst({ where: { code: platformCode, status: "active" } });
   if (!platform) {
-    return NextResponse.json({ error: "Nen tang chua duoc bat hoac khong ton tai" }, { status: 400 });
+    return NextResponse.json({ error: "Nền tảng chưa được bật hoặc không tồn tại" }, { status: 400 });
   }
 
   let uploadedImageUrl: string | null = null;

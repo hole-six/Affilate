@@ -23,7 +23,7 @@ export async function generateShortCode(): Promise<string> {
     if (!existing) return shortCode;
   }
 
-  throw new Error("Khong tao duoc short code duy nhat");
+  throw new Error("Không tạo được short code duy nhất");
 }
 
 export function buildShortUrl(shortCode: string): string {

@@ -25,7 +25,7 @@ export default async function AdminSettingsPage() {
         subtitle="Tỷ lệ chia hoa hồng và định dạng mã tracking đang sử dụng."
       />
 
-      <Card variant="default" className="border border-gray-100">
+      <Card id="integrations" variant="default" className="scroll-mt-6 border border-gray-100">
         <h2 className="display-xs mb-lg flex items-center gap-sm">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
             <Plug size={16} strokeWidth={1.75} />

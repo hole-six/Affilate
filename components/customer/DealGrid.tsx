@@ -325,7 +325,7 @@ export function DealGrid({
             <span>
               {activeLinkType === "shop"
                 ? "Chọn sản phẩm rồi tạo link riêng ở mục Hoàn tiền trước khi mua để nhận hoàn tiền"
-                : "Bấm vào sản phẩm để mua trực tiếp trên Shopee và nhận hoàn tiền"}
+                : "Bấm vào sản phẩm để mua trực tiếp trên sàn và nhận hoàn tiền"}
             </span>
           </div>
         </>

@@ -159,7 +159,7 @@ export function AdminOrdersClient({ orders, customers, totalPages, currentPage, 
               </div>
             </div>
             <div className="text-right">
-              <div className="text-[11px] font-bold uppercase text-gray-400">Chua tra</div>
+              <div className="text-[11px] font-bold uppercase text-gray-400">Chưa trả</div>
               <div className="mt-1 text-[14px] font-black text-[#e86a33]">{formatCurrency(platform.unpaidTotal)}</div>
             </div>
           </button>

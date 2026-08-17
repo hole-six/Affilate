@@ -83,7 +83,7 @@ export function TelegramAccountForm({ account }: { account: TelegramAccount | nu
         </div>
       )}
       <Button type="submit" disabled={loading} className="w-fit">
-        {loading ? "Dang luu..." : "Luu cau hinh"}
+        {loading ? "Đang lưu..." : "Lưu cấu hình"}
       </Button>
     </form>
   );

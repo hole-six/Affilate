@@ -72,7 +72,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const platformSummaries = await Promise.all([
     {
       code: "ALL",
-      name: "Tat ca",
+      name: "Tất cả",
       count: await prisma.order.count(),
       unpaidTotal: Number((await prisma.order.aggregate({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }))._sum.customerRewardAmount ?? 0),
       unmappedCount: await prisma.order.count({ where: { customerId: null } }),

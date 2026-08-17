@@ -126,7 +126,7 @@ export async function buildAffiliateUrl(
   }
 
   if (platformCode === "TIKTOK") {
-    throw new Error("TikTok Shop phai tao link qua RioHub");
+    throw new Error("TikTok Shop phải tạo link qua RioHub");
   }
 
   try {
@@ -166,7 +166,7 @@ function buildShopeeAffiliateUrl(
 ): string {
   const affiliateId = process.env.SHOPEE_AFFILIATE_ID;
   if (!affiliateId) {
-    throw new Error("Thieu SHOPEE_AFFILIATE_ID trong .env de build link Shopee");
+    throw new Error("Thiếu SHOPEE_AFFILIATE_ID trong .env để build link Shopee");
   }
 
   const effectiveSubIds = subIds ?? { subId2: trackingCode };
