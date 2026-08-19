@@ -12,6 +12,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { CreatePaymentButton } from "@/components/admin/CreatePaymentButton";
 import { CreatePaymentForCustomer } from "@/components/admin/CreatePaymentForCustomer";
 import { MarkPaidForm } from "@/components/admin/MarkPaidForm";
+import { CustomerMessageButton } from "@/components/admin/CustomerMessageButton";
 import type { ComboboxOption } from "@/components/ui/SearchableSelect";
 
 type CustomerPending = {
@@ -235,8 +236,17 @@ function BatchDetailModal({ batchId, onClose }: { batchId: string; onClose: () =
                     const o = item.order;
                     const img = o?.trackingLink?.productImage;
                     const title = o?.trackingLink?.productTitle ?? o?.itemName ?? o?.orderExternalId;
+                    const orderAmount = Number(o?.orderAmount ?? 0);
+                    const commission = Number(o?.commissionAmount ?? 0);
+                    // Hoa hồng lớn hơn giá trị đơn = dấu hiệu số liệu CSV bị đọc sai
+                    const suspicious = orderAmount > 0 && commission > orderAmount;
                     return (
-                      <div key={item.id} className="flex items-center gap-md rounded-xl bg-gray-50 border border-gray-100 p-sm">
+                      <div
+                        key={item.id}
+                        className={`flex items-center gap-md rounded-xl border p-sm ${
+                          suspicious ? "border-red-300 bg-red-50" : "border-gray-100 bg-gray-50"
+                        }`}
+                      >
                         {img ? (
                           <img src={img} alt="" className="h-10 w-10 rounded-lg object-cover ring-1 ring-black/5 shrink-0" />
                         ) : (
@@ -246,10 +256,17 @@ function BatchDetailModal({ batchId, onClose }: { batchId: string; onClose: () =
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="truncate text-[12px] font-semibold text-gray-800">{title}</p>
-                          <div className="flex items-center gap-xs mt-[2px]">
+                          <div className="flex flex-wrap items-center gap-x-xs gap-y-[2px] mt-[2px]">
                             <span className="text-[10px] font-bold text-gray-400 uppercase">{o?.platform?.name}</span>
                             <span className="text-gray-200">•</span>
                             <span className="font-mono text-[10px] text-gray-400">{o?.orderExternalId}</span>
+                            <span className="text-gray-200">•</span>
+                            <span className="text-[10px] text-gray-500">Giá: {formatCurrency(orderAmount)}</span>
+                            <span className="text-gray-200">•</span>
+                            <span className={`text-[10px] ${suspicious ? "font-bold text-red-600" : "text-gray-500"}`}>
+                              HH: {formatCurrency(commission)}
+                              {suspicious && " ⚠"}
+                            </span>
                           </div>
                         </div>
                         <span className="text-[13px] font-black text-emerald-600 shrink-0">
@@ -433,6 +450,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList, custome
                   {/* Actions */}
                   <div className="mt-auto flex items-center gap-sm pt-sm border-t border-gray-50">
                     <CopyInfoBtn c={c} />
+                    <CustomerMessageButton customerId={c.id} customerName={c.name} />
                     <div className="flex-1">
                       <CreatePaymentButton
                         customerId={c.id}

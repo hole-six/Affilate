@@ -2,10 +2,18 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { X, MessagesSquare, Headphones, Bell } from "lucide-react";
+import { X, MessagesSquare, Headphones, Bell, MessageCircle } from "lucide-react";
 import { SupportInfoGrid } from "./SupportInfoGrid";
 
-export function FloatingQuickAccess({ unreadCount }: { unreadCount: number }) {
+export function FloatingQuickAccess({
+  unreadCount,
+  hasSupportThread = false,
+  supportUnreadCount = 0,
+}: {
+  unreadCount: number;
+  hasSupportThread?: boolean;
+  supportUnreadCount?: number;
+}) {
   const [showSupport, setShowSupport] = useState(false);
 
   return (
@@ -20,6 +28,22 @@ export function FloatingQuickAccess({ unreadCount }: { unreadCount: number }) {
         >
           <Headphones size={24} strokeWidth={2.25} className="text-[#e86a33]" />
         </button>
+
+        {/* Chỉ hiện khi Admin ĐÃ nhắn tin trước — khách không tự tạo được hội thoại */}
+        {hasSupportThread && (
+          <Link
+            href="/app/messages"
+            title="Tin nhắn từ Admin"
+            className="relative flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-black/5 transition-transform hover:scale-105 active:scale-95"
+          >
+            <MessageCircle size={24} strokeWidth={2.25} className="text-sky-500" />
+            {supportUnreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-6 min-w-[24px] items-center justify-center rounded-full bg-negative px-1 text-[11px] font-bold text-white ring-2 ring-white">
+                {supportUnreadCount > 99 ? "99+" : supportUnreadCount}
+              </span>
+            )}
+          </Link>
+        )}
 
         <Link
           href="/app/notifications"

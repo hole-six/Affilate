@@ -302,6 +302,10 @@ export function buildPaymentPaidMessage(params: {
     .join("\n");
 }
 
+export function buildAdminMessageAlert(message: string): string {
+  return ["💬 <b>Bạn có tin nhắn mới từ Admin:</b>", "", escapeHtml(message)].join("\n");
+}
+
 export function buildOrdersListMessage(
   orders: { orderExternalId: string; orderStatus: string; customerRewardAmount: number }[]
 ): string {

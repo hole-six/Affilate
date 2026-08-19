@@ -78,7 +78,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (bill && bill.size > 0) {
     const uploadDir = path.join(process.cwd(), "storage", "bills");
     await mkdir(uploadDir, { recursive: true });
-    billStorageKey = `${randomUUID()}-${bill.name}`;
+    const originalExt = path.extname(bill.name).toLowerCase().replace(/[^a-z0-9.]/g, "");
+    const safeExt = /^\.(jpe?g|png|webp|gif|pdf)$/.test(originalExt) ? originalExt : ".jpg";
+    billStorageKey = `${randomUUID()}${safeExt}`;
     await writeFile(path.join(uploadDir, billStorageKey), Buffer.from(await bill.arrayBuffer()));
   }
 
