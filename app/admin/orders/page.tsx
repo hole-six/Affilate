@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
 import { AdminOrdersClient } from "@/components/admin/AdminOrdersClient";
+import { TikTokSyncButton } from "@/components/admin/TikTokSyncButton";
 import { Upload } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { getActiveCommissionRule } from "@/lib/commission";
@@ -171,12 +172,15 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               </p>
             </div>
           </div>
-          <Link href="/admin/orders/import">
-            <Button variant="primary" size="md">
-              <Upload size={16} strokeWidth={2} />
-              Import đối soát
-            </Button>
-          </Link>
+          <div className="flex items-start gap-md">
+            <TikTokSyncButton />
+            <Link href="/admin/orders/import">
+              <Button variant="primary" size="md">
+                <Upload size={16} strokeWidth={2} />
+                Import đối soát
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
