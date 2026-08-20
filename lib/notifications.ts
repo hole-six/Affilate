@@ -1,6 +1,6 @@
 import { prisma } from "./prisma";
 
-export type NotificationType = "order_approved" | "payment_paid" | "referral_bonus" | "broadcast" | "system";
+export type NotificationType = "order_approved" | "payment_paid" | "referral_bonus" | "broadcast" | "system" | "admin_message";
 
 type NotificationInput = {
   type: NotificationType;

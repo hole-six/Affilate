@@ -79,6 +79,7 @@ model Customer {
   telegramMessageLogs TelegramMessageLog[]
   telegramLinkCodes   TelegramLinkCode[]
   withdrawRequests    WithdrawRequest[]
+  supportThread       SupportThread?
 
   @@index([phone])
   @@index([zaloUserId])
@@ -616,4 +617,36 @@ model PasswordResetToken {
 
   @@index([userId])
   @@map("password_reset_tokens")
+}
+
+// Hội thoại nhắn tin riêng giữa admin và 1 khách hàng — mỗi khách chỉ có
+// đúng 1 thread (unique customerId). Khách không tự tạo được thread mới,
+// chỉ admin nhắn trước mới mở hội thoại (xem lib/supportMessages.ts).
+model SupportThread {
+  id                  String    @id @default(uuid())
+  customerId          String    @unique @map("customer_id")
+  customer            Customer  @relation(fields: [customerId], references: [id])
+  lastMessageAt       DateTime? @map("last_message_at")
+  lastMessagePreview  String?   @map("last_message_preview")
+  customerUnreadCount Int       @default(0) @map("customer_unread_count")
+  adminUnreadCount    Int       @default(0) @map("admin_unread_count")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  messages SupportMessage[]
+
+  @@map("support_threads")
+}
+
+model SupportMessage {
+  id           String        @id @default(uuid())
+  threadId     String        @map("thread_id")
+  thread       SupportThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderRole   String        @map("sender_role") // "admin" | "customer"
+  senderUserId String?       @map("sender_user_id")
+  message      String
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@index([threadId])
+  @@map("support_messages")
 }
