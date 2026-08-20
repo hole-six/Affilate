@@ -125,16 +125,19 @@ function parseDecimal(value: string): Prisma.Decimal {
       normalized = normalized.replace(/,/g, ".");
     }
   } else if (lastDotIndex > -1) {
-    // Only dot
+    // Only dot(s) — CSV hoa hồng gốc của Shopee luôn dùng dấu chấm làm DẤU
+    // THẬP PHÂN cho các cột tiền (vd "373.725" nghĩa là 373,725đ thật, KHÔNG
+    // PHẢI 373 nghìn 725đ), kể cả khi phần lẻ tình cờ đúng 3 chữ số. Trước
+    // đây đoán nhầm trường hợp này là dấu phân cách nghìn kiểu Việt Nam, làm
+    // số tiền bị nhân sai lên gấp 1000 lần (vd đơn "đũa kháng khuẩn" hoa hồng
+    // thật 373.725đ bị ghi thành 373725đ). Chỉ khi CÓ NHIỀU HƠN 1 dấu chấm
+    // (vd "1.234.567") mới chắc chắn là phân cách nghìn — vì số thập phân
+    // thật không thể có 2 dấu chấm trở lên.
     const parts = normalized.split(".");
-    const isThousands = parts.slice(1).every((p) => p.length === 3);
-    if (isThousands && parts[0].length <= 3) {
-      // e.g. 12.345
+    if (parts.length > 2) {
       normalized = normalized.replace(/\./g, "");
-    } else {
-      // e.g. 44498.215 (Raw Shopee CSV)
-      // Keep the dot as a decimal point
     }
+    // Đúng 1 dấu chấm — luôn giữ làm dấu thập phân, không đoán theo số chữ số.
   }
 
   try {
