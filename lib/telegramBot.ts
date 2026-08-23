@@ -234,6 +234,16 @@ export function buildOrderApprovedMessage(params: {
     .join("\n");
 }
 
+export function buildAdminMessageAlert(message: string): string {
+  return [
+    "💬 <b>Bạn có tin nhắn mới từ Admin!</b>",
+    "",
+    escapeHtml(message),
+    "",
+    "Vào mục Tin nhắn trên web để xem đầy đủ và trả lời.",
+  ].join("\n");
+}
+
 export function buildReferralBonusMessage(params: {
   bonusAmount: number;
   friendOrderExternalId: string;
@@ -300,10 +310,6 @@ export function buildPaymentPaidMessage(params: {
   ]
     .filter(Boolean)
     .join("\n");
-}
-
-export function buildAdminMessageAlert(message: string): string {
-  return ["💬 <b>Bạn có tin nhắn mới từ Admin:</b>", "", escapeHtml(message)].join("\n");
 }
 
 export function buildOrdersListMessage(
