@@ -3,18 +3,22 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/Button";
 import { AdminOrdersClient } from "@/components/admin/AdminOrdersClient";
+import { TikTokSyncButton } from "@/components/admin/TikTokSyncButton";
+import { LazadaSyncButton } from "@/components/admin/LazadaSyncButton";
 import { Upload } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import { getActiveCommissionRule } from "@/lib/commission";
 
-export default async function AdminOrdersPage({ searchParams }: { searchParams: { q?: string; page?: string; tab?: string; sort?: string; order?: string } }) {
+export default async function AdminOrdersPage({ searchParams }: { searchParams: { q?: string; page?: string; tab?: string; sort?: string; order?: string; platform?: string } }) {
   const page = Number(searchParams.page) || 1;
   const limit = 50;
   const skip = (page - 1) * limit;
   const q = searchParams.q || "";
   const tab = searchParams.tab || "all";
+  const selectedPlatform = (searchParams.platform || "all").toUpperCase();
 
-  const where: any = {};
+  const platformWhere = selectedPlatform !== "ALL" ? { platform: { code: selectedPlatform } } : {};
+  const where: any = { ...platformWhere };
   if (q) {
     where.OR = [
       { orderExternalId: { contains: q } },
@@ -35,6 +39,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   if (tab === "completed") where.orderStatus = "completed";
   if (tab === "clawback") where.orderStatus = "clawback";
   if (tab === "referral") where.sourceType = "referral";
+  const countWhere: any = { ...platformWhere };
 
   const orderByField = searchParams.sort || "createdAt";
   const orderByDir = searchParams.order || "desc";
@@ -42,27 +47,45 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
 
   const [
     allCount, unassignedCount, assignedCount, pendingCount, processingCount, moneyInCount, unpaidCount, paidCount, cancelledCount, completedCount, clawbackCount, referralCount,
-    orders, customers, filteredCount, sumsAgg, moneyInSumAgg, unpaidSumAgg, rule,
+    orders, customers, filteredCount, sumsAgg, moneyInSumAgg, unpaidSumAgg, rule, platforms,
   ] = await Promise.all([
-    prisma.order.count(),
-    prisma.order.count({ where: { customerId: null } }),
-    prisma.order.count({ where: { customerId: { not: null } } }),
-    prisma.order.count({ where: { orderStatus: "pending" } }),
-    prisma.order.count({ where: { orderStatus: "processing" } }),
-    prisma.order.count({ where: { orderStatus: "approved" } }),
-    prisma.order.count({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } } }),
-    prisma.order.count({ where: { payoutStatus: "paid" } }),
-    prisma.order.count({ where: { orderStatus: { in: ["cancelled", "rejected"] } } }),
-    prisma.order.count({ where: { orderStatus: "completed" } }),
-    prisma.order.count({ where: { orderStatus: "clawback" } }),
-    prisma.order.count({ where: { sourceType: "referral" } }),
+    prisma.order.count({ where: countWhere }),
+    prisma.order.count({ where: { ...countWhere, customerId: null } }),
+    prisma.order.count({ where: { ...countWhere, customerId: { not: null } } }),
+    prisma.order.count({ where: { ...countWhere, orderStatus: "pending" } }),
+    prisma.order.count({ where: { ...countWhere, orderStatus: "processing" } }),
+    prisma.order.count({ where: { ...countWhere, orderStatus: "approved" } }),
+    prisma.order.count({ where: { ...countWhere, orderStatus: "approved", payoutStatus: { not: "paid" } } }),
+    prisma.order.count({ where: { ...countWhere, payoutStatus: "paid" } }),
+    prisma.order.count({ where: { ...countWhere, orderStatus: { in: ["cancelled", "rejected"] } } }),
+    prisma.order.count({ where: { ...countWhere, orderStatus: "completed" } }),
+    prisma.order.count({ where: { ...countWhere, orderStatus: "clawback" } }),
+    prisma.order.count({ where: { ...countWhere, sourceType: "referral" } }),
     prisma.order.findMany({ where, orderBy, skip, take: limit, include: { platform: true, customer: true } }),
     prisma.customer.findMany({ orderBy: { fullName: "asc" } }),
     prisma.order.count({ where }),
     prisma.order.aggregate({ where, _sum: { orderAmount: true, commissionAmount: true, customerRewardAmount: true, systemProfitAmount: true, referralBonusDeducted: true } }),
-    prisma.order.aggregate({ where: { orderStatus: "approved" }, _sum: { customerRewardAmount: true } }),
-    prisma.order.aggregate({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }),
+    prisma.order.aggregate({ where: { ...countWhere, orderStatus: "approved" }, _sum: { customerRewardAmount: true } }),
+    prisma.order.aggregate({ where: { ...countWhere, orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }),
     getActiveCommissionRule(),
+    prisma.platform.findMany({ orderBy: { name: "asc" } }),
+  ]);
+
+  const platformSummaries = await Promise.all([
+    {
+      code: "ALL",
+      name: "Tất cả",
+      count: await prisma.order.count(),
+      unpaidTotal: Number((await prisma.order.aggregate({ where: { orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }))._sum.customerRewardAmount ?? 0),
+      unmappedCount: await prisma.order.count({ where: { customerId: null } }),
+    },
+    ...platforms.map(async (platform) => ({
+      code: platform.code,
+      name: platform.name,
+      count: await prisma.order.count({ where: { platformId: platform.id } }),
+      unpaidTotal: Number((await prisma.order.aggregate({ where: { platformId: platform.id, orderStatus: "approved", payoutStatus: { not: "paid" } }, _sum: { customerRewardAmount: true } }))._sum.customerRewardAmount ?? 0),
+      unmappedCount: await prisma.order.count({ where: { platformId: platform.id, customerId: null } }),
+    })),
   ]);
 
   const customerOptions = customers.map((c) => ({ id: c.id, label: `${c.fullName} (${c.customerCode})` }));
@@ -91,6 +114,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       orderExternalId: o.orderExternalId,
       itemName: o.itemName,
       platformName: o.platform.name,
+      platformCode: o.platform.code,
       customerName: o.customer?.fullName ?? null,
       customerId: o.customerId,
       trackingCode: o.trackingCode,
@@ -149,12 +173,16 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               </p>
             </div>
           </div>
-          <Link href="/admin/orders/import">
-            <Button variant="primary" size="md">
-              <Upload size={16} strokeWidth={2} />
-              Import đối soát
-            </Button>
-          </Link>
+          <div className="flex items-start gap-md">
+            <TikTokSyncButton />
+            <LazadaSyncButton />
+            <Link href="/admin/orders/import">
+              <Button variant="primary" size="md">
+                <Upload size={16} strokeWidth={2} />
+                Import đối soát
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -209,6 +237,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         currentPage={page}
         counts={counts}
         sums={sums}
+        platformSummaries={platformSummaries}
+        currentPlatform={selectedPlatform}
       />
     </div>
   );

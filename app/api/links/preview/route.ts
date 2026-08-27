@@ -16,15 +16,19 @@ export async function POST(req: NextRequest) {
 
   const platform = detectPlatform(url.trim());
   if (platform === "unknown") {
-    return NextResponse.json({ error: "Chỉ hỗ trợ link Shopee hoặc TikTok Shop" }, { status: 400 });
+    return NextResponse.json({ error: "Chỉ hỗ trợ link Shopee, TikTok Shop hoặc Lazada" }, { status: 400 });
   }
+
+  const platformCode = platform === "shopee" ? "SHOPEE" : platform === "lazada" ? "LAZADA" : "TIKTOK";
 
   try {
     const resolved = await resolveShortLink(url.trim());
     const normalized = normalizeUrl(resolved);
 
     // Thử API Sàn Cam trước (nhanh, chính xác, xử lý được cả link /opaanlp/)
-    // — chỉ Shopee mới có, TikTok vẫn dùng scrape HTML như cũ.
+    // — chỉ Shopee mới có, TikTok/Lazada vẫn dùng scrape HTML như cũ (preview
+    // không tạo TrackingLink nên không gọi Lazada getlink thật ở đây — chỉ
+    // gọi API Lazada thật lúc khách đã đăng nhập và bấm tạo link ở /api/links).
     const sanCamData = platform === "shopee" ? await fetchSanCamProductData(normalized) : null;
     const productInfo = sanCamData ? null : await fetchProductInfo(normalized);
 
@@ -34,7 +38,7 @@ export async function POST(req: NextRequest) {
     const cashback = await estimateCashback(title, price, sanCamData?.commission);
 
     return NextResponse.json({
-      platformCode: platform === "shopee" ? "SHOPEE" : "TIKTOK",
+      platformCode,
       productTitle: title,
       productImage: image,
       productPrice: price,
@@ -45,7 +49,7 @@ export async function POST(req: NextRequest) {
     // Không lấy được thông tin sản phẩm (link lạ, site chặn bot...) — vẫn
     // trả về thành công tối thiểu để không chặn khách, chỉ là preview rỗng.
     return NextResponse.json({
-      platformCode: platform === "shopee" ? "SHOPEE" : "TIKTOK",
+      platformCode,
       productTitle: null,
       productImage: null,
       productPrice: null,

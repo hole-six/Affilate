@@ -80,7 +80,7 @@ export function QuickLinkForm({
           <form onSubmit={handleSubmit} className="flex flex-col gap-xl">
             <div className="flex flex-col gap-xs">
               <label className="text-[12px] font-bold text-mute uppercase tracking-wide">
-                Link gốc từ Shopee / TikTok *
+                Link gốc từ Shopee / TikTok / Lazada *
               </label>
               <TextInput
                 placeholder="https://shopee.vn/..."

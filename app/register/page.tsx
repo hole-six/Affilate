@@ -6,11 +6,11 @@ import { TrustBadgesCard } from "@/components/marketing/TrustBadgesCard";
 
 export const metadata: Metadata = {
   title: "Đăng ký tài khoản — iviback",
-  description: "Tạo tài khoản iviback miễn phí để bắt đầu nhận hoàn tiền tự động khi mua sắm trên Shopee, TikTok Shop.",
+  description: "Tạo tài khoản iviback miễn phí để bắt đầu nhận hoàn tiền tự động khi mua sắm trên Shopee, TikTok Shop, Lazada.",
   alternates: { canonical: "/register" },
   openGraph: {
     title: "Đăng ký tài khoản — iviback",
-    description: "Tạo tài khoản iviback miễn phí để bắt đầu nhận hoàn tiền tự động khi mua sắm trên Shopee, TikTok Shop.",
+    description: "Tạo tài khoản iviback miễn phí để bắt đầu nhận hoàn tiền tự động khi mua sắm trên Shopee, TikTok Shop, Lazada.",
     type: "website",
     locale: "vi_VN",
     url: "/register",

@@ -1,6 +1,4 @@
-import { buildTikTokAffiliateUrlViaAccessTrade } from "./accesstrade";
-
-export type DetectedPlatform = "shopee" | "tiktok" | "unknown";
+export type DetectedPlatform = "shopee" | "tiktok" | "lazada" | "unknown";
 export type AffiliateSubIds = {
   subId1?: string;
   subId2?: string;
@@ -18,10 +16,18 @@ export function detectPlatform(rawUrl: string): DetectedPlatform {
   // khong chua chuoi "shopee." nen phai kiem tra rieng.
   if (url.includes("shopee.") || url.includes("shp.ee")) return "shopee";
   if (url.includes("tiktok.") || url.includes("vt.tiktok") || url.includes("vm.tiktok")) return "tiktok";
+  if (url.includes("lazada.") || url.includes("s.lazada") || url.includes("c.lazada")) return "lazada";
   return "unknown";
 }
 
-const SHORT_LINK_HOST_PATTERNS = [/(^|\.)shp\.ee$/, /(^|\.)s\.shopee\.vn$/, /(^|\.)vt\.tiktok\.com$/, /(^|\.)vm\.tiktok\.com$/];
+const SHORT_LINK_HOST_PATTERNS = [
+  /(^|\.)shp\.ee$/,
+  /(^|\.)s\.shopee\.vn$/,
+  /(^|\.)vt\.tiktok\.com$/,
+  /(^|\.)vm\.tiktok\.com$/,
+  /(^|\.)s\.lazada\.vn$/,
+  /(^|\.)c\.lazada\.vn$/,
+];
 
 function isShortLinkHost(hostname: string): boolean {
   return SHORT_LINK_HOST_PATTERNS.some((pattern) => pattern.test(hostname.toLowerCase()));
@@ -114,11 +120,9 @@ function safeDecodeURIComponent(value: string): string {
   }
 }
 
-// NOTE: Shopee dung link mock dang s.shopee.vn/an_redir (chua co API affiliate
-// Shopee that — xem 05-ghi-chu-nghien-cuu-va-rui-ro.md). TikTok Shop di qua
-// AccessTrade (mang affiliate that, xem lib/accesstrade.ts) khi da cau hinh
-// ACCESSTRADE_API_TOKEN/ACCESSTRADE_TIKTOK_CAMPAIGN_ID, neu chua thi fallback
-// ve link mock (gan sub_id truc tiep vao URL goc) de khong lam gian doan flow.
+// NOTE: Shopee still uses the existing affiliate URL builder. TikTok Shop and
+// Lazada don't use this fallback; trackingLinkService routes them through
+// their own API clients (RioHub, lib/lazadaApi.ts) instead.
 export async function buildAffiliateUrl(
   normalizedUrl: string,
   trackingCode: string,
@@ -131,8 +135,11 @@ export async function buildAffiliateUrl(
   }
 
   if (platformCode === "TIKTOK") {
-    const accessTradeLink = await buildTikTokAffiliateUrlViaAccessTrade(normalizedUrl, trackingCode, subIds);
-    if (accessTradeLink) return accessTradeLink;
+    throw new Error("TikTok Shop phải tạo link qua RioHub");
+  }
+
+  if (platformCode === "LAZADA") {
+    throw new Error("Lazada phải tạo link qua Lazada Open API");
   }
 
   try {
@@ -172,7 +179,7 @@ function buildShopeeAffiliateUrl(
 ): string {
   const affiliateId = process.env.SHOPEE_AFFILIATE_ID;
   if (!affiliateId) {
-    throw new Error("Thieu SHOPEE_AFFILIATE_ID trong .env de build link Shopee");
+    throw new Error("Thiếu SHOPEE_AFFILIATE_ID trong .env để build link Shopee");
   }
 
   const effectiveSubIds = subIds ?? { subId2: trackingCode };

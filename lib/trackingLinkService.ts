@@ -6,6 +6,8 @@ import { fetchProductInfo } from "./productInfo";
 import { fetchShopeeProductDetail } from "./shopeeProductApi";
 import { fetchSanCamProductData } from "./sanCamApi";
 import { estimateCashback } from "./cashbackEstimate";
+import { buildRioHubSubId, buildTikTokProductSnapshot, createRioHubTikTokProductLink } from "./riohubTikTok";
+import { getLazadaLinkByUrl } from "./lazadaApi";
 
 export async function createTrackingLink(params: {
   originalUrl: string;
@@ -21,7 +23,10 @@ export async function createTrackingLink(params: {
   ]);
 
   if (!platform || !customer) {
-    throw new Error("Nen tang hoac khach hang khong hop le");
+    throw new Error("Nền tảng hoặc khách hàng không hợp lệ");
+  }
+  if (platform.status !== "active") {
+    throw new Error("Nền tảng này đang tạm tắt");
   }
 
   const trackingCode = await generateTrackingCode({
@@ -39,11 +44,54 @@ export async function createTrackingLink(params: {
     trackingCode,
     channelSource: params.channelSource,
   });
-  const affiliateUrl = await buildAffiliateUrl(normalizedUrl, trackingCode, subIds, {
-    platformCode: platform.code,
-  });
-
   const isShopee = platform.code.toUpperCase() === "SHOPEE";
+  const isTikTok = platform.code.toUpperCase() === "TIKTOK";
+  const isLazada = platform.code.toUpperCase() === "LAZADA";
+
+  let affiliateUrl: string;
+  let tiktokSnapshot: Awaited<ReturnType<typeof buildTikTokProductSnapshot>> | null = null;
+  let lazadaProductName: string | null = null;
+  let lazadaCommissionRate: number | null = null; // %, vd 24.1
+  if (isTikTok) {
+    const rioHubSubId = buildRioHubSubId({
+      customerCode: customer.customerCode,
+      trackingCode,
+      channelSource: params.channelSource,
+    });
+    const rioHubLink = await createRioHubTikTokProductLink({
+      productUrl: params.originalUrl,
+      subId: rioHubSubId,
+      channel: params.channelSource,
+    });
+    affiliateUrl = rioHubLink.affiliate_link;
+    tiktokSnapshot = await buildTikTokProductSnapshot(rioHubLink.product);
+    subIds.subId1 = customer.customerCode;
+    subIds.subId2 = trackingCode;
+    subIds.subId3 = params.channelSource.toUpperCase();
+    subIds.subId4 = "";
+    subIds.subId5 = "";
+  } else if (isLazada) {
+    // Lazada's /marketing/getlink chỉ nhận URL sản phẩm trực tiếp (không cần
+    // resolveShortLink/normalizeUrl trước như Shopee — link rút gọn Lazada
+    // do chính Lazada tự resolve phía server của họ).
+    const lazadaLink = await getLazadaLinkByUrl(params.originalUrl, {
+      subId1: customer.customerCode,
+      subId2: trackingCode,
+      subId3: params.channelSource.toUpperCase(),
+    });
+    affiliateUrl = lazadaLink.promotionLink ?? params.originalUrl;
+    lazadaProductName = lazadaLink.productName;
+    lazadaCommissionRate = lazadaLink.commission ? parseFloat(lazadaLink.commission) : null;
+    subIds.subId1 = customer.customerCode;
+    subIds.subId2 = trackingCode;
+    subIds.subId3 = params.channelSource.toUpperCase();
+    subIds.subId4 = "";
+    subIds.subId5 = "";
+  } else {
+    affiliateUrl = await buildAffiliateUrl(normalizedUrl, trackingCode, subIds, {
+      platformCode: platform.code,
+    });
+  }
 
   // Thử API Sàn Cam (data.addlivetag.com) TRƯỚC — nhanh, chính xác, giải
   // quyết được cả link dạng /opaanlp/ mà scrape HTML không lấy được. Đây là
@@ -53,22 +101,32 @@ export async function createTrackingLink(params: {
   const sanCamData = isShopee ? await fetchSanCamProductData(normalizedUrl) : null;
 
   const [productInfo, shopeeDetail] = await Promise.all([
-    sanCamData ? Promise.resolve(null) : fetchProductInfo(normalizedUrl),
+    sanCamData || tiktokSnapshot ? Promise.resolve(null) : fetchProductInfo(normalizedUrl),
     !sanCamData && isShopee ? fetchShopeeProductDetail(normalizedUrl) : Promise.resolve(null),
   ]);
 
-  const productTitle = sanCamData?.title ?? productInfo?.title ?? shopeeDetail?.name ?? null;
-  const productImage = sanCamData?.image ?? productInfo?.image ?? shopeeDetail?.image ?? null;
+  const productTitle = tiktokSnapshot?.productTitle ?? lazadaProductName ?? sanCamData?.title ?? productInfo?.title ?? shopeeDetail?.name ?? null;
+  const productImage = tiktokSnapshot?.productImage ?? sanCamData?.image ?? productInfo?.image ?? shopeeDetail?.image ?? null;
   // Ưu tiên: nhập tay > Sàn Cam API > JSON-LD (Googlebot scrape) > Shopee internal API
   const productPrice =
     (params.manualPrice && params.manualPrice > 0)
       ? params.manualPrice
-      : (sanCamData?.price ?? productInfo?.price ?? shopeeDetail?.price ?? null);
-  const productSold = sanCamData?.sold ?? shopeeDetail?.sold ?? productInfo?.sold ?? null;
+      : (tiktokSnapshot?.productPrice ?? sanCamData?.price ?? productInfo?.price ?? shopeeDetail?.price ?? null);
+  const productSold = tiktokSnapshot?.productSold ?? sanCamData?.sold ?? shopeeDetail?.sold ?? productInfo?.sold ?? null;
+
+  // Lazada getlink chỉ trả TỶ LỆ hoa hồng (vd "24.1%"), không trả số tiền
+  // gộp trực tiếp như Shopee/TikTok — tự tính = giá × tỷ lệ khi có đủ cả 2,
+  // chính xác hơn đoán theo ngành hàng dù chưa "thật" 100% như Shopee/TikTok.
+  const lazadaGrossCommission =
+    isLazada && productPrice != null && lazadaCommissionRate != null
+      ? (productPrice * lazadaCommissionRate) / 100
+      : null;
 
   const cashback =
-    productPrice != null
-      ? await estimateCashback(productTitle, productPrice, sanCamData?.commission)
+    tiktokSnapshot
+      ? null
+      : productPrice != null
+      ? await estimateCashback(productTitle, productPrice, sanCamData?.commission ?? lazadaGrossCommission)
       : null;
 
   const link = await prisma.trackingLink.create({
@@ -84,7 +142,7 @@ export async function createTrackingLink(params: {
       productImage,
       productPrice,
       productSold,
-      estimatedCashback: cashback?.estimatedCashback ?? null,
+      estimatedCashback: tiktokSnapshot?.estimatedCashback ?? cashback?.estimatedCashback ?? null,
       shortCode,
       shortUrl,
       ...subIds,
@@ -99,6 +157,6 @@ export async function createTrackingLink(params: {
     shortCode,
     shortUrl,
     subId: subIds.subId2,
-    estimatedCashbackCategory: cashback?.categoryName ?? null,
+    estimatedCashbackCategory: tiktokSnapshot?.estimatedCashbackCategory ?? cashback?.categoryName ?? null,
   };
 }

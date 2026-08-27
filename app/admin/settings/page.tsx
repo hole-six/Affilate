@@ -4,15 +4,21 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { CommissionRuleForm } from "@/components/admin/CommissionRuleForm";
 import { CategoryRateForm } from "@/components/admin/CategoryRateForm";
 import { ChangePasswordForm } from "@/components/account/ChangePasswordForm";
-import { Settings, Code2, Info, Tags, ShieldCheck } from "lucide-react";
+import { TikTokIntegrationPanel } from "@/components/admin/TikTokIntegrationPanel";
+import { LazadaIntegrationPanel } from "@/components/admin/LazadaIntegrationPanel";
+import { getRioHubConfigStatus } from "@/lib/riohubTikTok";
+import { getLazadaConfigStatus } from "@/lib/lazadaApi";
+import { Settings, Code2, Info, Tags, ShieldCheck, Plug } from "lucide-react";
 
 export default async function AdminSettingsPage() {
-  const [activeRule, categoryRates] = await Promise.all([
+  const [activeRule, categoryRates, tiktokPlatform, lazadaPlatform] = await Promise.all([
     prisma.commissionRule.findFirst({
       where: { active: true },
       orderBy: { createdAt: "desc" },
     }),
     prisma.categoryCommissionRate.findMany({ orderBy: { sortOrder: "asc" } }),
+    prisma.platform.findUnique({ where: { code: "TIKTOK" } }),
+    prisma.platform.findUnique({ where: { code: "LAZADA" } }),
   ]);
 
   return (
@@ -21,6 +27,26 @@ export default async function AdminSettingsPage() {
         title="Cấu hình hệ thống"
         subtitle="Tỷ lệ chia hoa hồng và định dạng mã tracking đang sử dụng."
       />
+
+      <Card id="integrations" variant="default" className="scroll-mt-6 border border-gray-100">
+        <h2 className="display-xs mb-lg flex items-center gap-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
+            <Plug size={16} strokeWidth={1.75} />
+          </span>
+          Tích hợp TikTok Shop RioHub
+        </h2>
+        <TikTokIntegrationPanel platformStatus={tiktokPlatform?.status ?? "inactive"} config={getRioHubConfigStatus()} />
+      </Card>
+
+      <Card id="integrations-lazada" variant="default" className="scroll-mt-6 border border-gray-100">
+        <h2 className="display-xs mb-lg flex items-center gap-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">
+            <Plug size={16} strokeWidth={1.75} />
+          </span>
+          Tích hợp Lazada Open API
+        </h2>
+        <LazadaIntegrationPanel platformStatus={lazadaPlatform?.status ?? "inactive"} config={getLazadaConfigStatus()} />
+      </Card>
 
       {/* Commission rule card */}
       <Card variant="default" className="border border-gray-100">
@@ -40,7 +66,7 @@ export default async function AdminSettingsPage() {
         />
       </Card>
 
-      {/* Category commission rate table (uoc tinh cashback) */}
+      {/* Category commission rate table (ước tính cashback) */}
       <Card variant="default" className="border border-gray-100">
         <h2 className="display-xs mb-lg flex items-center gap-sm">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-pale text-gray-900-deep">

@@ -79,6 +79,7 @@ model Customer {
   telegramMessageLogs TelegramMessageLog[]
   telegramLinkCodes   TelegramLinkCode[]
   withdrawRequests    WithdrawRequest[]
+  supportThread       SupportThread?
 
   @@index([phone])
   @@index([zaloUserId])
@@ -524,6 +525,19 @@ model AuditLog {
 // Thông báo trong app cho từng user — mỗi sự kiện (đơn được duyệt, đã trả tiền,
 // hoa hồng giới thiệu, admin gửi thông báo hệ thống) sinh ra 1 dòng riêng cho
 // user đó, kể cả broadcast (tạo N dòng cho N user) để track đã đọc theo từng người.
+model RioHubWebhookEvent {
+  id              String   @id @default(uuid())
+  eventId         String   @unique @map("event_id")
+  event           String
+  orderExternalId String?  @map("order_external_id")
+  payload         String
+  processedAt     DateTime @default(now()) @map("processed_at")
+
+  @@index([event])
+  @@index([orderExternalId])
+  @@map("riohub_webhook_events")
+}
+
 model Notification {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
@@ -538,6 +552,39 @@ model Notification {
   @@index([userId, isRead])
   @@index([createdAt])
   @@map("notifications")
+}
+
+// Hội thoại riêng 1-1 giữa admin và 1 khách hàng cụ thể (khác ChatMessage —
+// phòng chat công khai chung). CHỈ ADMIN được mở hội thoại đầu tiên (vd báo
+// khách sai số tài khoản khi rút tiền) — khách không tự nhắn trước được,
+// chỉ xem và trả lời sau khi admin đã nhắn. Mỗi khách tối đa 1 thread.
+model SupportThread {
+  id                  String   @id @default(uuid())
+  customerId          String   @unique @map("customer_id")
+  customer            Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  lastMessageAt       DateTime @default(now()) @map("last_message_at")
+  lastMessagePreview  String?  @map("last_message_preview")
+  // Đếm riêng cho từng phía — tăng khi phía kia gửi tin, về 0 khi phía đó mở xem.
+  customerUnreadCount Int      @default(0) @map("customer_unread_count")
+  adminUnreadCount    Int      @default(0) @map("admin_unread_count")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  messages SupportMessage[]
+
+  @@map("support_threads")
+}
+
+model SupportMessage {
+  id           String        @id @default(uuid())
+  threadId     String        @map("thread_id")
+  thread       SupportThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  senderRole   String        @map("sender_role") // "admin" | "customer"
+  senderUserId String?       @map("sender_user_id")
+  message      String
+  createdAt    DateTime      @default(now()) @map("created_at")
+
+  @@index([threadId, createdAt])
+  @@map("support_messages")
 }
 
 // Room chat chung cho toàn hệ thống — mọi user (khách hàng lẫn admin) đăng

@@ -32,6 +32,12 @@ async function main() {
     create: { code: "TIKTOK", name: "TikTok Shop" },
   });
 
+  const lazada = await prisma.platform.upsert({
+    where: { code: "LAZADA" },
+    update: {},
+    create: { code: "LAZADA", name: "Lazada" },
+  });
+
   const customer = await prisma.customer.upsert({
     where: { customerCode: "C0001" },
     update: {},

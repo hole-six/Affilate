@@ -12,6 +12,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { CreatePaymentButton } from "@/components/admin/CreatePaymentButton";
 import { CreatePaymentForCustomer } from "@/components/admin/CreatePaymentForCustomer";
 import { MarkPaidForm } from "@/components/admin/MarkPaidForm";
+import { CustomerMessageButton } from "@/components/admin/CustomerMessageButton";
 import type { ComboboxOption } from "@/components/ui/SearchableSelect";
 
 type CustomerPending = {
@@ -235,8 +236,17 @@ function BatchDetailModal({ batchId, onClose }: { batchId: string; onClose: () =
                     const o = item.order;
                     const img = o?.trackingLink?.productImage;
                     const title = o?.trackingLink?.productTitle ?? o?.itemName ?? o?.orderExternalId;
+                    const orderAmount = Number(o?.orderAmount ?? 0);
+                    const commission = Number(o?.commissionAmount ?? 0);
+                    // Hoa hồng lớn hơn giá trị đơn = dấu hiệu số liệu CSV bị đọc sai
+                    const suspicious = orderAmount > 0 && commission > orderAmount;
                     return (
-                      <div key={item.id} className="flex items-center gap-md rounded-xl bg-gray-50 border border-gray-100 p-sm">
+                      <div
+                        key={item.id}
+                        className={`flex items-center gap-md rounded-xl border p-sm ${
+                          suspicious ? "border-red-300 bg-red-50" : "border-gray-100 bg-gray-50"
+                        }`}
+                      >
                         {img ? (
                           <img src={img} alt="" className="h-10 w-10 rounded-lg object-cover ring-1 ring-black/5 shrink-0" />
                         ) : (
@@ -246,10 +256,17 @@ function BatchDetailModal({ batchId, onClose }: { batchId: string; onClose: () =
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="truncate text-[12px] font-semibold text-gray-800">{title}</p>
-                          <div className="flex items-center gap-xs mt-[2px]">
+                          <div className="flex flex-wrap items-center gap-x-xs gap-y-[2px] mt-[2px]">
                             <span className="text-[10px] font-bold text-gray-400 uppercase">{o?.platform?.name}</span>
                             <span className="text-gray-200">•</span>
                             <span className="font-mono text-[10px] text-gray-400">{o?.orderExternalId}</span>
+                            <span className="text-gray-200">•</span>
+                            <span className="text-[10px] text-gray-500">Giá: {formatCurrency(orderAmount)}</span>
+                            <span className="text-gray-200">•</span>
+                            <span className={`text-[10px] ${suspicious ? "font-bold text-red-600" : "text-gray-500"}`}>
+                              HH: {formatCurrency(commission)}
+                              {suspicious && " ⚠"}
+                            </span>
                           </div>
                         </div>
                         <span className="text-[13px] font-black text-emerald-600 shrink-0">
@@ -333,7 +350,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList, custome
         <div className="flex items-center gap-sm overflow-x-auto">
           {[
             { id: "pending" as const, label: "Yêu cầu rút tiền", count: pendingList.length, icon: <Wallet size={14} /> },
-            { id: "waiting" as const, label: "Chờ Shopee duyệt", count: waitingList.length, icon: <Clock size={14} /> },
+            { id: "waiting" as const, label: "Chờ sàn duyệt", count: waitingList.length, icon: <Clock size={14} /> },
             { id: "history" as const, label: "Lịch sử phiếu", count: batches.length, icon: <ClipboardList size={14} /> },
             { id: "manual" as const, label: "Tạo phiếu chủ động", count: null, icon: <UserSearch size={14} /> },
           ].map((t) => (
@@ -433,6 +450,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList, custome
                   {/* Actions */}
                   <div className="mt-auto flex items-center gap-sm pt-sm border-t border-gray-50">
                     <CopyInfoBtn c={c} />
+                    <CustomerMessageButton customerId={c.id} customerName={c.name} />
                     <div className="flex-1">
                       <CreatePaymentButton
                         customerId={c.id}
@@ -458,7 +476,7 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList, custome
         filteredWaiting.length === 0 ? (
           <div className="flex flex-col items-center gap-sm rounded-3xl bg-white py-3xl shadow-sm ring-1 ring-black/[0.06]">
             <img src="/heochaomung.png" alt="" className="h-16 w-16 object-contain opacity-70" />
-            <span className="text-[14px] font-bold text-gray-400">Không có đơn nào đang chờ Shopee duyệt 🎉</span>
+            <span className="text-[14px] font-bold text-gray-400">Không có đơn nào đang chờ sàn duyệt 🎉</span>
           </div>
         ) : (
           <div className="flex flex-col gap-lg">
@@ -466,8 +484,8 @@ export function AdminPaymentsClient({ pendingList, batches, waitingList, custome
             <div className="flex items-start gap-sm rounded-2xl bg-blue-50 border border-blue-200 px-lg py-md">
               <img src="/heochodoi.png" alt="" className="h-7 w-7 object-contain shrink-0 mt-[1px]" />
               <p className="text-[13px] text-blue-700 font-medium leading-relaxed">
-                Các đơn bên dưới có <strong>tiếp thị liên kết chưa hoàn thành</strong> (Shopee chưa xác nhận hoa hồng).
-                Khi nào import lại CSV mới và Shopee đã duyệt, đơn sẽ tự chuyển sang <strong>"Sẵn sàng thanh toán"</strong>.
+                Các đơn bên dưới có <strong>tiếp thị liên kết chưa hoàn thành</strong> (sàn chưa xác nhận hoa hồng).
+                Shopee cập nhật qua CSV import; TikTok Shop cập nhật tự động qua webhook/sync RioHub; Lazada cập nhật tự động qua Conversion Report API. Khi sàn duyệt, đơn sẽ tự chuyển sang <strong>"Sẵn sàng thanh toán"</strong>.
               </p>
             </div>
 

@@ -16,6 +16,7 @@ type ResolveResult = {
   rawInputLink: string;
   cleanLink: string;
   affiliateUrl: string;
+  platformCode: string;
   shortCode: string;
   shortUrl: string;
   productTitle: string | null;
@@ -100,7 +101,7 @@ export function CreateDealForm() {
     fd.append("shortCode", resolved.shortCode); // dùng shortCode đã pre-generate
     fd.append("shortUrl", resolved.shortUrl);
     fd.append("shopeeImageUrl", resolved.shopeeImageUrl || "");
-    fd.append("platformCode", "SHOPEE");
+    fd.append("platformCode", resolved.platformCode || "SHOPEE");
     fd.append("linkType", linkType);
     if (category) fd.append("category", category);
     if (expiresAt) fd.append("expiresAt", dealExpiryEndOfDay(expiresAt).toISOString());
@@ -190,7 +191,7 @@ export function CreateDealForm() {
             </div>
             <div>
               <h3 className="text-[18px] font-black text-gray-900">Deal đã được đăng!</h3>
-              <p className="text-[13px] text-gray-400 mt-xs">Link dưới đây dùng tên miền của bạn, đích đến vẫn là Shopee.</p>
+              <p className="text-[13px] text-gray-400 mt-xs">Link dưới đây dùng tên miền của bạn, đích đến vẫn là sàn gốc.</p>
             </div>
 
             {createdShortUrl && (
@@ -228,7 +229,7 @@ export function CreateDealForm() {
             <div className="rounded-2xl bg-amber-50 border border-amber-100 p-md flex gap-sm">
               <AlertCircle size={16} className="text-amber-500 shrink-0 mt-0.5" />
               <p className="text-[13px] text-amber-700 leading-relaxed">
-                Dán link deal từ group Shopee vào đây. Hệ thống sẽ tự động tẩy mã affiliate của đối thủ và thay bằng của bạn.
+                Dán link deal Shopee, TikTok Shop hoặc Lazada vào đây. Hệ thống sẽ tự động tẩy mã affiliate của đối thủ và thay bằng của bạn.
               </p>
             </div>
 
@@ -237,7 +238,7 @@ export function CreateDealForm() {
                 <ExternalLink size={16} className="absolute left-md top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="url"
-                  placeholder="https://s.shopee.vn/... hoặc link dài đang dính aff đối thủ"
+                  placeholder="https://s.shopee.vn/... hoặc https://vt.tiktok.com/... hoặc https://s.lazada.vn/..."
                   value={inputUrl}
                   onChange={(e) => setInputUrl(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleResolve()}
@@ -275,6 +276,12 @@ export function CreateDealForm() {
         {/* ═══ STEP 2: Điền thông tin ═══ */}
         {step === 2 && resolved && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-xl">
+            <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-md py-sm">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Nền tảng</span>
+              <span className="rounded-md bg-gray-900 px-2 py-1 text-[11px] font-bold text-white">
+                {resolved.platformCode === "TIKTOK" ? "TikTok Shop" : resolved.platformCode === "LAZADA" ? "Lazada" : "Shopee"}
+              </span>
+            </div>
             <div className="flex flex-col lg:flex-row gap-xl">
               {/* Left: Image */}
               <div className="flex flex-col gap-sm lg:w-[280px] shrink-0">
@@ -299,7 +306,7 @@ export function CreateDealForm() {
                     <div className="flex flex-col items-center justify-center h-full gap-sm text-gray-400">
                       <ImageIcon size={32} strokeWidth={1.5} />
                       <span className="text-[13px] font-medium">Click để upload ảnh</span>
-                      <span className="text-[11px] text-gray-400">Hoặc dùng ảnh Shopee tự động</span>
+                      <span className="text-[11px] text-gray-400">Hoặc dùng ảnh sàn tự động</span>
                     </div>
                   )}
                   {imagePreview && (
@@ -309,7 +316,7 @@ export function CreateDealForm() {
                   )}
                   {!imagePreview && resolved.shopeeImageUrl && (
                     <div className="absolute top-2 right-2">
-                      <span className="rounded-full bg-sky-500 px-2 py-1 text-[10px] font-bold text-white">Ảnh Shopee</span>
+                      <span className="rounded-full bg-sky-500 px-2 py-1 text-[10px] font-bold text-white">Ảnh từ sàn</span>
                     </div>
                   )}
                 </div>
@@ -320,7 +327,7 @@ export function CreateDealForm() {
                     onClick={() => { setImageFile(null); setImagePreview(null); if (fileRef.current) fileRef.current.value = ""; }}
                     className="text-[12px] text-red-500 hover:text-red-700 text-center"
                   >
-                    Xoá ảnh upload → dùng ảnh Shopee
+                    Xoá ảnh upload → dùng ảnh sàn
                   </button>
                 )}
               </div>

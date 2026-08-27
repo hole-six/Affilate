@@ -125,16 +125,21 @@ function parseDecimal(value: string): Prisma.Decimal {
       normalized = normalized.replace(/,/g, ".");
     }
   } else if (lastDotIndex > -1) {
-    // Only dot
+    // Only dot(s), no comma.
     const parts = normalized.split(".");
-    const isThousands = parts.slice(1).every((p) => p.length === 3);
-    if (isThousands && parts[0].length <= 3) {
-      // e.g. 12.345
+    if (parts.length > 2) {
+      // Nhiều hơn 1 dấu chấm (vd "1.234.567") → chắc chắn là phân cách
+      // nghìn, vì một số thập phân thật không thể có 2 dấu chấm trở lên.
       normalized = normalized.replace(/\./g, "");
-    } else {
-      // e.g. 44498.215 (Raw Shopee CSV)
-      // Keep the dot as a decimal point
     }
+    // Đúng 1 dấu chấm: LUÔN coi là dấu thập phân, KHÔNG đoán là phân
+    // cách nghìn dù phần sau dấu chấm đúng 3 chữ số. File Shopee export
+    // gốc không bao giờ dùng "." làm phân cách nghìn — cột hoa hồng có
+    // thể ra số lẻ đúng 3 chữ số một cách tự nhiên (vd đơn 6.795đ x
+    // 3.5% + 2% = "373.725" nghĩa là 373,725đ thật, KHÔNG PHẢI
+    // 373.725 nghìn đồng). Đoán nhầm case này từng làm hoa hồng bị nhân
+    // sai gấp 1000 lần và tiền đã bị hoàn nhầm cho khách trên thực tế
+    // (đơn 260801680JWWTW: hoa hồng đúng 373,725đ bị lưu thành 373725đ).
   }
 
   try {

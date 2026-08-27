@@ -44,6 +44,15 @@ export default async function CustomerAppLayout({ children }: { children: React.
     where: { userId: session.userId, isRead: false },
   });
 
+  // Icon tin nhắn Admin chỉ hiện khi ĐÃ có hội thoại (admin nhắn trước) —
+  // khách không tự tạo được thread nên không có gì để hiện nếu null.
+  const supportThread = session.customerId
+    ? await prisma.supportThread.findUnique({
+        where: { customerId: session.customerId },
+        select: { customerUnreadCount: true },
+      })
+    : null;
+
   return (
     <div className="internal-app flex h-screen overflow-hidden bg-canvas flex-col md:flex-row text-ink">
       {/* Animated background */}
@@ -92,7 +101,11 @@ export default async function CustomerAppLayout({ children }: { children: React.
         </div>
       </main>
 
-      <FloatingQuickAccess unreadCount={unreadCount} />
+      <FloatingQuickAccess
+        unreadCount={unreadCount}
+        hasSupportThread={Boolean(supportThread)}
+        supportUnreadCount={supportThread?.customerUnreadCount ?? 0}
+      />
       <MobileBottomNav />
       <PendingLinkClaimer />
     </div>

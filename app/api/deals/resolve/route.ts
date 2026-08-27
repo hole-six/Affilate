@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { resolveShortLink, normalizeUrl } from "@/lib/linkConversion";
+import { detectPlatform, resolveShortLink, normalizeUrl } from "@/lib/linkConversion";
 import { generateShortCode, buildShortUrl } from "@/lib/shortLink";
 import { fetchProductInfo } from "@/lib/productInfo";
 import { createTrackingLink } from "@/lib/trackingLinkService";
@@ -12,7 +12,7 @@ const COMPETITOR_PARAMS = [
   "mmp_pid", "uls_trackid", "utm_source", "utm_medium", "utm_campaign",
   "utm_content", "utm_term", "af_siteid", "af_sub_siteid", "pid",
   "cns", "affiliate_id", "sub_id", "sub_id1", "sub_id2", "sub_id3",
-  "sub_id4", "sub_id5", "click_id", "sp_atk", "xptdk", "smtt",
+  "sub_id4", "sub_id5", "sub_id6", "sub_aff_id", "click_id", "sp_atk", "xptdk", "smtt",
   "share_channel_code", "deep_and_deferred", "is_from_login", "action_from",
   "credential_token", "exp_group", "gads_t_sig",
 ];
@@ -55,10 +55,16 @@ export async function POST(req: NextRequest) {
   let affiliateUrl = cleanLink;
   let productTitle: string | null = null;
   let shopeeImageUrl: string | null = null;
+  const detectedPlatform = detectPlatform(cleanLink);
+  const platformCode =
+    detectedPlatform === "shopee" ? "SHOPEE" :
+    detectedPlatform === "tiktok" ? "TIKTOK" :
+    detectedPlatform === "lazada" ? "LAZADA" :
+    null;
 
-  if (cleanLink.includes("shopee.vn")) {
+  if (platformCode) {
     try {
-      const platform = await prisma.platform.findFirst({ where: { code: "SHOPEE" } });
+      const platform = await prisma.platform.findFirst({ where: { code: platformCode, status: "active" } });
       if (platform) {
         const systemCustomer = await getSystemCustomer();
         const result = await createTrackingLink({
@@ -90,6 +96,7 @@ export async function POST(req: NextRequest) {
     rawInputLink: url.trim(),
     cleanLink,
     affiliateUrl,
+    platformCode: platformCode ?? "SHOPEE",
     shortCode,   // trả về để client giữ và truyền lên khi tạo deal
     shortUrl,    // link đã dạng tên miền của mình, hiện ngay cho admin
     productTitle,

@@ -6,7 +6,7 @@ const BADGES: { icon: LucideIcon; label: string; color: string }[] = [
   { icon: PiggyBank, label: "Hoàn tiền tự động", color: "text-primary" },
   { icon: Wallet, label: "Rút tiền nhanh chóng", color: "text-positive" },
   { icon: ClipboardList, label: "Đối soát minh bạch", color: "text-primary" },
-  { icon: Store, label: "Hỗ trợ Shopee & TikTok", color: "text-positive" },
+  { icon: Store, label: "Hỗ trợ Shopee, TikTok & Lazada", color: "text-positive" },
 ];
 
 function BadgeRow() {

@@ -14,7 +14,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     group: "Về cách hoạt động",
     question: "iviback hoạt động như thế nào?",
     answer:
-      "Khi bạn mua hàng qua link iviback, Shopee và TikTok Shop trả hoa hồng affiliate cho chúng tôi. iviback chia lại phần lớn khoản này vào ví của bạn dưới dạng tiền mặt — hoàn toàn tự động, không cần làm thêm gì.",
+      "Khi bạn mua hàng qua link iviback, Shopee, TikTok Shop và Lazada trả hoa hồng affiliate cho chúng tôi. iviback chia lại phần lớn khoản này vào ví của bạn dưới dạng tiền mặt — hoàn toàn tự động, không cần làm thêm gì.",
   },
   {
     group: "Về cách hoạt động",
@@ -47,7 +47,7 @@ export const FAQ_ITEMS: FaqItem[] = [
     group: "Về tiền hoàn",
     question: "Bao lâu tiền về ví iviback sau khi đơn giao thành công?",
     answer:
-      "7–15 ngày sau khi đơn được xác nhận hoàn tất. Thời gian này phụ thuộc vào kỳ đối soát của Shopee và TikTok Shop với hệ thống affiliate.",
+      "7–15 ngày sau khi đơn được xác nhận hoàn tất. Thời gian này phụ thuộc vào kỳ đối soát của Shopee, TikTok Shop và Lazada với hệ thống affiliate.",
   },
   {
     group: "Về tiền hoàn",

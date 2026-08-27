@@ -63,7 +63,7 @@ export function QuickVoucherForm({ platforms }: { platforms: Option[] }) {
         </select>
         <input
           type="text"
-          placeholder="Dán link deal Shopee/TikTok vào đây..."
+          placeholder="Dán link deal Shopee/TikTok/Lazada vào đây..."
           required
           value={voucherUrl}
           onChange={(e) => setVoucherUrl(e.target.value)}

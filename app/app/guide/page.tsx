@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 const steps = [
   {
     title: "Dán link sản phẩm",
-    body: "Vào mục Hoàn tiền, dán link Shopee/TikTok bạn muốn mua, chọn nền tảng và bấm Đổi link.",
+    body: "Vào mục Hoàn tiền, dán link Shopee/TikTok/Lazada bạn muốn mua, chọn nền tảng và bấm Đổi link.",
   },
   {
     title: "Bấm vào link vừa tạo",
@@ -14,11 +14,11 @@ const steps = [
   },
   {
     title: "Hoàn tất mua hàng",
-    body: "Thanh toán bình thường trên Shopee/TikTok như mọi khi.",
+    body: "Thanh toán bình thường trên Shopee/TikTok/Lazada như mọi khi.",
   },
   {
     title: "Chờ đối soát",
-    body: "Định kỳ hệ thống đối soát đơn hàng từ sàn — đơn chỉ được xác nhận \"Tiền đã về\" khi Shopee/TikTok đánh dấu trạng thái sản phẩm liên kết là \"Hoàn thành\", không phải chỉ đơn giản là đơn hàng giao thành công.",
+    body: "Định kỳ hệ thống đối soát đơn hàng từ sàn — đơn chỉ được xác nhận \"Tiền đã về\" khi Shopee/TikTok/Lazada đánh dấu trạng thái sản phẩm liên kết là \"Hoàn thành\", không phải chỉ đơn giản là đơn hàng giao thành công.",
   },
   {
     title: "Nhận hoàn tiền",
@@ -29,27 +29,27 @@ const steps = [
 const notes = [
   {
     title: "Luôn bấm lại link mỗi lần mua",
-    body: "Mỗi lượt mua hàng cần bấm lại link hoàn tiền ngay trước khi vào Shopee/TikTok. Nếu đã tắt trình duyệt hoặc mở lại app sau đó, link theo dõi có thể hết hiệu lực và đơn sẽ không được ghi nhận.",
+    body: "Mỗi lượt mua hàng cần bấm lại link hoàn tiền ngay trước khi vào Shopee/TikTok/Lazada. Nếu đã tắt trình duyệt hoặc mở lại app sau đó, link theo dõi có thể hết hiệu lực và đơn sẽ không được ghi nhận.",
   },
   {
     title: "Không dùng thêm app/link hoàn tiền khác",
-    body: "Shopee chỉ tính hoa hồng cho lượt click gần nhất trước khi đặt hàng. Nếu bạn bấm thêm link từ ứng dụng hoàn tiền khác, mã giảm giá ngoài hệ thống, hoặc link chia sẻ từ người khác sau khi đã bấm link của iviback, đơn sẽ bị tính cho nguồn khác.",
+    body: "Sàn thường tính hoa hồng cho lượt click hợp lệ gần nhất trước khi đặt hàng. Nếu bạn bấm thêm link từ ứng dụng hoàn tiền khác, mã giảm giá ngoài hệ thống, hoặc link chia sẻ từ người khác sau khi đã bấm link của iviback, đơn có thể bị tính cho nguồn khác.",
   },
   {
     title: "Hoàn tất đơn trong phiên, không thoát giữa chừng",
-    body: "Sau khi bấm link, nên hoàn tất đặt hàng trong cùng phiên truy cập. Thoát ứng dụng, tắt wifi hoặc chuyển sang app khác giữa lúc chuyển hướng có thể khiến Shopee không ghi nhận được nguồn click.",
+    body: "Sau khi bấm link, nên hoàn tất đặt hàng trong cùng phiên truy cập. Thoát ứng dụng, tắt wifi hoặc chuyển sang app khác giữa lúc chuyển hướng có thể khiến sàn không ghi nhận được nguồn click.",
   },
   {
     title: "Một số ngành hàng không được tính hoa hồng",
-    body: "Shopee/TikTok loại trừ hoa hồng với: nạp thẻ điện thoại, Shopee Xu/Ví, vé máy bay, một số sản phẩm Mall/Brand đặc biệt. Những đơn này vẫn lên hệ thống nhưng sẽ không có tiền hoàn.",
+    body: "Shopee/TikTok/Lazada loại trừ hoa hồng với: nạp thẻ điện thoại, Shopee Xu/Ví, vé máy bay, một số sản phẩm Mall/Brand đặc biệt. Những đơn này vẫn lên hệ thống nhưng sẽ không có tiền hoàn.",
   },
   {
     title: "Đơn có thể bị huỷ hoa hồng ngay cả khi đã \"đã về\"",
-    body: "Nếu sau đó bạn đổi trả hàng, huỷ đơn, hoặc Shopee phát hiện gian lận, hoa hồng đã ghi nhận có thể bị thu hồi (clawback) — số tiền tương ứng sẽ được trừ lại khỏi ví nếu chưa thanh toán.",
+    body: "Nếu sau đó bạn đổi trả hàng, huỷ đơn, hoặc sàn phát hiện gian lận, hoa hồng đã ghi nhận có thể bị thu hồi (clawback) — số tiền tương ứng sẽ được trừ lại khỏi ví nếu chưa thanh toán.",
   },
   {
     title: "Thời gian đối soát thường mất 7–20 ngày",
-    body: "Shopee/TikTok chỉ xác nhận hoa hồng sau khi hết thời hạn đổi trả của đơn hàng. Đơn ở trạng thái \"Chờ xác nhận\" là bình thường, không phải lỗi hệ thống — cứ chờ đến kỳ đối soát tiếp theo.",
+    body: "Shopee/TikTok/Lazada chỉ xác nhận hoa hồng sau khi hết thời hạn đổi trả của đơn hàng. Đơn ở trạng thái \"Chờ xác nhận\" là bình thường, không phải lỗi hệ thống — cứ chờ đến kỳ đối soát tiếp theo.",
   },
 ];
 

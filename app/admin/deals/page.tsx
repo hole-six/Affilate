@@ -54,6 +54,7 @@ export default async function AdminDealsPage({ searchParams }: { searchParams: {
     uploadedImageUrl: d.uploadedImageUrl,
     shopeeImageUrl: d.shopeeImageUrl,
     affiliateUrl: d.affiliateUrl,
+    platformCode: d.platformCode,
     shortUrl: d.shortUrl,
     status: d.status,
     clicks: d.clicks,

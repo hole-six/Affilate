@@ -17,7 +17,6 @@ import {
   buildReplyKeyboardMenu,
   buildTelegramHelpMessage,
   buildUnsupportedPlatformMessage,
-  buildTikTokDisabledOnTelegramMessage,
   buildWalletMessage,
   buildWithdrawErrorMessage,
   buildWithdrawSuccessMessage,
@@ -218,7 +217,7 @@ export async function POST(req: NextRequest) {
       .filter((o) => o.orderStatus === "approved" && o.payoutStatus === "unpaid")
       .reduce((s, o) => s + Number(o.customerRewardAmount), 0);
     const processing = orders
-      .filter((o) => o.payoutStatus === "processing")
+      .filter((o) => o.orderStatus === "pending" || o.orderStatus === "processing")
       .reduce((s, o) => s + Number(o.customerRewardAmount), 0);
     const paid = orders
       .filter((o) => o.payoutStatus === "paid")
@@ -338,11 +337,6 @@ export async function POST(req: NextRequest) {
     if (!platformCode) {
       replyText = buildUnsupportedPlatformMessage(originalUrl);
       processingStatus = "processed_unsupported_platform";
-    } else if (platformCode === "TIKTOK") {
-      // TikTok Shop tạm khoá riêng cho kênh Telegram — Shopee vẫn hoạt động
-      // bình thường, web vẫn đổi được link TikTok như cũ.
-      replyText = buildTikTokDisabledOnTelegramMessage();
-      processingStatus = "processed_tiktok_disabled_telegram";
     } else {
       const platform = await prisma.platform.findUnique({ where: { code: platformCode } });
 

@@ -142,7 +142,7 @@ export function buildConvertLinkPromptMessage(): string {
   return [
     "🔄 <b>Đổi link nhanh</b>",
     "",
-    "Dán link Shopee bạn muốn đổi vào ngay khung chat này (chỉ cần gửi link, không cần lệnh gì thêm), bot sẽ trả về link hoàn tiền ngay lập tức.",
+    "Dán link Shopee, TikTok Shop hoặc Lazada vào ngay khung chat này, bot sẽ trả về link hoàn tiền ngay lập tức.",
   ].join("\n");
 }
 
@@ -150,7 +150,7 @@ export function buildTelegramHelpMessage(): string {
   return [
     "👋 <b>Chào mừng đến với bot ivi Hoàn Tiền!</b>",
     "",
-    "Gửi link Shopee, bot sẽ đổi sang link hoàn tiền ngay lập tức.",
+    "Gửi link Shopee, TikTok Shop hoặc Lazada, bot sẽ đổi sang link hoàn tiền ngay lập tức.",
     "",
     "<b>Lệnh nhanh:</b>",
     "💰 /wallet — xem số dư hoàn tiền",
@@ -161,7 +161,7 @@ export function buildTelegramHelpMessage(): string {
     "🎁 /referral — link mời bạn & hoa hồng giới thiệu",
     "📖 /help — xem lại hướng dẫn này",
     "",
-    "Ví dụ: <code>https://shopee.vn/...</code>",
+    "Ví dụ: <code>https://shopee.vn/...</code> hoặc <code>https://www.tiktok.com/...</code>",
   ].join("\n");
 }
 
@@ -193,17 +193,8 @@ export function buildLinkExpiredMessage(): string {
 
 export function buildUnsupportedPlatformMessage(rawUrl: string): string {
   return [
-    "🙁 Bot đã nhận link nhưng hiện chỉ hỗ trợ <b>Shopee</b>.",
+    "🙁 Bot đã nhận link nhưng hiện chỉ hỗ trợ <b>Shopee/TikTok Shop/Lazada</b>.",
     `Link vừa gửi: ${escapeHtml(rawUrl)}`,
-  ].join("\n");
-}
-
-// TikTok Shop tạm thời chỉ đổi được trên website, chưa hỗ trợ qua Telegram —
-// khác với link Shopee vẫn hoạt động bình thường ở cả 2 nơi.
-export function buildTikTokDisabledOnTelegramMessage(): string {
-  return [
-    "🙁 Bot hiện <b>chưa hỗ trợ đổi link TikTok Shop</b> qua Telegram.",
-    "Vui lòng dùng website iviback.vn để đổi link TikTok, hoặc gửi link Shopee vào đây nhé.",
   ].join("\n");
 }
 
@@ -241,6 +232,16 @@ export function buildOrderApprovedMessage(params: {
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+export function buildAdminMessageAlert(message: string): string {
+  return [
+    "💬 <b>Bạn có tin nhắn mới từ Admin!</b>",
+    "",
+    escapeHtml(message),
+    "",
+    "Vào mục Tin nhắn trên web để xem đầy đủ và trả lời.",
+  ].join("\n");
 }
 
 export function buildReferralBonusMessage(params: {
@@ -318,7 +319,14 @@ export function buildOrdersListMessage(
     return "📦 Bạn chưa có đơn hàng nào. Đổi link và mua sắm để bắt đầu tích luỹ nhé!";
   }
 
-  const statusEmoji: Record<string, string> = { approved: "✅", pending: "⏳", rejected: "❌" };
+  const statusEmoji: Record<string, string> = {
+    approved: "✅",
+    pending: "⏳",
+    processing: "🕐",
+    cancelled: "❌",
+    rejected: "❌",
+    clawback: "⚠️",
+  };
   const lines = orders.map((o) => {
     const emoji = statusEmoji[o.orderStatus] ?? "•";
     return `${emoji} <code>${escapeHtml(o.orderExternalId)}</code> — ${escapeHtml(o.orderStatus)} — <b>${formatCurrency(o.customerRewardAmount)}</b>`;
@@ -331,7 +339,7 @@ export function buildLinksListMessage(
   links: { trackingCode: string; shortUrl: string | null; createdAt: Date }[]
 ): string {
   if (links.length === 0) {
-    return "🔗 Bạn chưa tạo link nào. Gửi link Shopee cho bot để bắt đầu đổi link hoàn tiền.";
+    return "🔗 Bạn chưa tạo link nào. Gửi link Shopee, TikTok Shop hoặc Lazada cho bot để bắt đầu đổi link hoàn tiền.";
   }
 
   const lines = links.map((l) => `🔗 <a href="${l.shortUrl ?? "#"}">${l.shortUrl ?? l.trackingCode}</a>`);
@@ -421,10 +429,11 @@ export function buildFlowCancelledMessage(): string {
   return "❌ Đã huỷ. Gõ /rut bất cứ lúc nào để thử lại.";
 }
 
-export function mapDetectedPlatformToCode(url: string): "SHOPEE" | "TIKTOK" | null {
+export function mapDetectedPlatformToCode(url: string): "SHOPEE" | "TIKTOK" | "LAZADA" | null {
   const platform = detectPlatform(url);
   if (platform === "shopee") return "SHOPEE";
   if (platform === "tiktok") return "TIKTOK";
+  if (platform === "lazada") return "LAZADA";
   return null;
 }
 

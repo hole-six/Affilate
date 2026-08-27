@@ -6,12 +6,12 @@ import Link from "next/link";
 import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
-  title: "Hướng Dẫn Sử Dụng — iviback Hoàn Tiền Shopee, TikTok Shop",
-  description: "Cách sử dụng nền tảng hoàn tiền iviback: 3 bước đơn giản để mua sắm Shopee, TikTok Shop và nhận hoàn tiền tự động.",
+  title: "Hướng Dẫn Sử Dụng — iviback Hoàn Tiền Shopee, TikTok Shop, Lazada",
+  description: "Cách sử dụng nền tảng hoàn tiền iviback: 3 bước đơn giản để mua sắm Shopee, TikTok Shop, Lazada và nhận hoàn tiền tự động.",
   alternates: { canonical: "/huong-dan" },
   openGraph: {
-    title: "Hướng Dẫn Sử Dụng — iviback Hoàn Tiền Shopee, TikTok Shop",
-    description: "Cách sử dụng nền tảng hoàn tiền iviback: 3 bước đơn giản để mua sắm Shopee, TikTok Shop và nhận hoàn tiền tự động.",
+    title: "Hướng Dẫn Sử Dụng — iviback Hoàn Tiền Shopee, TikTok Shop, Lazada",
+    description: "Cách sử dụng nền tảng hoàn tiền iviback: 3 bước đơn giản để mua sắm Shopee, TikTok Shop, Lazada và nhận hoàn tiền tự động.",
     type: "website",
     locale: "vi_VN",
     url: "/huong-dan",
@@ -26,7 +26,7 @@ const STEPS = [
   },
   {
     title: "Dán link sản phẩm",
-    description: "Copy link Shopee hoặc TikTok Shop bạn muốn mua, dán vào hệ thống để lấy link hoàn tiền. Hệ thống sẽ tự động sinh ra một link dành riêng cho bạn.",
+    description: "Copy link Shopee, TikTok Shop hoặc Lazada bạn muốn mua, dán vào hệ thống để lấy link hoàn tiền. Hệ thống sẽ tự động sinh ra một link dành riêng cho bạn.",
   },
   {
     title: "Mua sắm & nhận hoàn tiền",
@@ -87,7 +87,7 @@ export default function HuongDanPage() {
                     Bạn cũng có thể không cần phải mở Website để đổi link! Hãy liên kết với <span className="font-bold text-primary">Bot Telegram</span> của chúng tôi trong Cài đặt Cá nhân.
                 </p>
                 <p className="text-[16px] text-mute leading-relaxed">
-                    Mỗi khi lướt thấy đồ muốn mua trên Shopee/TikTok, chỉ việc gửi link đó vào khung chat Telegram, Bot sẽ gửi lại ngay link hoàn tiền trong 1 giây. Mọi tin nhắn duyệt hoàn tiền cũng sẽ được thông báo ngay lập tức qua Telegram.
+                    Mỗi khi lướt thấy đồ muốn mua trên Shopee/TikTok/Lazada, chỉ việc gửi link đó vào khung chat Telegram, Bot sẽ gửi lại ngay link hoàn tiền trong 1 giây. Mọi tin nhắn duyệt hoàn tiền cũng sẽ được thông báo ngay lập tức qua Telegram.
                 </p>
             </div>
         </section>

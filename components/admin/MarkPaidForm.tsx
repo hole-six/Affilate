@@ -1,20 +1,157 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, X, Upload, FileImage, Loader2 } from "lucide-react";
+import { CheckCircle2, X, Upload, FileImage, Loader2, AlertTriangle } from "lucide-react";
+import { useModal } from "@/components/ui/ModalProvider";
+
+type BatchItemBreakdown = {
+  id: string;
+  amount: number;
+  order: {
+    id: string;
+    orderExternalId: string;
+    itemName: string | null;
+    orderAmount: number | null;
+    commissionAmount: number;
+    customerRewardAmount: number;
+    referralBonusDeducted: number;
+    platform?: { name: string } | null;
+  };
+};
+
+function formatVnd(value: number) {
+  return `${Math.round(value).toLocaleString("vi-VN")}đ`;
+}
+
+// Cảnh báo khi hoa hồng lớn hơn hẳn giá trị đơn hàng — dấu hiệu số liệu CSV
+// bị đọc sai (vd dấu thập phân bị hiểu nhầm thành dấu phân cách nghìn, từng
+// khiến hoa hồng 373,725đ bị lưu thành 373.725 -> 373725đ, chuyển nhầm cho
+// khách gấp ~1000 lần số thật).
+function isSuspicious(item: BatchItemBreakdown) {
+  const orderAmount = Number(item.order.orderAmount ?? 0);
+  const commission = Number(item.order.commissionAmount ?? 0);
+  return orderAmount > 0 && commission > orderAmount;
+}
+
+function BatchBreakdown({
+  batchId,
+  onSuspiciousChange,
+}: {
+  batchId: string;
+  onSuspiciousChange: (count: number) => void;
+}) {
+  const [items, setItems] = useState<BatchItemBreakdown[] | null>(null);
+  const [totalAmount, setTotalAmount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/payments/${batchId}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        const loadedItems: BatchItemBreakdown[] = d.batch?.items ?? [];
+        setItems(loadedItems);
+        setTotalAmount(d.batch ? Number(d.batch.totalAmount) : null);
+        onSuspiciousChange(loadedItems.filter(isSuspicious).length);
+      })
+      .catch(() => {
+        if (!cancelled) setItems([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [batchId]);
+
+  if (items === null) {
+    return <p className="text-[12px] text-gray-400">Đang tải chi tiết đơn hàng...</p>;
+  }
+
+  const suspiciousCount = items.filter(isSuspicious).length;
+
+  return (
+    <div className="flex flex-col gap-xs">
+      <div className="flex items-center justify-between">
+        <label className="text-[12px] font-bold text-gray-600 uppercase tracking-wider">
+          Chi tiết đơn hàng ({items.length})
+        </label>
+        {totalAmount != null && (
+          <span className="text-[12px] font-black text-emerald-600">{formatVnd(totalAmount)}</span>
+        )}
+      </div>
+
+      {suspiciousCount > 0 && (
+        <div className="flex items-start gap-xs rounded-xl border border-red-200 bg-red-50 p-sm">
+          <AlertTriangle size={14} className="mt-[1px] shrink-0 text-red-500" />
+          <p className="text-[11px] font-semibold text-red-600">
+            {suspiciousCount} đơn có hoa hồng LỚN HƠN giá trị đơn hàng — khả năng số liệu CSV bị đọc sai. Kiểm tra kỹ trước khi chuyển khoản.
+          </p>
+        </div>
+      )}
+
+      <div className="flex max-h-56 flex-col gap-xs overflow-y-auto rounded-2xl border border-gray-100 bg-gray-50 p-xs">
+        {items.map((item) => {
+          const suspicious = isSuspicious(item);
+          return (
+            <div
+              key={item.id}
+              className={`rounded-xl border p-sm text-[11px] ${
+                suspicious ? "border-red-300 bg-red-50" : "border-gray-100 bg-white"
+              }`}
+            >
+              <div className="flex items-center justify-between gap-sm">
+                <p className="truncate font-semibold text-gray-800">
+                  {item.order.itemName ?? item.order.orderExternalId}
+                </p>
+                {suspicious && <AlertTriangle size={12} className="shrink-0 text-red-500" />}
+              </div>
+              <div className="mt-[2px] flex flex-wrap items-center gap-x-sm gap-y-[2px] text-[10px] text-gray-500">
+                <span className="font-mono">{item.order.orderExternalId}</span>
+                <span>Giá: {formatVnd(Number(item.order.orderAmount ?? 0))}</span>
+                <span className={suspicious ? "font-bold text-red-600" : ""}>
+                  Hoa hồng: {formatVnd(Number(item.order.commissionAmount ?? 0))}
+                </span>
+                {Number(item.order.referralBonusDeducted ?? 0) > 0 && (
+                  <span>HH giới thiệu: {formatVnd(Number(item.order.referralBonusDeducted))}</span>
+                )}
+                <span className="font-bold text-emerald-600">
+                  Khách nhận: {formatVnd(Number(item.amount))}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export function MarkPaidForm({ batchId }: { batchId: string }) {
   const router = useRouter();
+  const modal = useModal();
   const [open, setOpen] = useState(false);
   const [transferReference, setTransferReference] = useState("");
   const [transferNote, setTransferNote] = useState("");
   const [bill, setBill] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [suspiciousCount, setSuspiciousCount] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (suspiciousCount > 0) {
+      const confirmed = await modal.confirm({
+        title: "Số liệu bất thường trong phiếu",
+        message: `${suspiciousCount} đơn trong phiếu này có hoa hồng LỚN HƠN giá trị đơn hàng — rất có thể số liệu CSV bị đọc sai và số tiền chuyển khoản không đúng. Vẫn muốn xác nhận đã chuyển khoản?`,
+        confirmText: "Vẫn xác nhận",
+        cancelText: "Để tôi kiểm tra lại",
+        iconType: "danger",
+      });
+      if (!confirmed) return;
+    }
+
     setLoading(true);
 
     const formData = new FormData();
@@ -84,6 +221,9 @@ export function MarkPaidForm({ batchId }: { batchId: string }) {
 
             {/* Body */}
             <div className="flex flex-col gap-md p-xl">
+
+              {/* Chi tiết đơn hàng cấu thành số tiền chuyển khoản */}
+              {open && <BatchBreakdown batchId={batchId} onSuspiciousChange={setSuspiciousCount} />}
 
               {/* Mã giao dịch */}
               <div className="flex flex-col gap-xs">

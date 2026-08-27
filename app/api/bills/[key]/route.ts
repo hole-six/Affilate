@@ -12,9 +12,16 @@ export async function GET(
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  // Sanitize: chỉ cho phép tên file đơn giản, không path traversal
-  const key = params.key.replace(/[/\\..]/g, "");
-  if (!key) return new NextResponse("Not found", { status: 404 });
+  // Sanitize: chặn path traversal nhưng vẫn giữ được dấu chấm (đuôi file)
+  const rawKey = params.key;
+  const isSafe =
+    rawKey.length > 0 &&
+    !rawKey.includes("..") &&
+    !rawKey.includes("/") &&
+    !rawKey.includes("\\") &&
+    !rawKey.includes("\0");
+  if (!isSafe) return new NextResponse("Not found", { status: 404 });
+  const key = rawKey;
 
   try {
     const filePath = path.join(process.cwd(), "storage", "bills", key);

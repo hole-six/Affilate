@@ -53,7 +53,7 @@ const FEATURES = [
   {
     icon: Link2,
     title: "Tạo link hoàn tiền tức thì",
-    description: "Dán link sản phẩm Shopee hoặc TikTok Shop — hệ thống tự sinh link riêng cho bạn ngay lập tức.",
+    description: "Dán link sản phẩm Shopee, TikTok Shop hoặc Lazada — hệ thống tự sinh link riêng cho bạn ngay lập tức.",
   },
   {
     icon: ClipboardList,
@@ -89,7 +89,7 @@ const STEPS = [
   },
   {
     title: "Dán link sản phẩm",
-    description: "Copy link Shopee hoặc TikTok Shop bạn muốn mua, dán vào hệ thống để lấy link hoàn tiền.",
+    description: "Copy link Shopee, TikTok Shop hoặc Lazada bạn muốn mua, dán vào hệ thống để lấy link hoàn tiền.",
   },
   {
     title: "Mua sắm & nhận hoàn tiền",
@@ -114,7 +114,7 @@ const FAQ_ITEMS = [
   },
   {
     question: "Hệ thống hỗ trợ những sàn nào?",
-    answer: "Hiện tại hỗ trợ Shopee và TikTok Shop. Các sàn khác sẽ được bổ sung trong thời gian tới.",
+    answer: "Hiện tại hỗ trợ Shopee, TikTok Shop và Lazada. Các sàn khác sẽ được bổ sung trong thời gian tới.",
   },
   {
     question: "Tôi có thể dùng Telegram thay vì vào web không?",
@@ -159,7 +159,7 @@ export function LandingPage({ totalPaidOut, totalCustomers }: { totalPaidOut: nu
                 <img src={versionedAsset("/icontitle.png")} alt="iviback" className="inline-block h-[0.9em] w-[0.9em] object-cover rounded-full align-middle" />
               </h1>
               <p className="text-[18px] text-mute max-w-lg leading-relaxed">
-                Cách thông minh hơn để mua Shopee & TikTok Shop — hoàn tiền tự động cho mọi đơn, tiền về thẳng ví của bạn.
+                Cách thông minh hơn để mua Shopee, TikTok Shop & Lazada — hoàn tiền tự động cho mọi đơn, tiền về thẳng ví của bạn.
               </p>
               <div className="flex flex-col sm:flex-row gap-md pt-md">
                 <Link href="/login" className="bg-gradient-to-r from-primary to-primary-active hover:shadow-lg hover:-translate-y-0.5 text-white px-2xl py-lg rounded-2xl font-bold text-[16px] flex items-center justify-center gap-sm transition-all shadow-primary/30 shadow-md">

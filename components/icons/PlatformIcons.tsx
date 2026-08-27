@@ -97,3 +97,7 @@ export function GoogleIcon({ size = 22, className = "" }: IconProps) {
 export function TiktokIcon(props: IconProps) {
   return <Icons8Image {...props} style="color" slug="tiktok" alt="Tiktok" />;
 }
+
+export function LazadaIcon(props: IconProps) {
+  return <Icons8Image {...props} style="color" slug="lazada" alt="Lazada" />;
+}

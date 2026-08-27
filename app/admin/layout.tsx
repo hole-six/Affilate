@@ -11,6 +11,7 @@ import {
   Settings,
   Flame,
   MessagesSquare,
+  Plug,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { AdminSidebar } from "@/components/layout/AdminSidebar";
@@ -39,8 +40,9 @@ const sections = [
   {
     title: "Tích hợp & Cài đặt",
     items: [
-      { href: "/admin/telegram", label: "Telegram Bot",  emoji: "✈️", icon: <Send          size={16} strokeWidth={1.75} /> },
-      { href: "/admin/settings", label: "Cài đặt",       emoji: "⚙️", icon: <Settings      size={16} strokeWidth={1.75} /> },
+      { href: "/admin/telegram",              label: "Telegram Bot",       emoji: "✈️", icon: <Send     size={16} strokeWidth={1.75} /> },
+      { href: "/admin/settings#integrations", label: "Tích hợp nền tảng",   emoji: "🔌", icon: <Plug     size={16} strokeWidth={1.75} /> },
+      { href: "/admin/settings",              label: "Cài đặt",            emoji: "⚙️", icon: <Settings size={16} strokeWidth={1.75} /> },
     ],
   },
 ];

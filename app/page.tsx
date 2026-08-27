@@ -6,14 +6,14 @@ import { LandingPage } from "@/components/marketing/LandingPage";
 import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
-  title: "iviback — Mua sắm Shopee, TikTok Shop nhận hoàn tiền tự động",
+  title: "iviback — Mua sắm Shopee, TikTok Shop, Lazada nhận hoàn tiền tự động",
   description:
-    "Dán link Shopee hoặc TikTok Shop, nhận link hoàn tiền tự động. Rút tiền từ 10.000đ, tích hợp bot Telegram, miễn phí hoàn toàn.",
+    "Dán link Shopee, TikTok Shop hoặc Lazada, nhận link hoàn tiền tự động. Rút tiền từ 10.000đ, tích hợp bot Telegram, miễn phí hoàn toàn.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "iviback — Mua sắm thông minh, nhận hoàn tiền tự động",
     description:
-      "Nền tảng affiliate hoàn tiền cho Shopee và TikTok Shop. Rút tiền từ 10.000đ, tích hợp bot Telegram.",
+      "Nền tảng affiliate hoàn tiền cho Shopee, TikTok Shop và Lazada. Rút tiền từ 10.000đ, tích hợp bot Telegram.",
     type: "website",
     locale: "vi_VN",
     url: "/",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "iviback — Mua sắm thông minh, nhận hoàn tiền tự động",
     description:
-      "Nền tảng affiliate hoàn tiền cho Shopee và TikTok Shop. Rút tiền từ 10.000đ, tích hợp bot Telegram.",
+      "Nền tảng affiliate hoàn tiền cho Shopee, TikTok Shop và Lazada. Rút tiền từ 10.000đ, tích hợp bot Telegram.",
     images: ["/icontitle.png"],
   },
 };
@@ -37,7 +37,7 @@ const jsonLd = {
       "@id": "https://iviback.vn/#website",
       url: "https://iviback.vn",
       name: "iviback",
-      description: "Nền tảng affiliate hoàn tiền cho Shopee và TikTok Shop tại Việt Nam.",
+      description: "Nền tảng affiliate hoàn tiền cho Shopee, TikTok Shop và Lazada tại Việt Nam.",
       inLanguage: "vi-VN",
     },
     {
@@ -93,7 +93,7 @@ const jsonLd = {
           name: "Hệ thống hỗ trợ những sàn nào?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Hiện tại hỗ trợ Shopee và TikTok Shop. Các sàn khác sẽ được bổ sung trong thời gian tới.",
+            text: "Hiện tại hỗ trợ Shopee, TikTok Shop và Lazada. Các sàn khác sẽ được bổ sung trong thời gian tới.",
           },
         },
       ],

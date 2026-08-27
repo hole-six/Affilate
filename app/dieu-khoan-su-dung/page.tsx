@@ -32,7 +32,7 @@ const SECTIONS = [
   {
     title: "1. Giới thiệu chung",
     body: [
-      "iviback (\"chúng tôi\", \"hệ thống\", \"dịch vụ\") là nền tảng affiliate hoàn tiền, giúp người dùng (\"bạn\", \"khách hàng\") nhận lại một phần hoa hồng affiliate khi mua sắm qua các sàn thương mại điện tử liên kết như Shopee và TikTok Shop.",
+      "iviback (\"chúng tôi\", \"hệ thống\", \"dịch vụ\") là nền tảng affiliate hoàn tiền, giúp người dùng (\"bạn\", \"khách hàng\") nhận lại một phần hoa hồng affiliate khi mua sắm qua các sàn thương mại điện tử liên kết như Shopee, TikTok Shop và Lazada.",
       "Bằng việc truy cập, đăng ký tài khoản hoặc sử dụng bất kỳ tính năng nào của iviback (website, bot Telegram), bạn xác nhận đã đọc, hiểu và đồng ý với toàn bộ nội dung Điều khoản sử dụng này. Nếu không đồng ý, vui lòng ngừng sử dụng dịch vụ.",
     ],
   },

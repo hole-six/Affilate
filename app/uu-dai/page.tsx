@@ -9,12 +9,12 @@ import { Flame } from "lucide-react";
 import { safeJsonLdString } from "@/lib/jsonLd";
 
 export const metadata: Metadata = {
-  title: "Ưu Đãi & Mã Giảm Giá Shopee, TikTok Shop Mới Nhất — iviback",
-  description: "Cập nhật liên tục mã giảm giá, deal sập sàn Shopee và TikTok Shop. Mua qua link iviback vừa được giá tốt vừa nhận thêm hoàn tiền.",
+  title: "Ưu Đãi & Mã Giảm Giá Shopee, TikTok Shop, Lazada Mới Nhất — iviback",
+  description: "Cập nhật liên tục mã giảm giá, deal sập sàn Shopee, TikTok Shop và Lazada. Mua qua link iviback vừa được giá tốt vừa nhận thêm hoàn tiền.",
   alternates: { canonical: "/uu-dai" },
   openGraph: {
-    title: "Ưu Đãi & Mã Giảm Giá Shopee, TikTok Shop Mới Nhất — iviback",
-    description: "Cập nhật liên tục mã giảm giá, deal sập sàn Shopee và TikTok Shop. Mua qua link iviback vừa được giá tốt vừa nhận thêm hoàn tiền.",
+    title: "Ưu Đãi & Mã Giảm Giá Shopee, TikTok Shop, Lazada Mới Nhất — iviback",
+    description: "Cập nhật liên tục mã giảm giá, deal sập sàn Shopee, TikTok Shop và Lazada. Mua qua link iviback vừa được giá tốt vừa nhận thêm hoàn tiền.",
     type: "website",
     locale: "vi_VN",
     url: "/uu-dai",
@@ -89,6 +89,7 @@ export default async function PublicDealsPage({
     expiresAt: d.expiresAt ? d.expiresAt.toISOString() : null,
     imageUrl: d.uploadedImageUrl || d.shopeeImageUrl || null,
     shortUrl: d.shortUrl,
+    platformCode: d.platformCode,
     clicks: d.clicks,
     createdAt: d.createdAt.toISOString(),
   }));
@@ -127,7 +128,7 @@ export default async function PublicDealsPage({
               Ưu Đãi & <span className="text-primary">Mã Giảm Giá</span>
             </h1>
             <p className="text-[18px] text-mute max-w-2xl mx-auto leading-relaxed">
-              Deal sập sàn Shopee, TikTok Shop được cập nhật mỗi ngày. Mua qua link iviback vừa được giá tốt, vừa nhận thêm hoàn tiền.
+              Deal sập sàn Shopee, TikTok Shop, Lazada được cập nhật mỗi ngày. Mua qua link iviback vừa được giá tốt, vừa nhận thêm hoàn tiền.
             </p>
           </div>
         </section>

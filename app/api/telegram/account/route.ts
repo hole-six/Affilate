@@ -6,7 +6,7 @@ import { setBotDisplayName } from "@/lib/telegramBot";
 export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session || session.role !== "admin") {
-    return NextResponse.json({ error: "Khong co quyen" }, { status: 403 });
+    return NextResponse.json({ error: "Không có quyền" }, { status: 403 });
   }
 
   const { id, botName, botUsername, botTokenHint, webhookUrl, status } = await req.json();
