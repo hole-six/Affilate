@@ -6,6 +6,17 @@ import { CustomerLinkForm } from "@/components/customer/CustomerLinkForm";
 import { RefundHistoryClient } from "@/components/customer/RefundHistoryClient";
 import { versionedAsset } from "@/lib/versionedAsset";
 
+const PLATFORM_DISPLAY_ORDER: Record<string, number> = { SHOPEE: 0, TIKTOK: 1, LAZADA: 2 };
+
+function sortPlatformsForDisplay<T extends { code: string; name: string }>(platforms: T[]): T[] {
+  return [...platforms].sort((a, b) => {
+    const rankA = PLATFORM_DISPLAY_ORDER[a.code] ?? 99;
+    const rankB = PLATFORM_DISPLAY_ORDER[b.code] ?? 99;
+    if (rankA !== rankB) return rankA - rankB;
+    return a.name.localeCompare(b.name);
+  });
+}
+
 export default async function CustomerRefundsPage({ searchParams }: { searchParams: { q?: string; page?: string; tab?: string } }) {
   const session = await getSession();
   if (!session?.customerId) redirect("/admin");
@@ -77,7 +88,7 @@ export default async function CustomerRefundsPage({ searchParams }: { searchPara
       <img src={versionedAsset("/anhluuy.jpg")} alt="Lưu ý khi mua sắm" className="w-full rounded-2xl shadow-sm" />
 
       {/* FORM: CHỌN NỀN TẢNG & TẠO LINK */}
-      <CustomerLinkForm platforms={platforms.map((p) => ({ id: p.id, code: p.code, label: p.name }))} />
+      <CustomerLinkForm platforms={sortPlatformsForDisplay(platforms).map((p) => ({ id: p.id, code: p.code, label: p.name }))} />
 
       {/* HISTORY CARD */}
       <RefundHistoryClient

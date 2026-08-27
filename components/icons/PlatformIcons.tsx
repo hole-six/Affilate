@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 type IconProps = { size?: number; className?: string };
 
 function Icons8Image({
@@ -98,6 +100,30 @@ export function TiktokIcon(props: IconProps) {
   return <Icons8Image {...props} style="color" slug="tiktok" alt="Tiktok" />;
 }
 
-export function LazadaIcon(props: IconProps) {
-  return <Icons8Image {...props} style="color" slug="lazada" alt="Lazada" />;
+export function LazadaIcon({ size = 22, className = "" }: IconProps) {
+  const gradId = useId();
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 48 48"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      role="img"
+      aria-label="Lazada"
+    >
+      <defs>
+        <linearGradient id={gradId} x1="6" y1="4" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="#FF8A1E" />
+          <stop offset="1" stopColor="#F0047F" />
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="40" height="40" rx="13" fill={`url(#${gradId})`} />
+      <path
+        d="M24 38.2c-1.1-.85-4.75-3.75-8-7.35-3.35-3.7-6-8.05-6-11.85 0-4.7 3.7-8.5 8.25-8.5 2.35 0 4.5 1.05 6 2.75a8.16 8.16 0 0 1 6-2.75c4.55 0 8.25 3.8 8.25 8.5 0 3.8-2.65 8.15-6 11.85-3.25 3.6-6.9 6.5-8 7.35a1.6 1.6 0 0 1-1.5 0Z"
+        fill="#fff"
+      />
+    </svg>
+  );
 }
