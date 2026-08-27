@@ -143,6 +143,7 @@ export async function POST(req: NextRequest) {
   let duplicateRows = 0;
   let referralBonusCount = 0;
   let referralBonusTotal = new Prisma.Decimal(0);
+  const crossPlatformConflicts: string[] = [];
 
   // ============================================================
   // GỘP DÒNG THEO ĐƠN HÀNG
@@ -245,6 +246,27 @@ export async function POST(req: NextRequest) {
         where: { platformId_orderExternalId: { platformId, orderExternalId } },
       });
       if (existing) duplicateRows++;
+
+      // ============================================================
+      // CHẶN TRÙNG XUYÊN NỀN TẢNG
+      // orderExternalId chỉ unique THEO TỪNG platformId (compound key) —
+      // nếu admin chọn nhầm nền tảng khi import (vd: chọn Lazada nhưng
+      // file thật ra là báo cáo Shopee), đơn sẽ được coi là "mới" và tạo
+      // bản ghi trùng hoàn toàn dưới platform sai, kể cả khi đơn gốc đã
+      // approved/paid — gây trả hoa hồng 2 lần. Sự cố thật đã xảy ra
+      // 2026-08-27 (~1258 đơn bị nhân đôi, 2 phiếu đã trả nhầm lần 2).
+      // Chặn ngay ở đây trước khi tạo bản ghi mới.
+      // ============================================================
+      if (!existing) {
+        const existingOtherPlatform = await prisma.order.findFirst({
+          where: { orderExternalId, platformId: { not: platformId } },
+        });
+        if (existingOtherPlatform) {
+          crossPlatformConflicts.push(orderExternalId);
+          errorRows++;
+          continue;
+        }
+      }
 
       // ============================================================
       // MAP TRẠNG THÁI SHOPEE → NỘI BỘ
@@ -596,6 +618,13 @@ export async function POST(req: NextRequest) {
     data: { successRows, unmappedRows, errorRows, duplicateRows, status: "done" },
   });
 
+  if (crossPlatformConflicts.length > 0) {
+    console.warn(
+      `[IMPORT_CROSS_PLATFORM_CONFLICT] ${crossPlatformConflicts.length} đơn bị bỏ qua vì đã tồn tại dưới nền tảng khác (có thể admin chọn nhầm nền tảng khi import):`,
+      crossPlatformConflicts.slice(0, 20).join(", ")
+    );
+  }
+
   return NextResponse.json({
     batchId: batch.id,
     successRows,
@@ -604,5 +633,7 @@ export async function POST(req: NextRequest) {
     duplicateRows,
     referralBonusCount,
     referralBonusTotal: Number(referralBonusTotal),
+    crossPlatformConflictCount: crossPlatformConflicts.length,
+    crossPlatformConflictSample: crossPlatformConflicts.slice(0, 10),
   });
 }
