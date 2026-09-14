@@ -148,7 +148,10 @@ function BatchDetailModal({ batchId, onClose }: { batchId: string; onClose: () =
                 </div>
                 <div className="ml-auto text-right">
                   <p className="text-[11px] text-gray-400">Tổng tiền</p>
-                  <p className="text-[18px] font-black text-[#e86a33]">{formatCurrency(Number(batch.totalAmount))}</p>
+                  <div className="flex items-center justify-end gap-xs">
+                    <p className="text-[18px] font-black text-[#e86a33]">{formatCurrency(Number(batch.totalAmount))}</p>
+                    <CopyBtn value={String(Math.round(Number(batch.totalAmount)))} />
+                  </div>
                 </div>
               </div>
 
