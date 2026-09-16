@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 import { ModalProvider } from "@/components/ui/ModalProvider";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
+import { ChunkErrorRecovery } from "@/components/pwa/ChunkErrorRecovery";
 import "./globals.css";
 
 const beVietnamPro = Be_Vietnam_Pro({
@@ -45,6 +46,7 @@ export default function RootLayout({
     <html lang="vi" className={beVietnamPro.variable}>
       <body className={beVietnamPro.className}>
         <ServiceWorkerRegister />
+        <ChunkErrorRecovery />
         <ModalProvider>{children}</ModalProvider>
       </body>
     </html>
