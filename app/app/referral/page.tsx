@@ -54,6 +54,12 @@ export default async function ReferralPage() {
         where: {
           customerId: { in: friendIds },
           orderStatus: { in: ["pending", "processing", "approved", "clawback"] },
+          // Bạn bè (F1) cũng có thể vừa là người giới thiệu của người khác (F2) —
+          // đơn REF-... trong bảng orders là bản ghi nội bộ hoa hồng F1 nhận từ F2,
+          // không phải đơn mua hàng thật của F1. Thiếu điều kiện này khiến khoản
+          // hoa hồng đó bị liệt vào "đơn của bạn bè" và hiện sai thành "Không đủ
+          // điều kiện" (vì không khớp REF- nào của chính người xem trang này).
+          sourceType: { not: "referral" },
         },
         orderBy: { createdAt: "desc" },
         select: {
