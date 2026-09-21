@@ -1,0 +1,114 @@
+╔══════════════════════════════════════════════════════════════════╗
+║          LAZADA INTEGRATION - HOÀN THÀNH POSTBACK SETUP         ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📦 ĐÃ TẠO CÁC FILE MỚI:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. app/api/webhooks/lazada/postback/route.ts
+   → Webhook endpoint nhận postback từ Lazada
+   → Xử lý cả GET (test) và POST (data thật)
+   → Tự động upsert đơn hàng vào database
+
+2. app/api/admin/integrations/lazada/postback-test/route.ts  
+   → Admin API để test postback endpoint
+   → Gửi payload giả để verify hoạt động
+
+3. scripts/print-lazada-postback-url.js
+   → Script in ra URL cần copy vào Lazada dashboard
+   → Chạy: npm run lazada:postback-url
+
+4. docs/LAZADA_POSTBACK_SETUP.md
+   → Hướng dẫn chi tiết đầy đủ
+   → Bao gồm troubleshooting và best practices
+
+5. LAZADA_POSTBACK_QUICKSTART.md
+   → Quick start 3 bước nhanh
+   → Dành cho người vội
+
+6. .env (đã update)
+   → Thêm các biến LAZADA_* cần thiết
+
+
+🎯 POSTBACK URL CỦA BẠN:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+https://iviback.vn/api/webhooks/lazada/postback?order_id={_p_order_id}&sub_order_id={_p_sub_order_id}&offer={_p_offer}&sku_name={_p_sku_name}&status={_p_status}&payout={_p_payout}&pay_amount={_p_pay_amount}&currency={_p_currency}&sub_id1={sub_id1}&sub_id2={sub_id2}&sub_id3={sub_id3}&fulfilled_time={_p_fulfilled_time}&delivered_time={_p_delivered_time}&returned_time={_p_returned_time}
+
+
+✅ CẦN LÀM NGAY BÂY GIỜ (3 BƯỚC):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BƯỚC 1: Deploy code mới lên VPS
+   cd /var/www/iviback
+   git pull
+   npm install
+   npm run build
+   pm2 restart nextjs-app
+
+BƯỚC 2: Cấu hình Lazada Dashboard  
+   1. Đăng nhập: https://affiliate.lazada.vn
+   2. Settings → Postback URL → Create New
+   3. Name: iviback Order Tracking
+   4. Event: Order  
+   5. URL: Copy URL ở trên ☝️
+   6. Save → Run Test
+
+BƯỚC 3: Verify hoạt động
+   # Test endpoint
+   curl "https://iviback.vn/api/webhooks/lazada/postback?order_id=test"
+   
+   # Xem logs
+   pm2 logs nextjs-app | grep LAZADA
+
+
+📋 ĐIỀN THÔNG TIN VÀO .env (NẾU CHƯA CÓ):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+LAZADA_API_BASE_URL="https://api.lazada.sg/rest"
+LAZADA_APP_KEY="your_app_key_from_lazada_dashboard"
+LAZADA_APP_SECRET="your_app_secret_from_lazada_dashboard"  
+LAZADA_ACCESS_TOKEN="your_access_token_from_oauth"
+
+
+🔥 LỢI ÍCH POSTBACK VS CRON JOB:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Trước (Polling):        Sau (Postback):
+✗ Chạy mỗi 30 phút     ✓ Realtime (D+1 từ Lazada)
+✗ Tốn CPU/RAM          ✓ Chỉ chạy khi có đơn
+✗ Có thể bỏ sót        ✓ Không bỏ sót
+✗ Delay 0-30 phút      ✓ Delay tối đa 24h
+
+
+💡 KHUYẾN NGHỊ:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. ✅ Dùng Postback làm chính
+2. ✅ Giữ Cron Job làm backup (chạy 1 lần/ngày)
+3. ✅ Monitor logs để phát hiện vấn đề sớm
+
+
+📞 TROUBLESHOOTING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Lỗi "invalid click id"
+→ Dùng {sub_id1} thay vì {sub_aff_id}
+
+Lỗi "handshake failure"  
+→ Email: affiliate-vn@lazada.com yêu cầu whitelist
+
+Không nhận được postback
+→ Kiểm tra: SSL cert, firewall, có đơn thật không?
+
+Xem chi tiết: docs/LAZADA_POSTBACK_SETUP.md
+
+
+🎉 HOÀN TẤT!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tích hợp Lazada của bạn đã sẵn sàng nhận postback realtime!
+Sau khi cấu hình xong, khách đặt hàng qua link affiliate sẽ tự động 
+được tracking và cộng tiền hoàn vào hệ thống.
+
+Có thắc mắc? Đọc docs/LAZADA_POSTBACK_SETUP.md hoặc hỏi tôi! 🚀
