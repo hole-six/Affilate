@@ -22,20 +22,20 @@ async function main() {
 
   const shopee = await prisma.platform.upsert({
     where: { code: "SHOPEE" },
-    update: {},
-    create: { code: "SHOPEE", name: "Shopee" },
+    update: { status: "active" },
+    create: { code: "SHOPEE", name: "Shopee", status: "active" },
   });
 
   const tiktok = await prisma.platform.upsert({
     where: { code: "TIKTOK" },
-    update: {},
-    create: { code: "TIKTOK", name: "TikTok Shop" },
+    update: { status: "active" },
+    create: { code: "TIKTOK", name: "TikTok Shop", status: "active" },
   });
 
   const lazada = await prisma.platform.upsert({
     where: { code: "LAZADA" },
-    update: {},
-    create: { code: "LAZADA", name: "Lazada" },
+    update: { status: "active" },
+    create: { code: "LAZADA", name: "Lazada", status: "active" },
   });
 
   const customer = await prisma.customer.upsert({
